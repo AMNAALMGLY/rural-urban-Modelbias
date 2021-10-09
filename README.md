@@ -1,6 +1,6 @@
 # rural-urban-performance
 
-##setting a baseline from 
+# setting a baseline from 
 Yeh, C., Perez, A., Driscoll, A. et al. Using publicly available satellite imagery and deep learning to understand economic well-being in Africa. Nat Commun 11, 2583 (2020). https://doi.org/10.1038/s41467-020-16185-w
 
 
