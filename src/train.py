@@ -1,22 +1,20 @@
 # Setup Experiment
 import pytorch_lightning as pl
-#from pytorch_lightning.loggers import TensorBoardLogger
+# from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from batchers.dataset import Batcher
 from models.resnet import resnet50
 from src.trainer import ResTrain
 from utils.utils import get_paths
 
-
-
-#logger = TensorBoardLogger("resnet_logs", name="resnet50")
+# logger = TensorBoardLogger("resnet_logs", name="resnet50")
 
 # model
 model = resnet50(in_channels=7, pretrained=True)
 # fc=nn.Linear(model.fc.in_features,1)
 
 # metric
-#metric = torchmetrics.PearsonCorrcoef()
+# metric = torchmetrics.PearsonCorrcoef()
 
 # dataloader
 paths_train = get_paths('DHS_OOC', ['train'], 'A', '/content/drive/MyDrive/dhs_tfrecords')
@@ -37,5 +35,8 @@ trainer = pl.Trainer(max_epochs=400, gpus=1, auto_select_gpus=True,
                      logger=logger,
                      callbacks=[checkpoint_callback],
                      resume_from_checkpoint=ckpt_path,
-                     accumulate_grad_batches=16)  # understand what it does exactly
+                     precision=16,
+                    distributed_backend='ddp',
+                     profile=True,
+                     accumulate_grad_batches=16,)  # understand what it does exactly
 trainer.fit(litmodel, batcher_train, batcher_valid)

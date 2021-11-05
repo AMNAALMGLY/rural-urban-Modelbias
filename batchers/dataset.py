@@ -62,13 +62,13 @@ class Batcher():
         self.nl_label = nl_label
         self.normalize = normalize
         self.augment = augment
-        self.groupby=groupby
+        self.groupby=groupby         #str representing the name of the group ['urban' ,'rural',...]
         self.save_dir = save_dir
 
         self.batch_size = batch_size
         self._iterator = None
 
-        # TODO:chech values of arguments passed
+        # TODO:check values of arguments passed
 
     '''Not necessary anymore
     def __getitem__(self, idx):

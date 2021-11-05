@@ -30,21 +30,24 @@ class Metric:
         return method()
 
 
-def R2(self):
-    return torchmetrics.R2Score()
+    def R2(self):
+        return torchmetrics.R2Score()
 
 
-def r2(self):
-    return torchmetrics.PearsonCorrcoef()
+    def r2(self):
+        return torchmetrics.PearsonCorrcoef()
 
 
-def acc(self):
-    return torchmetrics.Accuracy(num_classes=self.num_classes)
+    def acc(self):
+        return torchmetrics.Accuracy(num_classes=self.num_classes)
 
 
-def mse(self):
-    return torchmetrics.MeanSquaredError()
+    def mse(self):
+        return torchmetrics.MeanSquaredError()
 
+
+    def rank(self):
+        return torchmetrics.SpearmanCorrcoef()
 
 def save_results(dir_path: str, np_dict: dict, filename: str
                  ) -> None:

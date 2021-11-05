@@ -39,7 +39,8 @@ class ResTrain(pl.LightningModule):
 
     def forward(self, x):
 
-        raise NotImplementedError
+        output=self.model(x)
+        return output
 
     def _shared_step(self, batch, metric_fn):
 
