@@ -32,5 +32,22 @@ initialization function:ckpt , random , imagenet
 
 Results dataframe ['r2', 'R2', 'mse', 'rank'] many metrics
 
-Experimets :another models[knn,ridge], bands combination ,hyperparmeters
+    Reproducability Experimets :
+    knn NL mean scalar
+    ridge rgb+NL hist
+    ridge NL+MS hist   (trained on NL seperately, ms seperately concat the fc , run ridge on top)
+    resnet18 MS
+    resnet18 ms+NL concat
+    transfer:resnet 18 RGB transfer
+    knn with imagehist file?
+    regenerate dhs-loc.pkl files ?
+    features.npz foe each mode 
+    test_preds.npz for each model 
+
+#New_experiments:
+drop dmsp
+
+concat features from images , with features learned with MLP for rural/urban column along with labels & locs columns
+
+add cluster column(kmean) and then repeat the same experiment above .
 
