@@ -1,13 +1,15 @@
 # Setup Experiment
 import pytorch_lightning as pl
-from pytorch_lightning.loggers import TensorBoardLogger
+#from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from batchers.dataset import Batcher
 from models.resnet import resnet50
 from src.trainer import ResTrain
 from utils.utils import get_paths
 
-logger = TensorBoardLogger("resnet_logs", name="resnet50")
+
+
+#logger = TensorBoardLogger("resnet_logs", name="resnet50")
 
 # model
 model = resnet50(in_channels=7, pretrained=True)

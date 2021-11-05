@@ -16,7 +16,7 @@ from dataset_constants import MEANS_DICT, STD_DEVS_DICT
 from utils.utils import  save_results
 from collections import defaultdict
 
-AUTO = tf.data.experimental.AUTOTUNE
+AUTO: int = tf.data.experimental.AUTOTUNE
 
 
 class Batcher():
@@ -48,7 +48,7 @@ class Batcher():
     """
 
     def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label, normalize, augment,
-                 batch_size, save_dir=None):
+                 batch_size, groupby=None,save_dir=None):
 
         '''
         initializes the loader as follows :
@@ -62,6 +62,7 @@ class Batcher():
         self.nl_label = nl_label
         self.normalize = normalize
         self.augment = augment
+        self.groupby=groupby
         self.save_dir = save_dir
 
         self.batch_size = batch_size
@@ -86,12 +87,17 @@ class Batcher():
             nbatches += 1
         return nbatches
 
-    def groupby(self):
+    def group(self,example_proto: tf.Tensor) -> tf.Tensor:
         '''
+
         group by urban/rural
 
         '''
-        raise NotImplementedError
+        key_to_feature=self.groupby
+        keys_to_features={key_to_feature:tf.io.FixedLenFeature(shape=[], dtype=tf.float32)}  #I'm assuming that it is float feature.
+        ex = tf.io.parse_single_example(example_proto, features=keys_to_features)
+        do_keep = tf.equal(ex['urban_rural'], 0.0)
+        return do_keep
 
     def tfrecords_to_dict(self, example: tf.Tensor) -> dict[str, tf.Tensor]:
         '''
@@ -188,10 +194,6 @@ class Batcher():
         '''
         do the tf_to dict operation to the whole dataset in numpy dtype
         '''
-
-        dataset = tf.data.TFRecordDataset(self.tfrecords, num_parallel_reads=AUTO, compression_type='GZIP')
-        if cache:
-            dataset = dataset.cache()
         if shuffle:
             # shuffle the order of the input files, then interleave their individual records
             dataset = tf.data.Dataset.from_tensor_slices(self.tfrecord_files)
@@ -199,12 +201,66 @@ class Batcher():
             dataset = dataset.apply(
                 tf.data.experimental.parallel_interleave(
                     lambda filename: tf.data.TFRecordDataset(filename),
-                    cycle_length=4))  ##TODO edit this cycle lenght
+                    cycle_length=4))   ##TODO edit this cycle lenght
+        else:
+            # convert to individual records
+            dataset = tf.data.TFRecordDataset(
+                filenames=self.tfrecords,
+                compression_type='GZIP',
+                buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
+                num_parallel_reads=4)         ##TODO edit this cycle lenght
+
+        if cache:
+            dataset = dataset.cache()
 
         dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex))
+
+        if self.augment:
+            counter = tf.data.experimental.Counter()
+            dataset= tf.data.Dataset.zip((dataset, (counter, counter)))
+            dataset=dataset.map(self.augment_ex,num_parallel_calls=AUTO)
+
+        if self.groupby:
+            dataset = dataset.filter(self.group, num_parallel_calls=AUTO)
+
         dataset = dataset.batch(batch_size=self.batch_size)
         dataset = dataset.prefetch(AUTO)
         return tfds.as_numpy(dataset)
+
+    def augment_ex(self,ex: dict[str, tf.Tensor],seed) -> dict[str, tf.Tensor]:
+        """Performs image augmentation (random flips + levels brightnes/contrast adjustments).
+          Does not perform level adjustments on NL band(s).
+
+          Args
+          - ex: dict {'images': img, ...}
+              - img: tf.Tensor, shape [H, W, C], type float32
+                  NL band depends on self.ls_bands and self.nl_band
+
+          Returns: ex, with img replaced with an augmented image
+          """
+        img=ex['image']
+        img=tf.image.stateless_random_flip_left_right(img,seed=seed)
+        img=tf.image.stateless_random_flip_left_right(img,seed=seed)
+
+        if self.ls_bands and self.ls_bands:
+            if self.nl_label=='merge':
+
+                img=tf.image.stateless_random_brightness(img[:,:,:-1],max_delta=0.5,seed=seed)
+                img=tf.image.stateless_random_contrast(img,lower=0.75, upper=1.25,seed=seed)
+                img=tf.concat([img , ex['image'][:,:,-1:]])
+            else:
+
+                img = tf.image.stateless_random_brightness(img[:, :, :-2], max_delta=0.5,seed=seed)
+                img = tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25,seed=seed)
+                img = tf.concat([img, ex['image'][:, :, -2:]])
+
+        elif self.ls_bands:
+
+            img = tf.image.stateless_random_brightness(img, max_delta=0.5,seed=seed)
+            img = tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25,seed=seed)
+        ex['image']=img
+        return ex
+
 
     def __iter__(self):
         '''
