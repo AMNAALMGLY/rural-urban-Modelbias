@@ -9,6 +9,7 @@ from torch import Tensor
 import torch.nn as nn
 from _internally_replaced_utils import load_state_dict_from_url
 from utils import _log_api_usage_once
+from src.configs import  args
 import math
 
 
@@ -291,7 +292,7 @@ def _resnet(
     if pretrained:
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         state_dict['conv1.weight'] = nn.Parameter(
-            init_first_layer_weights(in_channels, state_dict['conv1.weight'], 'same'))
+            init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
         model.load_state_dict(state_dict)
     return model
 

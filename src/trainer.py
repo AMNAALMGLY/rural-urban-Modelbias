@@ -1,8 +1,9 @@
 import pytorch_lightning as pl
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.optim.lr_scheduler import ExponentialLR
 import torch
 import torch.nn as nn
 from utils.utils import Metric
+from src.configs import  args
 
 
 class ResTrain(pl.LightningModule):
@@ -107,15 +108,13 @@ class ResTrain(pl.LightningModule):
         self.metric.reset()
 
     def configure_optimizers(self):
-        opt = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        opt = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         return {
             'optimizer': opt,
             'lr_scheduler': {
-                'scheduler': ReduceLROnPlateau(opt,
-                                               patience=10,
-                                               min_lr=1e-8,
-                                               factor=0.5,
-                                               verbose=True),
+                'scheduler': ExponentialLR(opt,
+                                           gamma=args.lr_decay,
+                                            verbose=True),
                 'monitor': 'train_loss',
             }
         }
@@ -127,3 +126,5 @@ class ResTrain(pl.LightningModule):
 
         elif self.loss_type == 'regression':
             self.criterion = nn.MSELoss()
+
+#lr=self.learning_rate * (self.lr_decay ** self.epoch)
