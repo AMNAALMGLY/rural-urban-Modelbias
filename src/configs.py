@@ -10,6 +10,7 @@ args = Namespace(
 
     model_name='resnet18',
     hs_weight_init='same',
+    model_init='imagenet',
 
     # Training
 
@@ -31,16 +32,20 @@ args = Namespace(
     dataset='DHS_OOC',
     fold='A',
     ls_bands='ms',
-    nl_band=None,     #[None , merge , split]
-    nl_label='None',     #[center, mean]
+    nl_band= None,     #[None , merge , split]
+    nl_label=None,     #[center, mean,None]
+   scalar_features_keys=None,
     # keep_frac {keep_frac}
 
     # Experiment
 
+    monitor='train_loss',
+    mode='min',
     seed=123,
     experiment_name='new_experiment',
     out_dir=os.path.join(ROOT_DIR, 'outputs/'),
-    ckpt=None
+    ckpt=None,
+    group=None
 
 )
 args.num_workers = multiprocessing.cpu_count()
