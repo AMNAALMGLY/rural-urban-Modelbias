@@ -2,6 +2,7 @@ from argparse import Namespace
 import torch
 import multiprocessing
 import os
+
 ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
 
 args = Namespace(
@@ -32,9 +33,9 @@ args = Namespace(
     dataset='DHS_OOC',
     fold='A',
     ls_bands='ms',
-    nl_band= None,     #[None , merge , split]
-    nl_label=None,     #[center, mean,None]
-   scalar_features_keys=None,
+    nl_band=None,  # [None , merge , split]
+    nl_label=None,  # [center, mean,None]
+    scalar_features_keys=None,
     # keep_frac {keep_frac}
 
     # Experiment
@@ -45,8 +46,13 @@ args = Namespace(
     experiment_name='new_experiment',
     out_dir=os.path.join(ROOT_DIR, 'outputs/'),
     ckpt=None,
-    group=None
-
+    group=None,
+    loss_type='regression',
+    num_outputs=1,
+    resume=None,
+    checkpoints= None,
 )
 args.num_workers = multiprocessing.cpu_count()
 args.no_of_gpus = torch.cuda.device_count()
+args.bands_channels = {'rgb': 3, 'ms': 7}  # TODO handle none key values
+args.in_channels = args.bands_channels[args.ls_bands] + 1 if args.nl_band else args.bands_channels[args.ls_bands]
