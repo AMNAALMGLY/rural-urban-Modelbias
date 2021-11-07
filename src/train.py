@@ -1,8 +1,8 @@
 # Setup Experiment #look at utils/trainer.py
 import argparse
 import copy
-import os.path
-
+import json
+import os
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning.loggers import TensorBoardLogger
@@ -10,23 +10,43 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from batchers.dataset import Batcher
 from models.model_generator import get_model
 from src.trainer import ResTrain
-from utils.utils import get_paths, dotdict, init_model, parse_arguments
+from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name
 from src.configs import args as default_args
 from pytorch_lightning import seed_everything
 
-#TODO create ouput directory for trained model so that they can be used for extract_features.py
+ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
+
+
+# TODO create ouput directory for trained model so that they can be used for extract_features.py
 
 def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
+    # setup lightining model params
+    params = dict(model=model, lr=args.lr, conv_reg=args.conv_reg, loss_type=args.loss_type,
+                  num_outputs=args.num_ouptus, metric='r2')
+
+    # setting experiment_path
+    experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
+                                          args.fc_reg, args.conv_reg, args.lr)
+
+    dirpath = os.path.join(args.out_dir, 'dhs_ooc', experiment)
+    print(f'checkpoints directory: {dirpath}')
+    os.makedirs(dirpath, exist_ok=True)  # check if it can be created automatically
+    # params filepath
+    params_filepath = os.path.join(dirpath, 'params.json')
+    with open(params_filepath, 'w') as config_file:
+        json.dump(params, config_file, indent=4)
+
     # logger
     logger = TensorBoardLogger(os.path.join(args.out_dir, f"{args.model_name}_logs"), name=args.model_name)
-    # lightning model , trainer
 
-    litmodel = ResTrain(model, args.lr, args.conv_reg, args.loss_type, args.num_outputs, metric='r2')
+    # lightning model , trainer
+    litmodel = ResTrain(**params)
     checkpoint_callback = ModelCheckpoint(monitor=args.monitor, mode=args.mode,
                                           filename="{args.model_name}-{epoch:02d}-{args.monitor:.2f}",
-                                          dirpath='/content/drive/MyDrive/checkpoints_resnet',
+                                          dirpath=dirpath,
                                           verbose=True,
-                                          #sanity check
+                                          save_top_k=1,
+                                          # sanity check
                                           save_last=True)
 
     trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=args.gpu, auto_select_gpus=True,
@@ -39,37 +59,48 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
                          accumulate_grad_batches=16, )  # understand what it does exactly
     if checkpoints:
         print(f'Initializing using pretrained lightning model:\n{checkpoints}')
-        pretrained_model = ResTrain(model, args.lr, args.conv_reg, args.loss_type, args.num_outputs, metric='r2')
-        pretrained_model.load_from_checkpoint(checkpoint_path=checkpoints, strict=False)
-        litmodel.model = copy.deepcopy(litmodel.model)
+        pretrained_model = ResTrain(**params)
+        pretrained_model.load_from_checkpoint(checkpoint_path=checkpoints, **params, strict=False)
+        litmodel.model = copy.deepcopy(pretrained_model.model)
 
     trainer.fit(litmodel, train_loader, valid_loader)
 
-    torch.save(litmodel.state_dict(),
+    torch.save(litmodel.model.state_dict(),
                './models')  # save the model itself (resnetms for example)rather than saving the lighting model
 
     best_model_ckpt = checkpoint_callback.best_model_path
     best_model_score = checkpoint_callback.best_model_score
 
-    return best_model_ckpt, best_model_score
+    return best_model_ckpt, best_model_score,dirpath
 
 
 def main(args):
     seed_everything(args.seed)
     # dataloader
-    paths_train = get_paths(args.dataset, ['train'], args.fold, '/content/drive/MyDrive/dhs_tfrecords')
-    paths_valid = get_paths(args.dataset, ['val'], args.fold, '/content/drive/MyDrive/dhs_tfrecords')
+    paths_train = get_paths(args.dataset, ['train'], args.fold, args.data_path)
+    paths_valid = get_paths(args.dataset, ['val'], args.fold, args.data_path)
+
+    #save data_params for later use
+    data_params = dict(dataset=args.dataset,fold=args.fold,ls_bands= args.ls_bands, nl_band=args.nl_band,label_name= args.label_name,
+                       nl_label=args.nl_label, batch_size=args.batch_size, groupby=args.group)
 
     batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                            args.nl_label, 'DHS', args.augment, args.batch_size, groupby=args.group)
+                            args.nl_label, 'DHS', args.augment, args.batch_size, groupby=args.group,
+                            cache='train' in args.cache)
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                            args.nl_label, 'DHS', args.augment, args.batch_size, groupby=args.group)
+                            args.nl_label, 'DHS', args.augment, args.batch_size, groupby=args.group,
+                            cache='train_eval' in args.cache)
 
     # model
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
-    best_model_ckpt, _ = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
+    best_model_ckpt, _ ,dirpath= setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
     print(f'Path to best model found during training: \n{best_model_ckpt}')
+
+    #saving data_param:
+    params_filepath = os.path.join(dirpath, 'data_params.json')
+    with open(params_filepath, 'w') as config_file:
+        json.dump(data_params, config_file, indent=4)
 
     if __name__ == "__main__":
         parser = argparse.ArgumentParser()

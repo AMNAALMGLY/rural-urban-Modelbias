@@ -47,8 +47,8 @@ class Batcher():
     TODO:citation
     """
 
-    def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label, normalize, augment,
-                 batch_size, groupby=None,save_dir=None):
+    def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label, normalize='DHS', augment=False,
+                 batch_size=64, groupby=None,cache=None,save_dir=None):
 
         '''
         initializes the loader as follows :
@@ -63,6 +63,7 @@ class Batcher():
         self.normalize = normalize
         self.augment = augment
         self.groupby=groupby         #str representing the name of the group ['urban' ,'rural',...]
+        self.cache=cache
         self.save_dir = save_dir
 
         self.batch_size = batch_size
@@ -266,7 +267,7 @@ class Batcher():
         '''
         implement iterator of the  loader
         '''
-        self.ds = self.get_dataset()
+        self.ds = self.get_dataset(self.cache)
         if self._iterator is None:
             self._iterator = iter(self.ds)
         else:

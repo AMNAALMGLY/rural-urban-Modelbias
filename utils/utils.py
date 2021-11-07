@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import os
 from glob import glob
+from typing import Iterable
 
 import numpy as np
 import tensorflow as tf
@@ -64,6 +65,31 @@ def save_results(dir_path: str, np_dict: dict, filename: str
         print(f'{key}: shape {nparr.shape}, dtype {nparr.dtype}')
     print(f'Saving results to {npz_path}')
     np.savez_compressed(npz_path, **np_dict)
+
+
+def get_full_experiment_name(experiment_name: str, batch_size: int,
+                             fc_reg: float, conv_reg: float, lr: float, ):
+    fc_str = str(fc_reg).replace('.', '')
+    conv_str = str(conv_reg).replace('.', '')
+    lr_str = str(lr).replace('.', '')
+    return f'{experiment_name}_b{batch_size}_fc{fc_str}_conv{conv_str}_lr{lr_str}'
+
+
+def check_existing(model_dirs: Iterable[str], outputs_root_dir: str,
+                   test_filename: str) -> bool:
+    exist = False
+    for model_dir in model_dirs:
+        dir = os.path.join(outputs_root_dir, model_dir)
+        dir = glob(os.path.join(dir, '*ckpt'))
+        if len(dir) > 0:
+            exist = True
+            # check if test file exists
+            test_path = os.path.join(model_dir, test_filename)
+            if os.path.exists(test_path):
+                exist = False
+                print(f'found {test_filename} in {model_dir}')
+
+    return exist
 
 
 def get_paths(dataset: str, split: str, fold: str, root) -> np.ndarray:

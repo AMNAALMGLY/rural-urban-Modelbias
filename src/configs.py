@@ -10,7 +10,7 @@ args = Namespace(
     # Model
 
     model_name='resnet18',
-    hs_weight_init='same',
+    hs_weight_init='same',       #[same, samescaled,random]
     model_init='imagenet',
 
     # Training
@@ -26,6 +26,7 @@ args = Namespace(
 
     # data
 
+    datapath='',
     label_name='wealthpooled',
     cache=['train', 'train_eval', 'val'],
     augment=True,
@@ -40,10 +41,10 @@ args = Namespace(
 
     # Experiment
 
-    monitor='train_loss',
+    monitor='val_loss',
     mode='min',
     seed=123,
-    experiment_name='new_experiment',
+    experiment_name='DHS_OOC_A_ms_same',
     out_dir=os.path.join(ROOT_DIR, 'outputs/'),
     ckpt=None,
     group=None,
