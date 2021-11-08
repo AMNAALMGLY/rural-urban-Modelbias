@@ -46,7 +46,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
                                           # sanity check
                                           save_last=True)
 
-    trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=args.gpu, auto_select_gpus=True,
+    trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=args.gpu,
                          logger=logger,
                          callbacks=[checkpoint_callback],
                          resume_from_checkpoint=args.resume,
