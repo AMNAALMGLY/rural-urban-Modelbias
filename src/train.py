@@ -14,16 +14,16 @@ from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_ful
 from src.configs import args as default_args
 from pytorch_lightning import seed_everything
 
-ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
+#ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
 
 
 # TODO create ouput directory for trained model so that they can be used for extract_features.py
 
 def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
     # setup lightining model params
-    params = dict(model=model, lr=args.lr, conv_reg=args.conv_reg, loss_type=args.loss_type,
-                  num_outputs=args.num_ouptus, metric='r2')
-
+    params = dict(model=model, lr=args.lr, weight_decay=args.conv_reg, loss_type=args.loss_type,
+                  num_outputs=args.num_outputs, metric='r2')
+  
     # setting experiment_path
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
                                           args.fc_reg, args.conv_reg, args.lr)
@@ -31,10 +31,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
     dirpath = os.path.join(args.out_dir, 'dhs_ooc', experiment)
     print(f'checkpoints directory: {dirpath}')
     os.makedirs(dirpath, exist_ok=True)  # check if it can be created automatically
-    # params filepath
-    params_filepath = os.path.join(dirpath, 'params.json')
-    with open(params_filepath, 'w') as config_file:
-        json.dump(params, config_file, indent=4)
+    
 
     # logger
     logger = TensorBoardLogger(os.path.join(args.out_dir, f"{args.model_name}_logs"), name=args.model_name)
@@ -53,8 +50,8 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
                          logger=logger,
                          callbacks=[checkpoint_callback],
                          resume_from_checkpoint=args.resume,
-                         precision=16,
-                         distributed_backend='ddp',
+                         #precision=16,
+                         #distributed_backend='ddp',
                          profiler='simple',
                          accumulate_grad_batches=16, )  # understand what it does exactly
     if checkpoints:
@@ -66,7 +63,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
     trainer.fit(litmodel, train_loader, valid_loader)
 
     torch.save(litmodel.model.state_dict(),
-               './models')  # save the model itself (resnetms for example)rather than saving the lighting model
+              dirpath)  # save the model itself (resnetms for example)rather than saving the lighting model
 
     best_model_ckpt = checkpoint_callback.best_model_path
     best_model_score = checkpoint_callback.best_model_score
@@ -101,8 +98,13 @@ def main(args):
     params_filepath = os.path.join(dirpath, 'data_params.json')
     with open(params_filepath, 'w') as config_file:
         json.dump(data_params, config_file, indent=4)
-
-    if __name__ == "__main__":
+ 
+    # saving resnet model params filepath
+    params=dict(model_name=args.model_name, in_channels=model.in_channels)
+    params_filepath = os.path.join(dirpath, 'params.json')
+    with open(params_filepath, 'w') as config_file:
+        json.dump(params, config_file, indent=4)
+if __name__ == "__main__":
         parser = argparse.ArgumentParser()
         args = parse_arguments(parser, default_args)
         args = dotdict(args)

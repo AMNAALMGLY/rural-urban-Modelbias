@@ -6,7 +6,7 @@ model_type = dict(resnet18=resnet18,
                   resnet50=resnet50)
 
 
-def get_model(model_name, in_channels, pretrained,ckpt_path):
+def get_model(model_name, in_channels, pretrained=False,ckpt_path=None):
     model_fn = model_type[model_name]
     model = model_fn(in_channels, pretrained)
     if ckpt_path:

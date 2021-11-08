@@ -12,7 +12,7 @@ from glob import glob
 import numpy as np
 import pandas as pd
 import torch
-from dataset_constants import MEANS_DICT, STD_DEVS_DICT
+from batchers.dataset_constants import MEANS_DICT, STD_DEVS_DICT
 from utils.utils import  save_results
 from collections import defaultdict
 
@@ -239,27 +239,28 @@ class Batcher():
 
           Returns: ex, with img replaced with an augmented image
           """
-        img=ex['image']
+        img=ex['images']
         img=tf.image.stateless_random_flip_left_right(img,seed=seed)
         img=tf.image.stateless_random_flip_left_right(img,seed=seed)
 
-        if self.ls_bands and self.ls_bands:
+        if self.nl_bands and self.ls_bands:
             if self.nl_label=='merge':
 
                 img=tf.image.stateless_random_brightness(img[:,:,:-1],max_delta=0.5,seed=seed)
-                img=tf.image.stateless_random_contrast(img,lower=0.75, upper=1.25,seed=seed)
-                img=tf.concat([img , ex['image'][:,:,-1:]])
+                img=tf.image.stateless_random_contrast(img[:,:,:-1],lower=0.75, upper=1.25,seed=seed)
+                img=tf.concat([img , ex['image'][:,:,-1:]],axis=2)
             else:
 
                 img = tf.image.stateless_random_brightness(img[:, :, :-2], max_delta=0.5,seed=seed)
-                img = tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25,seed=seed)
-                img = tf.concat([img, ex['image'][:, :, -2:]])
+                img = tf.image.stateless_random_contrast(img[:, :, :-2], lower=0.75, upper=1.25,seed=seed)
+                img = tf.concat([img, ex['images'][:, :, -2:]],axis=2)
 
         elif self.ls_bands:
 
             img = tf.image.stateless_random_brightness(img, max_delta=0.5,seed=seed)
             img = tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25,seed=seed)
-        ex['image']=img
+            print(img.shape)
+        ex['images']=img
         return ex
 
 

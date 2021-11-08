@@ -17,7 +17,7 @@ args = Namespace(
 
     lr_decay=0.96,
     batch_size=64,
-    gpu=0,
+    gpu=1,
     max_epochs=150,
 
     lr=0.001,
@@ -26,7 +26,7 @@ args = Namespace(
 
     # data
 
-    datapath='',
+    data_path='/content/drive/MyDrive/dhs_tfrecords',
     label_name='wealthpooled',
     cache=['train', 'train_eval', 'val'],
     augment=True,

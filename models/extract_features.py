@@ -16,7 +16,7 @@ import batchers
 from batchers.dataset import Batcher
 from src.configs import args
 from src.trainer import ResTrain
-from utils.utils import save_results, get_paths
+from utils.utils import save_results, get_paths,load_from_checkpoint
 
 OUTPUTS_ROOT_DIR = './outputs'
 
@@ -65,11 +65,11 @@ def run_extraction_on_models(model_dir: str,
     '''
 
     print(f'Building model from {model_dir} checkpoint')
-
-    model = ModelClass(**model_params)
+    
+    model=get_model(**model_params)
     checkpoint_pattern = os.path.join(model_dir, '*ckpt')
     checkpoint_path = glob(checkpoint_pattern)
-    model.load_from_checkpoint(checkpoint_path=checkpoint_path, **model_params, strict=False)
+    model=load_from_checkpoint(checkpoint_path=checkpoint_path,model, strict=False)
     model.eval()
     model.freeze()
     with torch.no_grad:
@@ -94,7 +94,7 @@ def main(args):
         json_data_path = os.path.join(model_dir, 'data_params.json')
         with open(json_data_path, 'r') as f:
             data_params = json.load(f)
-        paths = get_paths(data_params.dataset, ['all'], data_params.fold, args.datapath)
+        paths = get_paths(data_params.dataset, 'all', data_params.fold, args.datapath)
 
         batcher = Batcher(paths, None, data_params.ls_bands, data_params.nl_band, data_params.label_name,
                           data_params.nl_label, data_params.batch_size,

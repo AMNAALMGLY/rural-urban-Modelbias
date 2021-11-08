@@ -27,11 +27,13 @@ class ResTrain(pl.LightningModule):
         self.lr = lr
         self.weight_decay = weight_decay
         self.loss_type = loss_type
-        if num_outputs:
+        
+        if num_outputs is not None:
+            
             fc = nn.Linear(model.fc.in_features, num_outputs)
             model.fc = fc
 
-        else:  # fearture extraction
+        else:  # fearture extraction   #TODO fix this!
             model.fc = nn.Sequential()
 
         self.metric = Metric().get_metric(metric)  # TODO if it is a list
@@ -48,8 +50,9 @@ class ResTrain(pl.LightningModule):
         x = torch.tensor(batch['images'], device=self.model.conv1.weight.device)
         target = torch.tensor(batch['labels'], device=self.model.conv1.weight.device)
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
-
+        
         outputs = self.model(x)
+      
         outputs = outputs.squeeze(dim=-1)
         loss = self.criterion(outputs, target)
 
