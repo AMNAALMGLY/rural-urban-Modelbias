@@ -14,6 +14,7 @@ import torch
 
 import batchers
 from batchers.dataset import Batcher
+from models.model_generator import get_model
 from src.configs import args
 from src.trainer import ResTrain
 from utils.utils import save_results, get_paths,load_from_checkpoint
@@ -69,7 +70,7 @@ def run_extraction_on_models(model_dir: str,
     model=get_model(**model_params)
     checkpoint_pattern = os.path.join(model_dir, '*ckpt')
     checkpoint_path = glob(checkpoint_pattern)
-    model=load_from_checkpoint(checkpoint_path=checkpoint_path,model, strict=False)
+    model=load_from_checkpoint(checkpoint_path=checkpoint_path,model=model, strict=False)
     model.eval()
     model.freeze()
     with torch.no_grad:
