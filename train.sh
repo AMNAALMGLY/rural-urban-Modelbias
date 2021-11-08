@@ -8,31 +8,25 @@
 # then cancel the job with
 #   scancel <jobid>
 ##########################
-WRAP="python -m src.train.py"
+WRAP="python -m src.train"
 JOBNAME="resnetTrain"
 logfolder='./cluster_logs'
 
 #source your virtualenv
-cd /sailhome/amna/anaconda3/
-# choose the machine
-SBATCH --partition=atlas --qos=normal
-
-# set the machine parameters
-SBATCH --nodes=1 --cpus-per-task=10 --mem=32 --gres=gpu:titanxp:1
-
-# set the job name
-SBATCH --job-name=${JOBNAME}
-
-# set maximum time for job to run
-# indefinite job: --time=0
-# days/hours: --time=days-hours
-SBATCH --time=2-0
-
-mkdir -p ${logfolder}
-# set the output log name
-SBATCH --output=${logfolder}/%j.out
-SBATCH --error=${logfolder}/%j.err
-SBATCH --wrap="${WRAP}"
+cd /sailhome/amna/anaconda3
+GPUS=1
+echo "Number of GPUs: "${GPUS}
+WRAP="python -m src.train"
+JOBNAME="resnetTrain"
+LOG_FOLDER="./cluster_logs/"
+echo ${WRAP}
+echo "Log Folder:"${LOG_FOLDER}
+mkdir -p ${LOG_FOLDER}
+sbatch --output=${LOG_FOLDER}/%j.out --error=${LOG_FOLDER}/%j.err \
+    --exclude=atlas1,atlas2,atlas3,atlas4,atlas5,atlas6 \
+    --nodes=1 --ntasks-per-node=1 --time=2-00:00:00 --mem=44G \
+    --partition=atlas --cpus-per-task=10 \
+    --gres=gpu:titanxp:${GPUS} --job-name=${JOBNAME} --wrap="${WRAP}"
 # print out Slurm Environment Variables
 echo "
 Slurm Environment Variables:
