@@ -14,14 +14,10 @@ GPUS=1
 echo "Number of GPUs: "${GPUS}
 WRAP="python -m src.train"
 JOBNAME="resnetTrain"
-LOG_FOLDER="./cluster_logs/"
+LOG_FOLDER="/atlas/u/amna/logs/resnet18_logs/"
 echo ${WRAP}
 echo "Log Folder:"${LOG_FOLDER}
 mkdir -p ${LOG_FOLDER}
-sbatch --output=${LOG_FOLDER}/%j.out --error=${LOG_FOLDER}/%j.err \
-    --nodes=1 --ntasks-per-node=1 --time=2-00:00:00 --mem=60G \
-    --partition=atlas --cpus-per-task=10 \
-    --gres=gpu:titanxp:${GPUS} --job-name=${JOBNAME} --wrap="${WRAP}"
 # print out Slurm Environment Variables
 echo "
 Slurm Environment Variables:
@@ -50,6 +46,11 @@ Basic system information:
 conda activate envi
 
 {content}
+sbatch --output=${LOG_FOLDER}/%j.out --error=${LOG_FOLDER}/%j.err \
+    --nodes=1 --ntasks-per-node=1 --time=2-00:00:00 --mem=60G \
+    --partition=atlas --cpus-per-task=10 \
+    --gres=gpu:titanxp:${GPUS} --job-name=${JOBNAME} --wrap="${WRAP}"
+
 
 echo "All jobs launched!"
 echo "Waiting for child processes to finish..."
