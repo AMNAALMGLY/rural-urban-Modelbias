@@ -17,35 +17,25 @@ python -m src.train.py
 any new experiment you can add it to train.py.
 
 # TODO
+Revise anything and do a test module for every part 
+
 add assertions for sanity checks
-
-optimize dataloader class
-
-
-feature extraction test
 
 typing , documentation , citation 
 
 threads /distributed learning
 
-initialization function:ckpt , random , imagenet
+Results dataframe ['r2', 'R2', 'mse', 'rank'] evaluated_df function
 
-Results dataframe ['r2', 'R2', 'mse', 'rank'] many metrics
-
-    Reproducability Experimets :
+# Reproducibility Experiments :
     knn NL mean scalar
-    ridge rgb+NL hist
-    ridge NL+MS hist   (trained on NL seperately, ms seperately concat the fc , run ridge on top)
     resnet18 MS
-    resnet18 ms+NL concat
+    resnet18 ms+NL concat (trained on NL seperately, ms seperately concat the fc , run ridge on top)
     transfer:resnet 18 RGB transfer
-    knn with imagehist file?
-    regenerate dhs-loc.pkl files ?
-    features.npz foe each mode 
-    test_preds.npz for each model 
+
 
 #New_experiments:
-drop dmsp
+Drop dmsp nl for year <2012
 
 concat features from images , with features learned with MLP for rural/urban column along with labels & locs columns
 
