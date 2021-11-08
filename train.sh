@@ -53,7 +53,7 @@ Basic system information:
 - pwd: $(pwd)
 "
 
-conda activate base
+conda activate envi
 
 {content}
 
