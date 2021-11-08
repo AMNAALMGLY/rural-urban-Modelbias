@@ -11,6 +11,9 @@
 WRAP="python -m src.train.py"
 JOBNAME="resnetTrain"
 logfolder='./cluster_logs'
+
+#source your virtualenv
+cd /sailhome/amna/anaconda3/
 # choose the machine
 SBATCH --partition=atlas --qos=normal
 
