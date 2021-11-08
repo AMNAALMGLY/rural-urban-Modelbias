@@ -26,7 +26,7 @@ args = Namespace(
 
     # data
 
-    data_path='/content/drive/MyDrive/dhs_tfrecords',
+    data_path='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     label_name='wealthpooled',
     cache=['train', 'train_eval', 'val'],
     augment=True,
