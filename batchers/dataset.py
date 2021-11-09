@@ -1,4 +1,5 @@
 # credit goes to https://github.com/sustainlab-group/sustainbench.git https://github.com/sustainlab-group/africa_poverty.git
+#https://www.kaggle.com/hidehisaarai1213/g2net-read-from-tfrecord-train-with-pytorch
 from __future__ import annotations
 import tensorflow_datasets as tfds
 
@@ -19,7 +20,7 @@ from collections import defaultdict
 
 AUTO: int = tf.data.experimental.AUTOTUNE
 
-
+#TODO split nl_band function
 class Batcher():
     """
     The PovertyMap poverty measure prediction dataset Iterator.
@@ -216,7 +217,7 @@ class Batcher():
             dataset = dataset.filter(self.group, num_parallel_calls=AUTO)
 
         dataset = dataset.prefetch(2*self.batch_size)
-        dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex))
+        dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex),num_parallel_calls=AUTO)
 
         if cache:
             dataset = dataset.cache()

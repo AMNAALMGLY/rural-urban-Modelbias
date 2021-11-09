@@ -16,9 +16,6 @@ from pytorch_lightning import seed_everything
 
 #ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
 
-
-# TODO create ouput directory for trained model so that they can be used for extract_features.py
-
 def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
     # setup lightining model params
     params = dict(model=model, lr=args.lr, weight_decay=args.conv_reg, loss_type=args.loss_type,
@@ -51,6 +48,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
                          callbacks=[checkpoint_callback],
                          resume_from_checkpoint=args.resume,
                          #precision=16,
+                         limit_train_batches=0.25,
                          #distributed_backend='ddp',
                          profiler='simple',
                          accumulate_grad_batches=16, )  # understand what it does exactly

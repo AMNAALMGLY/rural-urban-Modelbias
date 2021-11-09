@@ -20,7 +20,7 @@ args = Namespace(
     gpu=-1,
     max_epochs=150,
 
-    lr=0.001,
+    lr=3*0.001,
     fc_reg=0.001,
     conv_reg=0.001,
 

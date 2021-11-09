@@ -52,7 +52,7 @@ class ResTrain(pl.LightningModule):
         x = torch.tensor(batch['images'], device=self.model.conv1.weight.device)
         target = torch.tensor(batch['labels'], device=self.model.conv1.weight.device)
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
-
+        print('devices',x.device)
         outputs = self.model(x)
 
         outputs = outputs.squeeze(dim=-1)
@@ -120,7 +120,7 @@ class ResTrain(pl.LightningModule):
                 'scheduler': ExponentialLR(opt,
                                            gamma=args.lr_decay,
                                            verbose=True),
-                'monitor': 'train_loss',
+                'monitor': 'val_loss',
             }
         }
 
