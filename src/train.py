@@ -36,7 +36,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
     # lightning model , trainer
     litmodel = ResTrain(**params)
     checkpoint_callback = ModelCheckpoint(monitor=args.monitor, mode=args.mode,
-                                          filename="{args.model_name}-{epoch:02d}-{args.monitor:.2f}",
+                                          filename="{resnet}-{epoch:02d}-{val_loss:.2f}",
                                           dirpath=dirpath,
                                           verbose=True,
                                           # save_top_k=1,
