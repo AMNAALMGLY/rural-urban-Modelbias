@@ -46,7 +46,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
                                           # sanity check
                                           save_last=True)
 
-    trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=args.gpu,
+    trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=args.no_of_gpus ,
                          logger=logger,
                          callbacks=[checkpoint_callback],
                          resume_from_checkpoint=args.resume,
@@ -100,7 +100,7 @@ def main(args):
         json.dump(data_params, config_file, indent=4)
  
     # saving resnet model params filepath
-    params=dict(model_name=args.model_name, in_channels=model.in_channels)
+    params=dict(model_name=args.model_name, in_channels=args.in_channels)
     params_filepath = os.path.join(dirpath, 'params.json')
     with open(params_filepath, 'w') as config_file:
         json.dump(params, config_file, indent=4)

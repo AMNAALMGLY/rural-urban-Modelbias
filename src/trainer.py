@@ -3,7 +3,7 @@ from torch.optim.lr_scheduler import ExponentialLR
 import torch
 import torch.nn as nn
 from utils.utils import Metric
-from src.configs import  args
+from src.configs import args
 
 
 class ResTrain(pl.LightningModule):
@@ -27,14 +27,16 @@ class ResTrain(pl.LightningModule):
         self.lr = lr
         self.weight_decay = weight_decay
         self.loss_type = loss_type
-        
+
         if num_outputs is not None:
-            
+
             fc = nn.Linear(model.fc.in_features, num_outputs)
             model.fc = fc
 
         else:  # fearture extraction   #TODO fix this!
-            model.fc = nn.Sequential()
+            # model.fc = nn.Sequential()
+            raise ValueError('please specify a value for your number of outputs for the loss function to evaluate '
+                             'against')
 
         self.metric = Metric().get_metric(metric)  # TODO if it is a list
 
@@ -42,7 +44,7 @@ class ResTrain(pl.LightningModule):
 
     def forward(self, x):
 
-        output=self.model(x)
+        output = self.model(x)
         return output
 
     def _shared_step(self, batch, metric_fn):
@@ -50,9 +52,9 @@ class ResTrain(pl.LightningModule):
         x = torch.tensor(batch['images'], device=self.model.conv1.weight.device)
         target = torch.tensor(batch['labels'], device=self.model.conv1.weight.device)
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
-        
+
         outputs = self.model(x)
-      
+
         outputs = outputs.squeeze(dim=-1)
         loss = self.criterion(outputs, target)
 
@@ -117,7 +119,7 @@ class ResTrain(pl.LightningModule):
             'lr_scheduler': {
                 'scheduler': ExponentialLR(opt,
                                            gamma=args.lr_decay,
-                                            verbose=True),
+                                           verbose=True),
                 'monitor': 'train_loss',
             }
         }
@@ -130,4 +132,4 @@ class ResTrain(pl.LightningModule):
         elif self.loss_type == 'regression':
             self.criterion = nn.MSELoss()
 
-#lr=self.learning_rate * (self.lr_decay ** self.epoch)
+# lr=self.learning_rate * (self.lr_decay ** self.epoch)

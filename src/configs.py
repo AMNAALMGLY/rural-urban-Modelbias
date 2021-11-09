@@ -50,7 +50,7 @@ args = Namespace(
     group=None,
     loss_type='regression',
     num_outputs=1,
-    resume=None,
+    resume='../last.ckpt',
     checkpoints= None,
 )
 args.num_workers = multiprocessing.cpu_count()
