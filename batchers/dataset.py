@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import torch
 from batchers.dataset_constants import MEANS_DICT, STD_DEVS_DICT
+from src.configs import args
 from utils.utils import  save_results
 from collections import defaultdict
 
@@ -211,9 +212,7 @@ class Batcher():
                 buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
                 num_parallel_reads=4)         ##TODO edit this cycle lenght
 
-        if cache:
-            dataset = dataset.cache()
-
+        dataset = dataset.prefetch(buffer_size=2 * self.batch_size)
         dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex))
 
         if self.augment:
@@ -224,8 +223,12 @@ class Batcher():
         if self.groupby:
             dataset = dataset.filter(self.group, num_parallel_calls=AUTO)
 
+        if cache:
+            dataset = dataset.cache()
+
         dataset = dataset.batch(batch_size=self.batch_size)
-        dataset = dataset.prefetch(AUTO)
+        dataset = dataset.repeat(args.max_epochs)           #TODO tis shoudnt be fixed like that
+        dataset = dataset.prefetch(2)
         return tfds.as_numpy(dataset)
 
     def augment_ex(self,ex: dict[str, tf.Tensor],seed) -> dict[str, tf.Tensor]:
