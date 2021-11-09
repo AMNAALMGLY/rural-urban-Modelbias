@@ -105,6 +105,7 @@ def main(args):
     with open(params_filepath, 'w') as config_file:
         json.dump(params, config_file, indent=4)
 if __name__ == "__main__":
+        print('GPUS:',torch.cuda.device_count())
         parser = argparse.ArgumentParser()
         args = parse_arguments(parser, default_args)
         args = dotdict(args)
