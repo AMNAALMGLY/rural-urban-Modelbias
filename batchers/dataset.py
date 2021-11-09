@@ -208,6 +208,7 @@ class Batcher():
                 tf.data.experimental.parallel_interleave(
                     lambda filename: tf.data.TFRecordDataset(filename),
                     cycle_length=args.num_workers))
+        else:
             # convert to individual records
             dataset = tf.data.TFRecordDataset(
                 filenames=self.tfrecords,
