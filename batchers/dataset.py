@@ -1,5 +1,5 @@
 # credit goes to https://github.com/sustainlab-group/sustainbench.git https://github.com/sustainlab-group/africa_poverty.git
-#https://www.kaggle.com/hidehisaarai1213/g2net-read-from-tfrecord-train-with-pytorch
+# https://www.kaggle.com/hidehisaarai1213/g2net-read-from-tfrecord-train-with-pytorch
 from __future__ import annotations
 import tensorflow_datasets as tfds
 
@@ -15,12 +15,13 @@ import pandas as pd
 import torch
 from batchers.dataset_constants import MEANS_DICT, STD_DEVS_DICT
 from src.configs import args
-from utils.utils import  save_results
+from utils.utils import save_results
 from collections import defaultdict
 
 AUTO: int = tf.data.experimental.AUTOTUNE
 
-#TODO split nl_band function
+
+# TODO split nl_band function
 class Batcher():
     """
     The PovertyMap poverty measure prediction dataset Iterator.
@@ -49,8 +50,9 @@ class Batcher():
     TODO:citation
     """
 
-    def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label, normalize='DHS', augment=False,
-                 batch_size=64, groupby=None,cache=None,save_dir=None):
+    def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label, normalize='DHS',
+                 augment=False,
+                 batch_size=64, groupby=None, cache=None, save_dir=None):
 
         '''
         initializes the loader as follows :
@@ -64,8 +66,8 @@ class Batcher():
         self.nl_label = nl_label
         self.normalize = normalize
         self.augment = augment
-        self.groupby=groupby         #str representing the name of the feature to be grouped by ['urban_rural',...]
-        self.cache=cache
+        self.groupby = groupby  # str representing the name of the feature to be grouped by ['urban_rural',...]
+        self.cache = cache
         self.save_dir = save_dir
 
         self.batch_size = batch_size
@@ -90,14 +92,15 @@ class Batcher():
             nbatches += 1
         return nbatches
 
-    def group(self,example_proto: tf.Tensor) -> tf.Tensor:
+    def group(self, example_proto: tf.Tensor) -> tf.Tensor:
         '''
 
         group by urban/rural
 
         '''
-        key_to_feature=self.groupby
-        keys_to_features={key_to_feature:tf.io.FixedLenFeature(shape=[], dtype=tf.float32)}  #I'm assuming that it is float feature.
+        key_to_feature = self.groupby
+        keys_to_features = {
+            key_to_feature: tf.io.FixedLenFeature(shape=[], dtype=tf.float32)}  # I'm assuming that it is float feature.
         ex = tf.io.parse_single_example(example_proto, features=keys_to_features)
         do_keep = tf.equal(ex[self.groupby], 0.0)
         return do_keep
@@ -204,20 +207,19 @@ class Batcher():
             dataset = dataset.apply(
                 tf.data.experimental.parallel_interleave(
                     lambda filename: tf.data.TFRecordDataset(filename),
-                    cycle_length=4))   ##TODO edit this cycle lenght
-        else:
+                    cycle_length=args.num_workers))
             # convert to individual records
             dataset = tf.data.TFRecordDataset(
                 filenames=self.tfrecords,
                 compression_type='GZIP',
                 buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
-                num_parallel_reads=4)         ##TODO edit this cycle lenght
+                num_parallel_reads=args.num_workers)
 
         if self.groupby:
-            dataset = dataset.filter(self.group, num_parallel_calls=AUTO)
+            dataset = dataset.filter(self.group, num_parallel_calls=args.num_workers)
 
-        dataset = dataset.prefetch(2*self.batch_size)
-        dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex),num_parallel_calls=AUTO)
+        dataset = dataset.prefetch(2 * self.batch_size)
+        dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex), num_parallel_calls=args.num_workers)
 
         if cache:
             dataset = dataset.cache()
@@ -225,15 +227,13 @@ class Batcher():
         if self.augment:
             counter = tf.data.experimental.Counter()
             dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
-            dataset = dataset.map(self.augment_ex, num_parallel_calls=AUTO)
-
-
+            dataset = dataset.map(self.augment_ex, num_parallel_calls=args.num_workers)
 
         dataset = dataset.batch(batch_size=self.batch_size)
         dataset = dataset.prefetch(2)
         return tfds.as_numpy(dataset)
 
-    def augment_ex(self,ex: dict[str, tf.Tensor],seed) -> dict[str, tf.Tensor]:
+    def augment_ex(self, ex: dict[str, tf.Tensor], seed) -> dict[str, tf.Tensor]:
         """Performs image augmentation (random flips + levels brightnes/contrast adjustments).
           Does not perform level adjustments on NL band(s).
 
@@ -244,31 +244,30 @@ class Batcher():
 
           Returns: ex, with img replaced with an augmented image
           """
-        img=ex['images']
-        img=tf.image.stateless_random_flip_left_right(img,seed=seed)
-        img=tf.image.stateless_random_flip_left_right(img,seed=seed)
+        img = ex['images']
+        img = tf.image.stateless_random_flip_left_right(img, seed=seed)
+        img = tf.image.stateless_random_flip_left_right(img, seed=seed)
 
         if self.nl_bands and self.ls_bands:
-            if self.nl_label=='merge':
+            if self.nl_label == 'merge':
 
-                img=tf.image.stateless_random_brightness(img[:,:,:-1],max_delta=0.5,seed=seed)
-                img=tf.image.stateless_random_contrast(img[:,:,:-1],lower=0.75, upper=1.25,seed=seed)
-                img=tf.concat([img , ex['image'][:,:,-1:]],axis=2)
+                img = tf.image.stateless_random_brightness(img[:, :, :-1], max_delta=0.5, seed=seed)
+                img = tf.image.stateless_random_contrast(img[:, :, :-1], lower=0.75, upper=1.25, seed=seed)
+                img = tf.concat([img, ex['image'][:, :, -1:]], axis=2)
             else:
 
-                img = tf.image.stateless_random_brightness(img[:, :, :-2], max_delta=0.5,seed=seed)
-                img = tf.image.stateless_random_contrast(img[:, :, :-2], lower=0.75, upper=1.25,seed=seed)
-                img = tf.concat([img, ex['images'][:, :, -2:]],axis=2)
+                img = tf.image.stateless_random_brightness(img[:, :, :-2], max_delta=0.5, seed=seed)
+                img = tf.image.stateless_random_contrast(img[:, :, :-2], lower=0.75, upper=1.25, seed=seed)
+                img = tf.concat([img, ex['images'][:, :, -2:]], axis=2)
 
         elif self.ls_bands:
 
-            img = tf.image.stateless_random_brightness(img, max_delta=0.5,seed=seed)
-            img = tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25,seed=seed)
+            img = tf.image.stateless_random_brightness(img, max_delta=0.5, seed=seed)
+            img = tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25, seed=seed)
         print('images augment')
-        print(img,ex['images'])
-        ex['images']=img
+        print(img, ex['images'])
+        ex['images'] = img
         return ex
-
 
     def __iter__(self):
         '''
