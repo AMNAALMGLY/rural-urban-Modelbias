@@ -17,6 +17,7 @@ from batchers.dataset_constants import MEANS_DICT, STD_DEVS_DICT
 from src.configs import args
 from utils.utils import save_results
 from collections import defaultdict
+import time
 
 AUTO: int = tf.data.experimental.AUTOTUNE
 
@@ -200,6 +201,7 @@ class Batcher():
         '''
         do the tf_to dict operation to the whole dataset in numpy dtype
         '''
+        start = time.time()
         if shuffle:
             # shuffle the order of the input files, then interleave their individual records
             dataset = tf.data.Dataset.from_tensor_slices(self.tfrecord_files)
@@ -232,6 +234,7 @@ class Batcher():
 
         dataset = dataset.batch(batch_size=self.batch_size)
         dataset = dataset.prefetch(2)
+        print(f'Time in getdataset: {time.time() - start}')
         return tfds.as_numpy(dataset)
 
     def augment_ex(self, ex: dict[str, tf.Tensor], seed) -> dict[str, tf.Tensor]:
@@ -274,16 +277,20 @@ class Batcher():
         '''
         implement iterator of the  loader
         '''
+        start = time.time()
         self.ds = self.get_dataset(self.cache)
         if self._iterator is None:
             self._iterator = iter(self.ds)
         else:
             self._reset()
+        print(f'time in iter: {time.time() - start}')
         return self._iterator
 
     def _reset(self):
         self._iterator = iter(self.ds)
 
     def __next__(self):
+        start = time.time()
         batch = next(self._iterator)
+        print(f'time in next: {time.time() - start}')
         return batch

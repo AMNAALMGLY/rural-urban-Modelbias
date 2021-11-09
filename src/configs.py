@@ -10,7 +10,7 @@ args = Namespace(
     # Model
 
     model_name='resnet18',
-    hs_weight_init='same',       #[same, samescaled,random]
+    hs_weight_init='random',       #[same, samescaled,random]
     model_init='imagenet',
 
     # Training
