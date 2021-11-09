@@ -63,7 +63,7 @@ class Batcher():
         self.nl_label = nl_label
         self.normalize = normalize
         self.augment = augment
-        self.groupby=groupby         #str representing the name of the group ['urban' ,'rural',...]
+        self.groupby=groupby         #str representing the name of the feature to be grouped by ['urban_rural',...]
         self.cache=cache
         self.save_dir = save_dir
 
@@ -98,7 +98,7 @@ class Batcher():
         key_to_feature=self.groupby
         keys_to_features={key_to_feature:tf.io.FixedLenFeature(shape=[], dtype=tf.float32)}  #I'm assuming that it is float feature.
         ex = tf.io.parse_single_example(example_proto, features=keys_to_features)
-        do_keep = tf.equal(ex['urban_rural'], 0.0)
+        do_keep = tf.equal(ex[self.groupby], 0.0)
         return do_keep
 
     def tfrecords_to_dict(self, example: tf.Tensor) -> dict[str, tf.Tensor]:
@@ -212,22 +212,23 @@ class Batcher():
                 buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
                 num_parallel_reads=4)         ##TODO edit this cycle lenght
 
-        dataset = dataset.prefetch(buffer_size=2 * self.batch_size)
-        dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex))
-
-        if self.augment:
-            counter = tf.data.experimental.Counter()
-            dataset= tf.data.Dataset.zip((dataset, (counter, counter)))
-            dataset=dataset.map(self.augment_ex,num_parallel_calls=AUTO)
-
         if self.groupby:
             dataset = dataset.filter(self.group, num_parallel_calls=AUTO)
+
+        dataset = dataset.prefetch(2*self.batch_size)
+        dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex))
 
         if cache:
             dataset = dataset.cache()
 
+        if self.augment:
+            counter = tf.data.experimental.Counter()
+            dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
+            dataset = dataset.map(self.augment_ex, num_parallel_calls=AUTO)
+
+
+
         dataset = dataset.batch(batch_size=self.batch_size)
-        dataset = dataset.repeat(args.max_epochs)           #TODO tis shoudnt be fixed like that
         dataset = dataset.prefetch(2)
         return tfds.as_numpy(dataset)
 
