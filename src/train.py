@@ -59,8 +59,8 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
         pretrained_model.load_from_checkpoint(checkpoint_path=checkpoints, **params, strict=False)
         litmodel.model = copy.deepcopy(pretrained_model.model)
 
-    trainer.fit(litmodel, train_loader, valid_loader)
-
+    #trainer.fit(litmodel, train_loader, valid_loader)
+    trainer.test(litmodel,train_loader)
     torch.save(litmodel.model.state_dict(),
                dirpath)  # save the model itself (resnetms for example)rather than saving the lighting model
 
