@@ -62,9 +62,10 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
         litmodel.model = copy.deepcopy(pretrained_model.model)
 
     #trainer.fit(litmodel, train_loader, valid_loader)
-    start=time.time()
+
+
     #trainer.test(litmodel,train_loader)
-    print(f'in test :{time.time()-start}')
+
     torch.save(litmodel.model.state_dict(),
                dirpath)  # save the model itself (resnetms for example)rather than saving the lighting model
 
@@ -96,10 +97,11 @@ def main(args):
     # model
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
-    model.to('cuda')
+
+    model.to('cpu')
     for record in batcher_train:
         start1=time.time()
-        x=torch.tensor(record['images'],device='cuda')
+        x=torch.tensor(record['images'],device='cpu')
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
         start2= time.time()
         print(f'time in batch {start2 - start1}')
