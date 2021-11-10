@@ -347,6 +347,7 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
         elif hs_weight_init == 'random':
             mean = rgb_weights.mean()
             std = rgb_weights.std()
+            print('mean', mean)
             ms_weights = torch.normal(mean, std, size=(out_channels, ms_channels, H, W))
 
         elif hs_weight_init == 'samescaled':
