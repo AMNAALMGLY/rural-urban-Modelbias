@@ -10,7 +10,7 @@
 ##########################
 #source your virtualenv
 #cd /sailhome/amna/anaconda3
-GPUS=1
+GPUS=0
 echo "Number of GPUs: "${GPUS}
 WRAP="python -m src.train"
 JOBNAME="resnetTrain"
