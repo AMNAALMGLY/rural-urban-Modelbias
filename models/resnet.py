@@ -340,7 +340,7 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
 
         if hs_weight_init == 'same':
 
-            with torch.no_grad:
+            with torch.no_grad():
                 mean = rgb_weights.mean(axis=1, keepdims=True)  # mean across the in_channel dimension
                 mean = torch.tile(mean, (1, ms_channels, 1, 1))
                 ms_weights = mean
@@ -352,7 +352,7 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
 
         elif hs_weight_init == 'samescaled':
 
-            with torch.no_grad:
+            with torch.no_grad():
                 mean = rgb_weights.mean(axis=1, keepdims=True)  # mean across the in_channel dimension
                 mean = torch.tile(mean, (1, ms_channels, 1, 1))
                 ms_weights = (mean * 3) / (3 + ms_channels)
