@@ -48,7 +48,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
                          callbacks=[checkpoint_callback],
                          resume_from_checkpoint=args.resume,
                          # precision=16,
-                         overfit_batches=1,
+                         #overfit_batches=1,
                          # distributed_backend='ddp',
                          profiler='simple',
                          flush_logs_every_n_steps=50)
