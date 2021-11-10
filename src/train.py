@@ -3,6 +3,8 @@ import argparse
 import copy
 import json
 import os
+import time
+
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning.loggers import TensorBoardLogger
@@ -60,7 +62,9 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
         litmodel.model = copy.deepcopy(pretrained_model.model)
 
     #trainer.fit(litmodel, train_loader, valid_loader)
+    start=time.time()
     trainer.test(litmodel,train_loader)
+    print(f'in test :{time.time()-start}')
     torch.save(litmodel.model.state_dict(),
                dirpath)  # save the model itself (resnetms for example)rather than saving the lighting model
 
