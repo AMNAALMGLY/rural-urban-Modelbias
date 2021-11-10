@@ -1,3 +1,5 @@
+import time
+
 import pytorch_lightning as pl
 from torch.optim.lr_scheduler import ExponentialLR
 import torch
@@ -43,8 +45,9 @@ class ResTrain(pl.LightningModule):
         self.setup_criterion()
 
     def forward(self, x):
-
+        start=time.time()
         output = self.model(x)
+        print(f'in forward{time.time()-start}')
         return output
 
     def _shared_step(self, batch, metric_fn):
