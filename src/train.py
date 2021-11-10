@@ -100,7 +100,7 @@ def main(args):
     for record in batcher_train:
         start1=time.time()
         x=torch.tensor(record['images'],device='cuda')
-
+        x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
         start2= time.time()
         print(f'time in batch {start2 - start1}')
         output=model(x)
