@@ -92,9 +92,22 @@ def main(args):
                             args.nl_label, 'DHS', args.augment, args.batch_size, groupby=args.group,
                             cache='train_eval' in args.cache)
 
+
     # model
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
+    model.to('cuda')
+    for record in batcher_train:
+        start1=time.time()
+        x=torch.tensor(record['images'],device='cuda')
+
+        start2= time.time()
+        print(f'time in batch {start2 - start1}')
+        output=model(x)
+        print(f'time in model{time.time()-start2}')
+
+
+
     best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
     print(f'Path to best model found during training: \n{best_model_ckpt}')
 
@@ -116,4 +129,4 @@ if __name__ == "__main__":
     args = parse_arguments(parser, default_args)
     args = dotdict(args)
 
-    main(args)
+    #main(args)
