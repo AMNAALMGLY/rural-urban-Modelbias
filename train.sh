@@ -49,7 +49,7 @@ conda activate envi
 export CUDA_VISIBLE_DEVICES=0
 
 sbatch --output=${LOG_FOLDER}/%j.out --error=${LOG_FOLDER}/%j.err \
-    --nodes=1 --ntasks-per-node=1 --time=2-00:00:00 --mem=60G \
+    --nodes=1 --ntasks-per-node=1 --time=2-00:00:00 --mem=78G \
     --partition=atlas --cpus-per-task=10 \
     --gres=gpu:${GPUS} --job-name=${JOBNAME} --wrap="${WRAP}"
 
