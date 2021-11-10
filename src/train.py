@@ -63,7 +63,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
 
     #trainer.fit(litmodel, train_loader, valid_loader)
     start=time.time()
-    trainer.test(litmodel,train_loader)
+    #trainer.test(litmodel,train_loader)
     print(f'in test :{time.time()-start}')
     torch.save(litmodel.model.state_dict(),
                dirpath)  # save the model itself (resnetms for example)rather than saving the lighting model
@@ -129,4 +129,4 @@ if __name__ == "__main__":
     args = parse_arguments(parser, default_args)
     args = dotdict(args)
 
-    #main(args)
+    main(args)
