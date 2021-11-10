@@ -46,6 +46,8 @@ class ResTrain(pl.LightningModule):
 
     def forward(self, x):
         start=time.time()
+        print('the batch is ',x.device)
+        x = x.to('cpu')
         output = self.model(x)
         print(f'in forward{time.time()-start}')
         return output
