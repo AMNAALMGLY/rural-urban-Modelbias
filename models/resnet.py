@@ -10,6 +10,7 @@ import torch.nn as nn
 from models._internally_replaced_utils import load_state_dict_from_url
 from models.utils import _log_api_usage_once
 from src.configs import  args
+import time
 import math
 
 
@@ -346,18 +347,21 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
                 ms_weights = mean
 
         elif hs_weight_init == 'random':
+            start = time.time()
             mean = rgb_weights.mean().detach().item()
             std = rgb_weights.std().detach().item()
             ms_weights = torch.normal(mean, std, size=(out_channels, ms_channels, H, W))
+            print(f'random: {time.time() - start}')
 
         elif hs_weight_init == 'samescaled':
-
+            start = time.time()
             with torch.no_grad():
                 mean = rgb_weights.mean(axis=1, keepdims=True)  # mean across the in_channel dimension
                 mean = torch.tile(mean, (1, ms_channels, 1, 1))
                 ms_weights = (mean * 3) / (3 + ms_channels)
                 # scale both rgb_weights and ms_weights
                 rgb_weights = (rgb_weights * 3) / (3 + ms_channels)
+            print(f'samescaled: {time.time() - start}')
 
         else:
 
