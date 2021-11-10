@@ -61,7 +61,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
         pretrained_model.load_from_checkpoint(checkpoint_path=checkpoints, **params, strict=False)
         litmodel.model = copy.deepcopy(pretrained_model.model)
 
-    #trainer.fit(litmodel, train_loader, valid_loader)
+    trainer.fit(litmodel, train_loader, valid_loader)
 
 
     #trainer.test(litmodel,train_loader)
@@ -88,7 +88,7 @@ def main(args):
 
     batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', args.augment, args.batch_size, groupby=args.group,
-                            cache=False)
+                            cache=True)
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', args.augment, args.batch_size, groupby=args.group,
                             cache='train_eval' in args.cache)
@@ -98,6 +98,7 @@ def main(args):
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
 
+    '''
     model.to('cpu')
     for record in batcher_train:
         start1=time.time()
@@ -107,7 +108,7 @@ def main(args):
         print(f'time in batch {start2 - start1}')
         output=model(x)
         print(f'time in model{time.time()-start2}')
-
+    '''
 
 
     best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
