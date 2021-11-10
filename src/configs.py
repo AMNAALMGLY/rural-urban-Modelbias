@@ -9,7 +9,7 @@ args = Namespace(
 
     # Model
 
-    model_name='resnet50',
+    model_name='resnet18',
     hs_weight_init='random',       #[same, samescaled,random]
     model_init='imagenet',
 
@@ -29,7 +29,7 @@ args = Namespace(
     data_path='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     label_name='wealthpooled',
     cache=['train', 'train_eval', 'val'],
-    augment=True,
+    augment=False,
     ooc=True,
     dataset='DHS_OOC',
     fold='A',
