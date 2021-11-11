@@ -28,10 +28,11 @@ class Data(Dataset):
             self.y = data['labels']
 
     def __len__(self):
-            return length
+            return self.get_length()
 
     def __getitem__(self, item):
             return self.get_length()
+
     def get_length(self):
         file_path = os.path.join(self.data_dir, '*.npz')
         all_files = glob(file_path)
