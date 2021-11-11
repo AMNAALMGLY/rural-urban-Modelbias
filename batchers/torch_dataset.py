@@ -9,14 +9,13 @@ from src.configs import args
 from utils.utils import get_paths
 
 data_dir='./np_data'
-file_path=os.path.join(data_dir,'*.npz')
-all_files=glob(file_path)
-length=len(all_files)
+
 
 class Data(Dataset):
     def __init__(self,data_dir):
-        def __init__(self, data_dir):
+            self.data_dir=data_dir
             data = pd.DataFrame(columns=['images', 'locs', 'years', 'labels'])
+            length=self.get_length()
             for i in range(length):
                 print(i)
                 with np.load(os.path.join(data_dir, f'{i:05d}.npz')) as d:
@@ -28,11 +27,16 @@ class Data(Dataset):
             self.x = data['images']
             self.y = data['labels']
 
-        def __len__(self):
+    def __len__(self):
             return length
 
-        def __getitem__(self, item):
-            return self.data[item]
+    def __getitem__(self, item):
+            return self.get_length()
+    def get_length(self):
+        file_path = os.path.join(self.data_dir, '*.npz')
+        all_files = glob(file_path)
+        length = len(all_files)
+        return length
 '''
 paths_train = get_paths(args.dataset, ['train'], args.fold, args.data_path)
 batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
