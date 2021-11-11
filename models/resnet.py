@@ -348,9 +348,10 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
 
         elif hs_weight_init == 'random':
             start = time.time()
-            mean = rgb_weights.mean().detach().item()
-            std = rgb_weights.std().detach().item()
-            ms_weights = torch.normal(mean, std, size=(out_channels, ms_channels, H, W))
+            with torch.no_grad():
+                mean = rgb_weights.mean()
+                std = rgb_weights.std()
+                ms_weights = torch.normal(mean, std, size=(out_channels, ms_channels, H, W))
             print(f'random: {time.time() - start}')
 
         elif hs_weight_init == 'samescaled':

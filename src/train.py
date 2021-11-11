@@ -63,15 +63,15 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
         pretrained_model = ResTrain(**params)
         pretrained_model.load_from_checkpoint(checkpoint_path=checkpoints, **params, strict=False)
         litmodel.model = copy.deepcopy(pretrained_model.model)
-    start=time.time()
-    print('before dataloader')
-    dataloader = torch.utils.data.DataLoader(Data(data_dir=data_dir), batch_size=32, num_workers=args.num_workers , pin_memory=True,
-                                             prefetch_factor=2, shuffle=True)
+    #start=time.time()
+    #print('before dataloader')
+    #dataloader = torch.utils.data.DataLoader(Data(data_dir=data_dir), batch_size=32, num_workers=args.num_workers , pin_memory=True,
+    #                                         prefetch_factor=2, shuffle=True)
 
-    print(f'Finished dataloader in {time.time() -start} seconds')
-    print(' values in dataloader ',(next(iter(dataloader))))
-    trainer.fit(litmodel, dataloader)
-    #trainer.fit(litmodel,train_loader,valid_loader)
+    #print(f'Finished dataloader in {time.time() -start} seconds')
+    #print(' values in dataloader ',(next(iter(dataloader))))
+    #trainer.fit(litmodel, dataloader)
+    trainer.fit(litmodel,train_loader,valid_loader)
 
 
     #trainer.test(litmodel,train_loader)
@@ -102,7 +102,13 @@ def main(args):
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', args.augment, args.batch_size, groupby=args.group,
                             cache='train_eval' in args.cache)
-
+    #Test Loop
+    z=0
+    for i , j in batcher_train:
+        if z<3:
+           print('fetching data ....')
+           print(i , j )
+        z+=1
 
     # model
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
