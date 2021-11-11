@@ -41,7 +41,7 @@ args = Namespace(
 
     # Experiment
 
-    monitor='val_loss',
+    monitor='train_loss',
     mode='min',
     seed=123,
     experiment_name='DHS_OOC_A_ms_same',

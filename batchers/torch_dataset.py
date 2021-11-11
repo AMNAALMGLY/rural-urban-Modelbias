@@ -42,3 +42,5 @@ dataloader=torch.utils.data.DataLoader(Data(data_dir=data_dir),batch_size=16,num
 for x, y in dataloader:
     print(x,y)
 
+
+
