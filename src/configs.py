@@ -16,7 +16,7 @@ args = Namespace(
     # Training
 
     lr_decay=0.96,
-    batch_size=16,
+    batch_size=64,
     gpu=-1,
     max_epochs=150,
 
@@ -33,7 +33,7 @@ args = Namespace(
     ooc=True,
     dataset='DHS_OOC',
     fold='A',
-    ls_bands='rgb',
+    ls_bands='ms',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     scaler_features_keys=None,
@@ -41,7 +41,7 @@ args = Namespace(
 
     # Experiment
 
-    monitor='valid_loss',
+    monitor='train_loss',
     mode='min',
     seed=123,
     experiment_name='DHS_OOC_A_ms_same',
