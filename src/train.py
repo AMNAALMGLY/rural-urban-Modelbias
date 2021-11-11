@@ -69,7 +69,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
                                              prefetch_factor=2, shuffle=True)
 
     print(f'Finished dataloader in {time.time() -start} seconds')
-    print(' values in dataloader '(next(iter(dataloader))))
+    print(' values in dataloader ',(next(iter(dataloader))))
     trainer.fit(litmodel, dataloader)
 
 
