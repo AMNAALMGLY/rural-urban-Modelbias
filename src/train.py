@@ -61,7 +61,8 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
         pretrained_model = ResTrain(**params)
         pretrained_model.load_from_checkpoint(checkpoint_path=checkpoints, **params, strict=False)
         litmodel.model = copy.deepcopy(pretrained_model.model)
-
+    for x, y in dataloader:
+        print(x)
     trainer.fit(litmodel, dataloader, valid_loader)
 
 
