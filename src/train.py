@@ -63,6 +63,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
         pretrained_model = ResTrain(**params)
         pretrained_model.load_from_checkpoint(checkpoint_path=checkpoints, **params, strict=False)
         litmodel.model = copy.deepcopy(pretrained_model.model)
+    print('before dataloader')
     dataloader = torch.utils.data.DataLoader(Data(data_dir=data_dir), batch_size=32, num_workers=args.num_workers , pin_memory=True,
                                              prefetch_factor=2, shuffle=True)
     for x, y in dataloader:
