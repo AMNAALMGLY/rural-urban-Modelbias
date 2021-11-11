@@ -33,7 +33,7 @@ args = Namespace(
     ooc=True,
     dataset='DHS_OOC',
     fold='A',
-    ls_bands='ms',
+    ls_bands='rgb',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     scaler_features_keys=None,
@@ -41,7 +41,7 @@ args = Namespace(
 
     # Experiment
 
-    monitor='train_loss',
+    monitor='valid_loss',
     mode='min',
     seed=123,
     experiment_name='DHS_OOC_A_ms_same',
