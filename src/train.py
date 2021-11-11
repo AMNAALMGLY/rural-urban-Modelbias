@@ -104,10 +104,10 @@ def main(args):
                             cache='train_eval' in args.cache)
     #Test Loop
     z=0
-    for i , j in batcher_train:
+    for  j in batcher_train:
         if z<3:
            print('fetching data ....')
-           print(i , j )
+           print( j['images'] )
         z+=1
 
     # model
