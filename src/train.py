@@ -68,7 +68,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
     for x, y in dataloader:
         print('in loader')
 
-    trainer.fit(litmodel, dataloader, valid_loader)
+    trainer.fit(litmodel, dataloader)
 
 
     #trainer.test(litmodel,train_loader)
