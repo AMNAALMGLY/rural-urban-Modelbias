@@ -10,12 +10,14 @@ import torch
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from batchers.dataset import Batcher
-from batchers.torch_dataset import dataloader
+from batchers.torch_dataset import  Data
 from models.model_generator import get_model
 from src.trainer import ResTrain
 from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name
 from src.configs import args as default_args
 from pytorch_lightning import seed_everything
+
+data_dir='./np_data'
 
 
 # ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
@@ -61,8 +63,9 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
         pretrained_model = ResTrain(**params)
         pretrained_model.load_from_checkpoint(checkpoint_path=checkpoints, **params, strict=False)
         litmodel.model = copy.deepcopy(pretrained_model.model)
-    for x, y in dataloader:
-        print(x)
+    dataloader = torch.utils.data.DataLoader(Data(data_dir=data_dir), batch_size=16, num_workers=3, pin_memory=True,
+                                             prefetch_factor=2, shuffle=True)
+
     trainer.fit(litmodel, dataloader, valid_loader)
 
 
