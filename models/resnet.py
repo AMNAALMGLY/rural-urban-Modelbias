@@ -335,7 +335,7 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
     ms_channels = in_channels - rgb_channels
 
     if in_channels == 3:
-        weights = rgb_weights
+        final_weights = rgb_weights
     elif in_channels > 3:
         # spectral images
 
@@ -358,17 +358,17 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
             start = time.time()
             with torch.no_grad():
                 mean = rgb_weights.mean(axis=1, keepdims=True)  # mean across the in_channel dimension
-                mean = torch.tile(mean, (1, ms_channels, 1, 1))
+                mean = torch.tile(meweightsan, (1, ms_channels, 1, 1))gh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p_sqExrWjabQOvcZAHejudClv9oGZWAE0rxHyD
                 ms_weights = (mean * 3) / (3 + ms_channels)
                 # scale both rgb_weights and ms_weights
-                rgb_weights = (rgb_weights * 3) / (3 + ms_channels)
+                rgb_weights = weights(rgb_weights * 3) / (3 + ms_channels)
             print(f'samescaled: {time.time() - start}')
 
         else:
 
             raise ValueError(f'Unknown hs_weight_init type: {hs_weight_init}')
 
-    final_weights = torch.cat([rgb_weights, ms_weights], dim=1)
+        final_weights = torch.cat([rgb_weights, ms_weights], dim=1)
     print('init__layer_weight shape ', final_weights.shape)
     return final_weights
 
