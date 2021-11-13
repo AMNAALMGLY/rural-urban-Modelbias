@@ -45,11 +45,11 @@ class ResTrain(pl.LightningModule):
         self.setup_criterion()
 
     def forward(self, x):
-        start=time.time()
-        print('the batch is ',x.device)
-        x = x.to('cpu')
+
+
+
         output = self.model(x)
-        print(f'in forward{time.time()-start}')
+
         return output
 
     def _shared_step(self, batch, metric_fn):
@@ -58,9 +58,11 @@ class ResTrain(pl.LightningModule):
         target = torch.tensor(batch['labels'], device=self.model.conv1.weight.device)
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
         print('devices',x.device)
+        start1=time.time()
         outputs = self.model(x)
-
+        print(f'in forward model_step {time.time() - start1}')
         outputs = outputs.squeeze(dim=-1)
+        start = time.time()
         loss = self.criterion(outputs, target)
 
         if self.loss_type == 'classification':
@@ -70,6 +72,7 @@ class ResTrain(pl.LightningModule):
         metric_fn.update(preds, target)
 
         print(loss)
+        print(f'in loss_step{time.time() - start}')
         return loss
 
     def training_step(self, batch, batch_idx):
