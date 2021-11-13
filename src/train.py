@@ -114,20 +114,20 @@ def main(args):
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
 
-    '''
-    model.to('cpu')
+
+    model.to('cuda')
     for record in batcher_train:
         start1=time.time()
-        x=torch.tensor(record['images'],device='cpu')
+        x=torch.tensor(record['images'],device='cuda')
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
         start2= time.time()
         print(f'time in batch {start2 - start1}')
         output=model(x)
         print(f'time in model{time.time()-start2}')
-    '''
 
-    best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
-    print(f'Path to best model found during training: \n{best_model_ckpt}')
+
+    #best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
+    #print(f'Path to best model found during training: \n{best_model_ckpt}')
 
     # saving data_param:
     params_filepath = os.path.join(dirpath, 'data_params.json')
