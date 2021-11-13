@@ -11,7 +11,7 @@ args = Namespace(
 
     model_name='resnet18',
     hs_weight_init='same',       #[same, samescaled,random]
-    model_init='imagenet',
+    model_init=None,
 
     # Training
 
