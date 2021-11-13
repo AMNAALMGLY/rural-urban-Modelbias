@@ -62,7 +62,8 @@ class ResTrain(pl.LightningModule):
         start1=time.time()
         outputs = self.model(x)
         print(f'in forward model_step {time.time() - start1}')
-        outputs = outputs.squeeze(dim=-1)
+        #outputs = outputs.squeeze(dim=-1)
+        print(target.shape, outputs.shape)
         start = time.time()
         loss = self.criterion(outputs, target.float())
 
