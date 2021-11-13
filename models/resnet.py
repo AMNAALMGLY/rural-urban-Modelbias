@@ -358,10 +358,10 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
             start = time.time()
             with torch.no_grad():
                 mean = rgb_weights.mean(axis=1, keepdims=True)  # mean across the in_channel dimension
-                mean = torch.tile(meweightsan, (1, ms_channels, 1, 1))gh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p_sqExrWjabQOvcZAHejudClv9oGZWAE0rxHyD
+                mean = torch.tile(mean, (1, ms_channels, 1, 1))
                 ms_weights = (mean * 3) / (3 + ms_channels)
                 # scale both rgb_weights and ms_weights
-                rgb_weights = weights(rgb_weights * 3) / (3 + ms_channels)
+                rgb_weights = (rgb_weights * 3) / (3 + ms_channels)
             print(f'samescaled: {time.time() - start}')
 
         else:
