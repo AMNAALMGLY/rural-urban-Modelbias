@@ -8,6 +8,7 @@ import time
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.loggers import WandbLogger  # newline 1
 from pytorch_lightning.callbacks import ModelCheckpoint
 from batchers.dataset import Batcher
 from batchers.torch_dataset import Data
@@ -36,7 +37,8 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
     os.makedirs(dirpath, exist_ok=True)  # check if it can be created automatically
 
     # logger
-    logger = TensorBoardLogger(os.path.join(args.out_dir, f"{args.model_name}_logs"), name=args.model_name)
+    #logger = TensorBoardLogger(os.path.join(args.out_dir, f"{args.model_name}_logs"), name=args.model_name)
+    logger=WandbLogger( name=args.model_name,save_dir=os.path.join(args.out_dir, f"{args.model_name}_logs"))
 
     # lightning model , trainer
     litmodel = ResTrain(**params)
@@ -52,11 +54,12 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
                          logger=logger,
                          callbacks=[checkpoint_callback],
                          resume_from_checkpoint=args.resume,
-                         # precision=16,
+                         precision=16,
                          # overfit_batches=1,
                          # distributed_backend='ddp',
                          profiler='simple',
                          flush_logs_every_n_steps=50)
+    logger.watch(litmodel,log='all')
     # accumulate_grad_batches=16, )  # understand what it does exactly
     if checkpoints:
         print(f'Initializing using pretrained lightning model:\n{checkpoints}')
