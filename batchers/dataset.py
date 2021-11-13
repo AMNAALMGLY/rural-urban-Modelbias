@@ -15,7 +15,7 @@ import pandas as pd
 import torch
 from batchers.dataset_constants import MEANS_DICT, STD_DEVS_DICT
 from src.configs import args
-from utils.utils import save_results
+from utils.utils import save_results, get_paths
 from collections import defaultdict
 import time
 
@@ -52,7 +52,7 @@ class Batcher():
     """
 
     def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label, normalize='DHS',
-                 augment=False,
+                 augment=False, clipn=True,
                  batch_size=64, groupby=None, cache=None, save_dir=None):
 
         '''
@@ -67,6 +67,7 @@ class Batcher():
         self.nl_label = nl_label
         self.normalize = normalize
         self.augment = augment
+        self.clipn = clipn
         self.groupby = groupby  # str representing the name of the feature to be grouped by ['urban_rural',...]
         self.cache = cache
         self.save_dir = save_dir
@@ -139,16 +140,17 @@ class Batcher():
             for band in ex_bands:  ##TODO is this loop necessary ?vectorize
                 ex[band].set_shape([255 * 255])
                 ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]  # crop to 224x224
-
+                if self.clipn:
+                    ex[band] = tf.nn.relu(ex[band])
                 if self.normalize:
                     means = MEANS_DICT[self.normalize]
                     stds = STD_DEVS_DICT[self.normalize]
                     if band == 'NIGHTLIGHTS' and year < 2012:
-                        ex[band] = (ex[band] - means['DMSP']) / std_devs['DMSP']
+                        ex[band] = (ex[band] - means['DMSP']) / stds['DMSP']
                     elif band == 'NIGHTLIGHTS' and year > 2012:
-                        ex[band] = (ex[band] - means['VIIRS']) / std_devs['VIIRS']
+                        ex[band] = (ex[band] - means['VIIRS']) / stds['VIIRS']
                     else:
-                        ex[band] = ex[band] - means[band] / stds[band]
+                        ex[band] = (ex[band] - means[band]) / stds[band]
             # TODO augmentation
             img = tf.stack([ex[band] for band in ex_bands], axis=2)
 
@@ -294,3 +296,24 @@ class Batcher():
         batch = next(self._iterator)
         print(f'time in next: {time.time() - start}')
         return batch
+
+
+'''
+paths_train = get_paths(args.dataset, ['train'], args.fold, args.data_path)
+batcher_train = Batcher(paths_train, None, 'ms', args.nl_band, args.label_name,
+                        None, None, None, 64, None,
+                        None)
+
+dataset = tf.data.TFRecordDataset(
+    paths_train,
+    compression_type='GZIP',
+    buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
+)
+# dataset=dataset.map(batcher_train.tfrecords_to_dict)
+i = 0
+for el in dataset:
+    if i < 3:
+        print(el)
+        print(i)
+        i += 1
+'''

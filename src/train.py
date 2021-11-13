@@ -10,14 +10,14 @@ import torch
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from batchers.dataset import Batcher
-from batchers.torch_dataset import  Data
+from batchers.torch_dataset import Data
 from models.model_generator import get_model
 from src.trainer import ResTrain
 from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name
 from src.configs import args as default_args
 from pytorch_lightning import seed_everything
 
-data_dir='./np_data'
+data_dir = './np_data'
 
 
 # ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
@@ -53,7 +53,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
                          callbacks=[checkpoint_callback],
                          resume_from_checkpoint=args.resume,
                          # precision=16,
-                         #overfit_batches=1,
+                         # overfit_batches=1,
                          # distributed_backend='ddp',
                          profiler='simple',
                          flush_logs_every_n_steps=50)
@@ -63,18 +63,17 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
         pretrained_model = ResTrain(**params)
         pretrained_model.load_from_checkpoint(checkpoint_path=checkpoints, **params, strict=False)
         litmodel.model = copy.deepcopy(pretrained_model.model)
-    #start=time.time()
-    #print('before dataloader')
-    #dataloader = torch.utils.data.DataLoader(Data(data_dir=data_dir), batch_size=32, num_workers=args.num_workers , pin_memory=True,
+    # start=time.time()
+    # print('before dataloader')
+    # dataloader = torch.utils.data.DataLoader(Data(data_dir=data_dir), batch_size=32, num_workers=args.num_workers , pin_memory=True,
     #                                         prefetch_factor=2, shuffle=True)
 
-    #print(f'Finished dataloader in {time.time() -start} seconds')
-    #print(' values in dataloader ',(next(iter(dataloader))))
-    #trainer.fit(litmodel, dataloader)
-    trainer.fit(litmodel,train_loader,valid_loader)
+    # print(f'Finished dataloader in {time.time() -start} seconds')
+    # print(' values in dataloader ',(next(iter(dataloader))))
+    # trainer.fit(litmodel, dataloader)
+    trainer.fit(litmodel, train_loader, valid_loader)
 
-
-    #trainer.test(litmodel,train_loader)
+    # trainer.test(litmodel,train_loader)
 
     torch.save(litmodel.model.state_dict(),
                dirpath)  # save the model itself (resnetms for example)rather than saving the lighting model
@@ -97,19 +96,20 @@ def main(args):
                        nl_label=args.nl_label, batch_size=args.batch_size, groupby=args.group)
 
     batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                            args.nl_label, 'DHS', args.augment, args.batch_size, groupby=args.group,
+                            args.nl_label, 'DHS', args.augment, args.clipn, args.batch_size, groupby=args.group,
                             cache=True)
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                            args.nl_label, 'DHS', args.augment, args.batch_size, groupby=args.group,
+                            args.nl_label, 'DHS', args.augment, args.clipn, args.batch_size, groupby=args.group,
                             cache='train_eval' in args.cache)
-    #Test Loop
+    # Test Loop
+    '''
     z=0
     for  j in batcher_train:
         if z<3:
            print('fetching data ....')
            print( j['images'] )
         z+=1
-
+    '''
     # model
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
@@ -125,7 +125,6 @@ def main(args):
         output=model(x)
         print(f'time in model{time.time()-start2}')
     '''
-
 
     best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
     print(f'Path to best model found during training: \n{best_model_ckpt}')
