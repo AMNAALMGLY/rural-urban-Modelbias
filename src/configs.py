@@ -10,7 +10,7 @@ args = Namespace(
     # Model
 
     model_name='resnet18',
-    hs_weight_init='random',       #[same, samescaled,random]
+    hs_weight_init='same',       #[same, samescaled,random]
     model_init='imagenet',
 
     # Training
@@ -34,7 +34,7 @@ args = Namespace(
     ooc=True,
     dataset='DHS_OOC',
     fold='A',
-    ls_bands='ms',
+    ls_bands='rgb',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     scaler_features_keys=None,
