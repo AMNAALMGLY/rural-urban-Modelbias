@@ -21,6 +21,9 @@ import time
 
 AUTO: int = tf.data.experimental.AUTOTUNE
 
+# choose which GPU to run on
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+
 
 # TODO split nl_band function
 class Batcher():
