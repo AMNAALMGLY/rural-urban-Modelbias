@@ -18,6 +18,18 @@ from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_ful
 from src.configs import args as default_args
 from pytorch_lightning import seed_everything
 
+import torchvision
+import torchvision.transforms as transforms
+transform = transforms.Compose(
+    [transforms.ToTensor(),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
+trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                        download=True, transform=transform)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
+                                          shuffle=True, num_workers=2)
+
+
 data_dir = './np_data'
 
 
@@ -130,7 +142,8 @@ def main(args):
         print(f'time in model{time.time()-start2}')
     '''
 
-    best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
+    #best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
+    best_model_ckpt, _, dirpath = setup_experiment(model, trainloader, args.checkpoints, args)
     print(f'Path to best model found during training: \n{best_model_ckpt}')
 
     # saving data_param:
