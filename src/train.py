@@ -143,7 +143,7 @@ def main(args):
     '''
 
     #best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
-    best_model_ckpt, _, dirpath = setup_experiment(model, trainloader, args.checkpoints, args)
+    best_model_ckpt, _, dirpath = setup_experiment(model, trainloader,trainloader ,args.checkpoints, args)
     print(f'Path to best model found during training: \n{best_model_ckpt}')
 
     # saving data_param:
