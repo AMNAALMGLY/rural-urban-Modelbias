@@ -41,7 +41,7 @@ class ResTrain(pl.LightningModule):
                              'against')
 
         #self.metric = Metric().get_metric(metric)  # TODO if it is a list
-        self.metric=Accuracy(num_outputs=10)
+        self.metric=Accuracy(num_classes=10)
         self.setup_criterion()
 
     def forward(self, x):
