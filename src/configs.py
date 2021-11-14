@@ -42,14 +42,14 @@ args = Namespace(
 
     # Experiment
 
-    monitor='train_loss',
+    monitor='val_loss',
     mode='min',
     seed=123,
     experiment_name='DHS_OOC_A_ms_same',
     out_dir=os.path.join(ROOT_DIR, 'outputs/'),
     ckpt=None,
     group=None,
-    loss_type='classification',
+    loss_type='regression',
     num_outputs=10,
     #resume='../last.ckpt',
     resume=None,

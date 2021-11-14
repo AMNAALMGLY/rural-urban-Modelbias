@@ -53,19 +53,19 @@ class ResTrain(pl.LightningModule):
         return output
 
     def _shared_step(self, batch, metric_fn):
-        x,target=batch
-        #x = torch.tensor(batch['images'])
+        #x,target=batch
+        x = torch.tensor(batch['images'])
         x=x.type_as(self.model.conv1.weight)
-        #target = torch.tensor(batch['labels'])
+        target = torch.tensor(batch['labels'])
         target=target.type_as(self.model.conv1.weight)
-        #x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
+        x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
 
         start1=time.time()
         outputs = self.model(x)
         print(f'in forward model_step {time.time() - start1}')
         outputs = outputs.squeeze(dim=-1)
         start = time.time()
-        loss = self.criterion(outputs, target.long())
+        loss = self.criterion(outputs, target)
 
         if self.loss_type == 'classification':
             preds = nn.functional.softmax(outputs, dim=1)
