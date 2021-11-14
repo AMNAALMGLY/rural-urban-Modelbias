@@ -55,9 +55,9 @@ class ResTrain(pl.LightningModule):
     def _shared_step(self, batch, metric_fn):
         #x,target=batch
         x = torch.tensor(batch['images'])
-        #x=x.type_as(batch['images'])
+        x=x.type_as(self.model.conv1.weight)
         target = torch.tensor(batch['labels'])
-        #target=target.type_as(batch['labels'])
+        target=target.type_as(self.model.conv1.weight)
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
 
         start1=time.time()
