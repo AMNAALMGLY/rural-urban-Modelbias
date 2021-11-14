@@ -40,8 +40,8 @@ class ResTrain(pl.LightningModule):
             raise ValueError('please specify a value for your number of outputs for the loss function to evaluate '
                              'against')
 
-        #self.metric = Metric().get_metric(metric)  # TODO if it is a list
-        self.metric=Accuracy(num_classes=10)
+        self.metric = Metric().get_metric(metric)  # TODO if it is a list
+        #self.metric=Accuracy(num_classes=10)
         self.setup_criterion()
 
     def forward(self, x):
@@ -53,11 +53,12 @@ class ResTrain(pl.LightningModule):
         return output
 
     def _shared_step(self, batch, metric_fn):
-        x,target=batch
-        #x = torch.tensor(batch['images'], device=self.model.conv1.weight.device)
-
-        #target = torch.tensor(batch['labels'], device=self.model.conv1.weight.device)
-        #x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
+        #x,target=batch
+        x = torch.tensor(batch['images'])
+        x=x.type_as(batch['images'])
+        target = torch.tensor(batch['labels'])
+        target=target.type_as(batch['labels'])
+        x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
 
         start1=time.time()
         outputs = self.model(x)
@@ -70,7 +71,7 @@ class ResTrain(pl.LightningModule):
             preds = nn.functional.softmax(outputs, dim=1)
         else:
             preds = outputs
-        metric_fn.update(preds, target.long())
+        metric_fn.update(preds, target)
 
         print(loss)
         print(f'in loss_step{time.time() - start}')

@@ -11,7 +11,7 @@ args = Namespace(
 
     model_name='resnet18',
     hs_weight_init='same',       #[same, samescaled,random]
-    model_init=None,
+    model_init='imagenet',
 
     # Training
 
@@ -34,7 +34,7 @@ args = Namespace(
     ooc=True,
     dataset='DHS_OOC',
     fold='A',
-    ls_bands='rgb',
+    ls_bands='ms',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     scaler_features_keys=None,
@@ -50,7 +50,7 @@ args = Namespace(
     ckpt=None,
     group=None,
     loss_type='classification',
-    num_outputs=10,
+    num_outputs=1,
     #resume='../last.ckpt',
     resume=None,
     checkpoints= None,

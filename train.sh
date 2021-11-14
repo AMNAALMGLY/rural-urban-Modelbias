@@ -8,9 +8,9 @@
 # then cancel the job with
 #   scancel <jobid>
 ##########################
-#source your virtualenv
+#source you virtualenv
 #cd /sailhome/amna/anaconda3
-GPUS=4
+GPUS=1
 echo "Number of GPUs: "${GPUS}
 WRAP="python -m src.train"
 JOBNAME="resnetTrain"

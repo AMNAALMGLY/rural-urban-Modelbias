@@ -69,8 +69,8 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
                          precision=16,
                          # overfit_batches=1,
                          #distributed_backend='ddp',
-                         strategy='ddp',
-                         num_nodes=2,
+                         #strategy='ddp',
+                         #num_nodes=2,
                          profiler='simple',
                          flush_logs_every_n_steps=50)
     logger.watch(litmodel,log='all')
@@ -131,7 +131,6 @@ def main(args):
     # model
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
-    model.to('cuda')
     '''
     model.to('cuda')
     for record in batcher_train:
@@ -144,8 +143,8 @@ def main(args):
         print(f'time in model{time.time()-start2}')
     '''
 
-    #best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
-    best_model_ckpt, _, dirpath = setup_experiment(model, trainloader,trainloader ,args.checkpoints, args)
+    best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
+    #best_model_ckpt, _, dirpath = setup_experiment(model, trainloader,trainloader ,args.checkpoints, args)
     print(f'Path to best model found during training: \n{best_model_ckpt}')
 
     # saving data_param:
