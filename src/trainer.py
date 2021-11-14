@@ -58,7 +58,7 @@ class ResTrain(pl.LightningModule):
 
         #target = torch.tensor(batch['labels'], device=self.model.conv1.weight.device)
         #x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
-        print('devices',x.device)
+
         start1=time.time()
         outputs = self.model(x)
         print(f'in forward model_step {time.time() - start1}')
