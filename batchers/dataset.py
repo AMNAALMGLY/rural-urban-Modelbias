@@ -143,8 +143,8 @@ class Batcher():
             for band in ex_bands:  ##TODO is this loop necessary ?vectorize
                 ex[band].set_shape([255 * 255])
                 #ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]  # crop to 224x224
-                ex[band]=tf.reshape(ex[band],[255 , 255])
-                ex[band]= tf.image.resize_with_crop_or_pad(ex[band], 32, 32)
+                #ex[band]=tf.reshape(ex[band],[255 , 255])
+                ex[band]= tf.image.resize_with_crop_or_pad(tf.reshape(ex[band],[255 , 255]), 32, 32)
                 if self.clipn:
                     ex[band] = tf.nn.relu(ex[band])
                 if self.normalize:
