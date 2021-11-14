@@ -65,7 +65,7 @@ class ResTrain(pl.LightningModule):
         print(f'in forward model_step {time.time() - start1}')
         outputs = outputs.squeeze(dim=-1)
         start = time.time()
-        loss = self.criterion(outputs, target)
+        loss = self.criterion(outputs, target.long())
 
         if self.loss_type == 'classification':
             preds = nn.functional.softmax(outputs, dim=1)
