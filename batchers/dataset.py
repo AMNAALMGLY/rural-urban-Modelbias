@@ -159,6 +159,7 @@ class Batcher():
             # TODO augmentation
             img = tf.stack([ex[band] for band in ex_bands], axis=2)
             img=tf.image.resize_with_crop_or_pad(img,32,32)
+            print(img.shape)
 
         else:
             raise ValueError
