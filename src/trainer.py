@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 from utils.utils import Metric
 from src.configs import args
-
+from torchmetrics import Accuracy
 
 class ResTrain(pl.LightningModule):
     def __init__(self, model, lr, weight_decay, loss_type, num_outputs, metric, **kwargs):
@@ -40,8 +40,8 @@ class ResTrain(pl.LightningModule):
             raise ValueError('please specify a value for your number of outputs for the loss function to evaluate '
                              'against')
 
-        self.metric = Metric().get_metric(metric)  # TODO if it is a list
-
+        #self.metric = Metric().get_metric(metric)  # TODO if it is a list
+        self.metric=Accuracy(num_outputs=10)
         self.setup_criterion()
 
     def forward(self, x):
