@@ -49,8 +49,8 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
     os.makedirs(dirpath, exist_ok=True)  # check if it can be created automatically
 
     # logger
-    #logger = TensorBoardLogger(os.path.join(args.out_dir, f"{args.model_name}_logs"), name=args.model_name)
-    logger=WandbLogger( name=args.model_name,save_dir=os.path.join(args.out_dir, f"{args.model_name}_logs"))
+    logger = TensorBoardLogger(os.path.join(args.out_dir, f"{args.model_name}_logs"), name=args.model_name)
+    #logger=WandbLogger( name=args.model_name,save_dir=os.path.join(args.out_dir, f"{args.model_name}_logs"))
 
     # lightning model , trainer
     litmodel = ResTrain(**params)
@@ -73,7 +73,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
                          #num_nodes=2,
                          profiler='simple',
                          flush_logs_every_n_steps=50)
-    logger.watch(litmodel,log='all')
+    #logger.watch(litmodel,log='all')
     # accumulate_grad_batches=16, )  # understand what it does exactly
     if checkpoints:
         print(f'Initializing using pretrained lightning model:\n{checkpoints}')
