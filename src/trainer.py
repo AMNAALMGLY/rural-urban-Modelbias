@@ -72,7 +72,7 @@ class ResTrain(pl.LightningModule):
             preds = nn.functional.softmax(outputs, dim=1)
         else:
             preds = outputs
-        metric_fn.update(preds, target)
+        #metric_fn.update(preds, target)
 
         print(loss)
         print(f'in loss_step{time.time() - start}')
@@ -86,13 +86,13 @@ class ResTrain(pl.LightningModule):
                  on_epoch=True, prog_bar=True, logger=True)
 
         return {'loss': loss}
-
+    '''
     def training_epoch_end(self, training_step_outputs):
         self.log(f'train_metric_epoch', self.metric.compute(), prog_bar=True, )
 
         # reset after each epoch
         self.metric.reset()
-
+    '''
     def validation_step(self, batch, batch_idx):
         loss = self._shared_step(batch, self.metric)
 
@@ -101,13 +101,13 @@ class ResTrain(pl.LightningModule):
                  on_epoch=True, prog_bar=True, logger=True)
 
         return {'loss': loss}
-
+    '''
     def validation_epoch_end(self, validation_step_outputs):
         self.log(f'val_metric_epoch', self.metric.compute(), prog_bar=True, )
 
         # reset after each epoch
         self.metric.reset()
-
+    '''
     def test_step(self, batch, batch_idx):
         loss = self._shared_step(batch, self.metric)
 
@@ -116,13 +116,13 @@ class ResTrain(pl.LightningModule):
                  on_epoch=True, prog_bar=True, logger=True)
 
         return {'loss': loss}
-
+    '''
     def test_epoch_end(self, test_step_outputs):
         self.log(f'test_metric_epoch', self.metric.compute(), prog_bar=True, )
 
         # reset after each epoch
         self.metric.reset()
-
+    '''
     def configure_optimizers(self):
         opt = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         return {
