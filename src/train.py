@@ -69,7 +69,8 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
                          precision=16,
                          # overfit_batches=1,
                          #distributed_backend='ddp',
-                         strategy='ddp2',
+                         strategy='dp',
+                         num_nodes=2,
                          profiler='simple',
                          flush_logs_every_n_steps=50)
     logger.watch(litmodel,log='all')
