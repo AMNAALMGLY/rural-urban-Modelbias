@@ -133,7 +133,7 @@ def main(args):
        for record in batcher_train:
                 x=torch.tensor(record['images'],device='cuda')
                 x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
-
+                target=record['labels']
                 target = target.type_as(model.conv1.weight)
 
                 output=model(x).squeeze(-1)
