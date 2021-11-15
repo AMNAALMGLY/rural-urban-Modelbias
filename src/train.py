@@ -34,7 +34,7 @@ transform = transforms.Compose(
 
 
 data_dir = './np_data'
-wandb.init(project='rural-urban-Modelbias')
+wandb.init(project='rural-urban-torch',entity='amna')
 
 # ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
 
