@@ -82,14 +82,8 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
         pretrained_model = ResTrain(**params)
         pretrained_model.load_from_checkpoint(checkpoint_path=checkpoints, **params, strict=False)
         litmodel.model = copy.deepcopy(pretrained_model.model)
-    # start=time.time()
-    # print('before dataloader')
-    # dataloader = torch.utils.data.DataLoader(Data(data_dir=data_dir), batch_size=32, num_workers=args.num_workers , pin_memory=True,
-    #                                         prefetch_factor=2, shuffle=True)
 
-    # print(f'Finished dataloader in {time.time() -start} seconds')
-    # print(' values in dataloader ',(next(iter(dataloader))))
-    # trainer.fit(litmodel, dataloader)
+
     trainer.fit(litmodel, train_loader, valid_loader)
 
     # trainer.test(litmodel,train_loader)
@@ -120,16 +114,7 @@ def main(args):
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', args.augment, args.clipn, args.batch_size, groupby=args.group,
                             cache=True)
-    # Test Loop
-    '''
-    z=0
-    for  j in batcher_train:
-        if z<3:
-           print('fetching data ....')
-           print( j['images'] )
-        z+=1
-    '''
-    #
+
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
                                           args.fc_reg, args.conv_reg, args.lr)
 
@@ -174,6 +159,8 @@ def main(args):
                 if valid_loss<train_loss:
                     torch.save(model.state_dict(),dirpath)
                     print('best loss is ',valid_loss)
+                    print(f'Path to best model found during training: \n{dirpath}')
+
 
 
     #best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
@@ -181,7 +168,7 @@ def main(args):
     #print(f'Path to best model found during training: \n{best_model_ckpt}')
 
     # saving data_param:
-    '''
+
     params_filepath = os.path.join(dirpath, 'data_params.json')
     with open(params_filepath, 'w') as config_file:
         json.dump(data_params, config_file, indent=4)
@@ -191,7 +178,7 @@ def main(args):
     params_filepath = os.path.join(dirpath, 'params.json')
     with open(params_filepath, 'w') as config_file:
         json.dump(params, config_file, indent=4)
-   '''
+
 
 if __name__ == "__main__":
     print('GPUS:', torch.cuda.device_count())
