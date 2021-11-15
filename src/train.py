@@ -135,7 +135,8 @@ def main(args):
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
     criterion=nn.MSELoss()
     optimizer=torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-
+    fc = nn.Linear(model.fc.in_features, 1)
+    model.fc = fc
     model.to('cuda')
     for record in batcher_train:
         start1=time.time()
