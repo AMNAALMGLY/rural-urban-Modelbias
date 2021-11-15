@@ -12,7 +12,7 @@
 #cd /sailhome/amna/anaconda3
 GPUS=1
 echo "Number of GPUs: "${GPUS}
-WRAP="python -m src.train.py"
+WRAP="python -m src.train"
 JOBNAME="resnetTrain"
 LOG_FOLDER="/atlas/u/amna/logs/resnet18_logs/"
 echo ${WRAP}
