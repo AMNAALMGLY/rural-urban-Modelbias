@@ -132,23 +132,29 @@ def main(args):
     model.fc = fc
     model.to('cuda')
     for epoch in range(args.max_epochs):
-       model.train()
-       for record in batcher_train:
-                x=torch.tensor(record['images'],device='cuda')
-                x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
-                target=torch.tensor(record['labels'],device='cuda')
-                output=model(x).squeeze(-1)
+        step = 0
 
-                train_loss = criterion(output, target)
-                optimizer.zero_grad()
+        total_steps = len(batcher_train) + len(batcher_valid)
+        print('in train Loop')
+        model.train()
+        for record in batcher_train:
+            x = torch.tensor(record['images'], device='cuda')
+            x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
+            target = torch.tensor(record['labels'], device='cuda')
+            output = model(x).squeeze(-1)
 
-                train_loss.backward()
+            train_loss = criterion(output, target)
+            optimizer.zero_grad()
 
-                optimizer.step()
+            train_loss.backward()
 
-                # print statistics
-                print(f'Epoch {epoch} train_loss {train_loss.item()}')
-       with torch.no_grad():
+            optimizer.step()
+
+            # print statistics
+            print(f'Epoch {epoch} Step {step}/{total_steps} train_loss {train_loss.item()}')
+            step += 1
+        with torch.no_grad():
+            print('in eval ')
             model.eval()
             for record in batcher_valid:
                 x = torch.tensor(record['images'], device='cuda')
@@ -157,11 +163,12 @@ def main(args):
                 target = torch.tensor(record['labels'], device='cuda')
                 output = model(x).squeeze(-1)
                 valid_loss = criterion(output, target)
-                if valid_loss<train_loss:
-                    torch.save(model.state_dict(),os.path.join(dirpath,f'Epoch {epoch} loss {valid_loss}.ckpt'))
+                if valid_loss < train_loss:
+                    torch.save(model.state_dict(), os.path.join(dirpath, f'Epoch {epoch} loss {valid_loss}.ckpt'))
                     print(f'best loss  is at Epoch {epoch} and is {valid_loss}')
                     print(f'Path to best model found during training: \n{dirpath}')
-       sched.step()
+
+        sched.step()
 
 
     #best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
