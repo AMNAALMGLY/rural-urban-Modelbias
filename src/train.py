@@ -110,10 +110,10 @@ def main(args):
 
     batcher_train = Batcher(paths_train[:6000], args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', args.augment, args.clipn, args.batch_size, groupby=args.group,
-                            cache=True)
+                            cache=False)
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', args.augment, args.clipn, args.batch_size, groupby=args.group,
-                            cache=True)
+                            cache=False)
 
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
                                           args.fc_reg, args.conv_reg, args.lr)
