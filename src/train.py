@@ -20,7 +20,7 @@ from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_ful
 from src.configs import args as default_args
 from pytorch_lightning import seed_everything
 import  wandb
-wandb.init()
+
 import torchvision
 import torchvision.transforms as transforms
 transform = transforms.Compose(
@@ -34,7 +34,7 @@ transform = transforms.Compose(
 
 
 data_dir = './np_data'
-
+wandb.init(project='rural-urban-Modelbias')
 
 # ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
 
@@ -119,7 +119,7 @@ def main(args):
                                           args.fc_reg, args.conv_reg, args.lr)
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
-    wandb.watch(model, log='all')
+
     
     dirpath = os.path.join(args.out_dir, 'dhs_ooc', experiment)
     print(f'checkpoints directory: {dirpath}')
@@ -133,6 +133,7 @@ def main(args):
     fc = nn.Linear(model.fc.in_features, 1)
     model.fc = fc
     model.to('cuda')
+    wandb.watch(model, criterion,log='all')
     best_loss=float('inf')
     for epoch in range(args.max_epochs):
         train_step = 0
