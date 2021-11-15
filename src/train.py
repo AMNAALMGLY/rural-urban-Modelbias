@@ -119,8 +119,10 @@ def main(args):
                                           args.fc_reg, args.conv_reg, args.lr)
 
     dirpath = os.path.join(args.out_dir, 'dhs_ooc', experiment)
+    print(f'checkpoints directory: {dirpath}')
+    os.makedirs(dirpath, exist_ok=True)
 
-    ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
+ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
     criterion=nn.MSELoss()
     optimizer=torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.conv_reg)
