@@ -83,8 +83,6 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
         pretrained_model.load_from_checkpoint(checkpoint_path=checkpoints, **params, strict=False)
         litmodel.model = copy.deepcopy(pretrained_model.model)
 
-    train_loader=torch.utils.data.DataLoader(train_loader, batch_size=64,)
-    valid_loader=torch.utils.data.DataLoader(valid_loader, batch_size=64,)
     trainer.fit(litmodel, train_dataloaders=train_loader, val_dataloaders=valid_loader)
 
     # trainer.test(litmodel,train_loader)
@@ -120,7 +118,7 @@ def main(args):
                                           args.fc_reg, args.conv_reg, args.lr)
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
-    '''
+
     
     dirpath = os.path.join(args.out_dir, 'dhs_ooc', experiment)
     print(f'checkpoints directory: {dirpath}')
@@ -134,11 +132,13 @@ def main(args):
     fc = nn.Linear(model.fc.in_features, 1)
     model.fc = fc
     model.to('cuda')
+    best_loss=float('inf')
     for epoch in range(args.max_epochs):
-        step = 0
-
-        total_steps = len(batcher_train) + len(batcher_valid)
-        print('in train Loop')
+        train_step = 0
+        epoch_loss=0
+        train_steps = len(batcher_train)
+        valid_steps= len(batcher_valid)
+        print('----------------Training--------------------------------')
         model.train()
         for record in batcher_train:
             x = torch.tensor(record['images'], device='cuda')
@@ -152,12 +152,16 @@ def main(args):
             train_loss.backward()
 
             optimizer.step()
-
+            epoch_loss+=train_loss.item()
             # print statistics
-            print(f'Epoch {epoch} Step {step}/{total_steps} train_loss {train_loss.item()}')
-            step += 1
+            print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item()}')
+            train_step += 1
+        avgloss=epoch_loss.mean()
+        print(f'End of Epoch training average Loss is {avgloss}')
         with torch.no_grad():
-            print('in eval ')
+            valid_step=0
+            valid_epoch_loss=0
+            print('--------------------------Validation-------------------- ')
             model.eval()
             for record in batcher_valid:
                 x = torch.tensor(record['images'], device='cuda')
@@ -166,18 +170,23 @@ def main(args):
                 target = torch.tensor(record['labels'], device='cuda')
                 output = model(x).squeeze(-1)
                 valid_loss = criterion(output, target)
-                if valid_loss < train_loss:
-                    torch.save(model.state_dict(), os.path.join(dirpath, f'Epoch {epoch} loss {valid_loss}.ckpt'))
-                    print(f'best loss  is at Epoch {epoch} and is {valid_loss}')
-                    print(f'Path to best model found during training: \n{dirpath}')
+                valid_epoch_loss+=valid_loss.item()
+                valid_step+=1
+            print(f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item()}')
+            if valid_epoch_loss.mean() < best_loss:
+                    best_loss=valid_epoch_loss.mean()
+                    save_path=os.path.join(dirpath, f'Epoch {epoch} loss {best_loss}.ckpt')
+                    torch.save(model.state_dict(), save_path)
+                    print(f'best average validation loss  is at Epoch {epoch} and is {best_loss}')
+                    print(f'Path to best model found during training: \n{save_path}')
 
         sched.step()
-        '''
 
-    best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
+
+    #best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
     #best_model_ckpt, _, dirpath = setup_experiment(model, trainloader,trainloader ,args.checkpoints, args)
-    print(f'Path to best model found during training: \n{best_model_ckpt}')
-
+    #print(f'Path to best model found during training: \n{best_model_ckpt}')
+    '''
     # saving data_param:
 
     params_filepath = os.path.join(dirpath, 'data_params.json')
@@ -190,6 +199,7 @@ def main(args):
     with open(params_filepath, 'w') as config_file:
         json.dump(params, config_file, indent=4)
 
+    '''
 
 if __name__ == "__main__":
     print('GPUS:', torch.cuda.device_count())
