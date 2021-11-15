@@ -123,7 +123,7 @@ def main(args):
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
     criterion=nn.MSELoss()
-    optimizer=torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    optimizer=torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.conv_reg)
     sched = torch.optim.lr_scheduler.ExponentialLR(optimizer, args.lr_decay)
     fc = nn.Linear(model.fc.in_features, 1)
     model.fc = fc
