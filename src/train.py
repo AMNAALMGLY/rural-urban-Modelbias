@@ -133,6 +133,7 @@ def main(args):
     fc = nn.Linear(model.fc.in_features, 1)
     model.fc = fc
     model.to('cuda')
+    wandb.require(experiment="service")
     wandb.watch(model, criterion,log='all')
     best_loss=float('inf')
     for epoch in range(args.max_epochs):
