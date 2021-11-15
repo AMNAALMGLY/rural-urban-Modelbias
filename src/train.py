@@ -83,8 +83,9 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
         pretrained_model.load_from_checkpoint(checkpoint_path=checkpoints, **params, strict=False)
         litmodel.model = copy.deepcopy(pretrained_model.model)
 
-
-    trainer.fit(litmodel, train_dataloader=train_loader, val_dataloaders=valid_loader)
+    train_loader=torch.utils.data.DataLoader(train_loader, batch_size=64,)
+    valid_loader=torch.utils.data.DataLoader(valid_loader, batch_size=64,)
+    trainer.fit(litmodel, train_dataloaders=train_loader, val_dataloaders=valid_loader)
 
     # trainer.test(litmodel,train_loader)
 
