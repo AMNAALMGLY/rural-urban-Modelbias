@@ -151,8 +151,7 @@ def main(args):
                 x = torch.tensor(record['images'], device='cuda')
                 x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
 
-                target = target.type_as(model.conv1.weight)
-
+                target = torch.tensor(record['labels'], device='cuda')
                 output = model(x).squeeze(-1)
                 valid_loss = criterion(output, target)
                 if valid_loss<train_loss:
