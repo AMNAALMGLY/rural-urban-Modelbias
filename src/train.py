@@ -10,6 +10,8 @@ import torch
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.loggers import WandbLogger  # newline 1
 from pytorch_lightning.callbacks import ModelCheckpoint
+from torch import nn
+
 from batchers.dataset import Batcher
 from batchers.torch_dataset import Data
 from models.model_generator import get_model
@@ -24,10 +26,10 @@ transform = transforms.Compose(
     [transforms.ToTensor(),
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                    download=True, transform=transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
-                                    shuffle=True, num_workers=2)
+#trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+  #                                  download=True, transform=transform)
+#trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
+                 #                   shuffle=True, num_workers=2)
 
 
 data_dir = './np_data'
@@ -131,21 +133,35 @@ def main(args):
     # model
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
-    '''
+    criterion=nn.MSELoss()
+    optimizer=torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
     model.to('cuda')
     for record in batcher_train:
         start1=time.time()
         x=torch.tensor(record['images'],device='cuda')
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
+        print(f'time in batch {time.time()- start1}')
+        target = torch.tensor(record['labels'])
+        target = target.type_as(model.conv1.weight)
         start2= time.time()
-        print(f'time in batch {start2 - start1}')
+
         output=model(x)
-        print(f'time in model{time.time()-start2}')
-    '''
+        print(f'time in model{time.time() - start2}')
+        loss = criterion(output, target)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        # print statistics
+        print(loss.item())
+
+
+
 
     #best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
-    best_model_ckpt, _, dirpath = setup_experiment(model, trainloader,trainloader ,args.checkpoints, args)
-    print(f'Path to best model found during training: \n{best_model_ckpt}')
+    #best_model_ckpt, _, dirpath = setup_experiment(model, trainloader,trainloader ,args.checkpoints, args)
+    #print(f'Path to best model found during training: \n{best_model_ckpt}')
 
     # saving data_param:
     params_filepath = os.path.join(dirpath, 'data_params.json')
