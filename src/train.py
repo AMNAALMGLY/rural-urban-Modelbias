@@ -129,7 +129,11 @@ def main(args):
            print( j['images'] )
         z+=1
     '''
+    #
+    experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
+                                          args.fc_reg, args.conv_reg, args.lr)
 
+    dirpath = os.path.join(args.out_dir, 'dhs_ooc', experiment)
     # model
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
@@ -138,33 +142,38 @@ def main(args):
     fc = nn.Linear(model.fc.in_features, 1)
     model.fc = fc
     model.to('cuda')
-    for record in batcher_train:
-        start1=time.time()
-        x=torch.tensor(record['images'],device='cuda')
-        x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
+    for epoch in range(args.max_epoch):
+       model.train()
+       for record in batcher_train:
+                x=torch.tensor(record['images'],device='cuda')
+                x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
 
-        print(f'time in batch {time.time()- start1}')
-        target = torch.tensor(record['labels'])
-        print(f'target and x shapes {x.shape,}{target.shape}')
-        target = target.type_as(model.conv1.weight)
-        start2= time.time()
+                target = target.type_as(model.conv1.weight)
 
-        output=model(x).squeeze(-1)
-        print('output shape',output.shape)
-        print(f'time in model{time.time() - start2}')
-        loss = criterion(output, target)
-        optimizer.zero_grad()
-        start3=time.time()
-        loss.backward()
-        print(f'time in backword {time.time() - start3}')
-        start4=time.time()
-        optimizer.step()
-        print(f'time in update{time.time() - start4}')
+                output=model(x).squeeze(-1)
 
-        # print statistics
-        print(loss.item())
+                train_loss = criterion(output, target)
+                optimizer.zero_grad()
 
+                train_loss.backward()
 
+                optimizer.step()
+
+                # print statistics
+                print(train_loss.item())
+       with torch.no_grad():
+            model.eval()
+            for record in batcher_valid:
+                x = torch.tensor(record['images'], device='cuda')
+                x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
+
+                target = target.type_as(model.conv1.weight)
+
+                output = model(x).squeeze(-1)
+                valid_loss = criterion(output, target)
+                if valid_loss<train_loss:
+                    torch.save(model.state_dict(),dirpath)
+                    print('best loss is ',valid_loss)
 
 
     #best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)

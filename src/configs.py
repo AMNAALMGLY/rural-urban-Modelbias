@@ -16,9 +16,9 @@ args = Namespace(
     # Training
 
     lr_decay=0.96,
-    batch_size=128,
+    batch_size=64,
     gpu=-1,
-    max_epochs=1,
+    max_epochs=150,
 
     lr=3*0.001,
     fc_reg=0.001,
@@ -34,7 +34,7 @@ args = Namespace(
     ooc=True,
     dataset='DHS_OOC',
     fold='A',
-    ls_bands='rgb',
+    ls_bands='ms',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     scaler_features_keys=None,
