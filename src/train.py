@@ -160,7 +160,7 @@ def main(args):
                 wandb.log({"train_loss": train_loss})
             train_step += 1
 
-        avgloss=epoch_loss//train_steps
+        avgloss=epoch_loss/train_steps
         print(f'End of Epoch training average Loss is {avgloss}')
         with torch.no_grad():
             valid_step=0
@@ -180,8 +180,8 @@ def main(args):
                 if valid_step % 50 == 0:
                     wandb.log({"valid_loss": valid_loss})
 
-            if (valid_epoch_loss//valid_steps) < best_loss:
-                    best_loss=valid_epoch_loss//valid_steps
+            if (valid_epoch_loss/valid_steps) < best_loss:
+                    best_loss=valid_epoch_loss/valid_steps
                     save_path=os.path.join(dirpath, f'Epoch {epoch} loss {best_loss}.ckpt')
                     torch.save(model.state_dict(), save_path)
                     print(f'best average validation loss  is at Epoch {epoch} and is {best_loss}')
