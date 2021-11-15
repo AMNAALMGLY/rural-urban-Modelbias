@@ -141,17 +141,24 @@ def main(args):
         start1=time.time()
         x=torch.tensor(record['images'],device='cuda')
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
+
         print(f'time in batch {time.time()- start1}')
         target = torch.tensor(record['labels'])
+        print(f'target and x shapes {x.shape,}{target.shape}')
         target = target.type_as(model.conv1.weight)
         start2= time.time()
 
         output=model(x)
+        print('output shape',output.shape)
         print(f'time in model{time.time() - start2}')
         loss = criterion(output, target)
         optimizer.zero_grad()
+        start3=time.time()
         loss.backward()
+        print(f'time in backword {time.time() - start3}')
+        start4=time.time()
         optimizer.step()
+        print(f'time in update{time.time() - start4}')
 
         # print statistics
         print(loss.item())
