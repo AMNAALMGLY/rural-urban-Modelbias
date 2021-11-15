@@ -19,9 +19,10 @@ from src.trainer import ResTrain
 from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name
 from src.configs import args as default_args
 from pytorch_lightning import seed_everything
-import  wandb
+#import  wandb
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter()
 
-import torchvision
 import torchvision.transforms as transforms
 transform = transforms.Compose(
     [transforms.ToTensor(),
@@ -34,7 +35,7 @@ transform = transforms.Compose(
 
 
 data_dir = './np_data'
-wandb.init(project='rural-urban-torch',entity='amna')
+#wandb.init(project='rural-urban-torch',entity='amna')
 
 # ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
 
@@ -133,8 +134,8 @@ def main(args):
     fc = nn.Linear(model.fc.in_features, 1)
     model.fc = fc
     model.to('cuda')
-    wandb.require(experiment="service")
-    wandb.watch(model, criterion,log='all')
+    #wandb.require(experiment="service")
+    #wandb.watch(model, criterion,log='all')
     best_loss=float('inf')
     for epoch in range(args.max_epochs):
         train_step = 0
@@ -159,7 +160,7 @@ def main(args):
             # print statistics
             print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item()}')
             if train_step % 50 == 0:
-                wandb.log({"train_loss": train_loss})
+                writer.add_scalar("Loss/train", train_loss, train_step)
             train_step += 1
 
         avgloss=epoch_loss/train_steps
@@ -180,7 +181,7 @@ def main(args):
                 valid_step+=1
                 print(f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item()}')
                 if valid_step % 50 == 0:
-                    wandb.log({"valid_loss": valid_loss})
+                    writer.add_scalar("Loss/valid", valid_loss, valid_step)
 
             if (valid_epoch_loss/valid_steps) < best_loss:
                     best_loss=valid_epoch_loss/valid_steps
@@ -190,7 +191,7 @@ def main(args):
                     print(f'Path to best model found during training: \n{save_path}')
 
         sched.step()
-
+    writer.flush()
 
     #best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
     #best_model_ckpt, _, dirpath = setup_experiment(model, trainloader,trainloader ,args.checkpoints, args)
