@@ -149,7 +149,7 @@ def main(args):
         target = target.type_as(model.conv1.weight)
         start2= time.time()
 
-        output=model(x)
+        output=model(x).squeeze(-1)
         print('output shape',output.shape)
         print(f'time in model{time.time() - start2}')
         loss = criterion(output, target)
