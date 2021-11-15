@@ -119,11 +119,12 @@ def main(args):
                                           args.fc_reg, args.conv_reg, args.lr)
 
     dirpath = os.path.join(args.out_dir, 'dhs_ooc', experiment)
-    # model
+
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
     criterion=nn.MSELoss()
     optimizer=torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    sched = torch.optim.lr_scheduler.ExponentialLR(optimizer, args.gamma)
     fc = nn.Linear(model.fc.in_features, 1)
     model.fc = fc
     model.to('cuda')
@@ -145,7 +146,7 @@ def main(args):
                 optimizer.step()
 
                 # print statistics
-                print(train_loss.item())
+                print(f'Epoch {epoch} train_loss {train_loss.item()}')
        with torch.no_grad():
             model.eval()
             for record in batcher_valid:
@@ -158,9 +159,9 @@ def main(args):
                 valid_loss = criterion(output, target)
                 if valid_loss<train_loss:
                     torch.save(model.state_dict(),dirpath)
-                    print('best loss is ',valid_loss)
+                    print(f'best loss  is at Epoch {epoch} and is {valid_loss}')
                     print(f'Path to best model found during training: \n{dirpath}')
-
+       sched.step()
 
 
     #best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
