@@ -172,6 +172,7 @@ def main(args):
     #print(f'Path to best model found during training: \n{best_model_ckpt}')
 
     # saving data_param:
+    '''
     params_filepath = os.path.join(dirpath, 'data_params.json')
     with open(params_filepath, 'w') as config_file:
         json.dump(data_params, config_file, indent=4)
@@ -181,7 +182,7 @@ def main(args):
     params_filepath = os.path.join(dirpath, 'params.json')
     with open(params_filepath, 'w') as config_file:
         json.dump(params, config_file, indent=4)
-
+   '''
 
 if __name__ == "__main__":
     print('GPUS:', torch.cuda.device_count())
