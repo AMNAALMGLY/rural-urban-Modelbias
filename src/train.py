@@ -84,7 +84,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
         litmodel.model = copy.deepcopy(pretrained_model.model)
 
 
-    trainer.fit(litmodel, train_loader, valid_loader)
+    trainer.fit(litmodel, train_dataloader=train_loader, val_dataloaders=valid_loader)
 
     # trainer.test(litmodel,train_loader)
 
