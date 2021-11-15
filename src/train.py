@@ -128,7 +128,7 @@ def main(args):
     fc = nn.Linear(model.fc.in_features, 1)
     model.fc = fc
     model.to('cuda')
-    for epoch in range(args.max_epoch):
+    for epoch in range(args.max_epochs):
        model.train()
        for record in batcher_train:
                 x=torch.tensor(record['images'],device='cuda')
