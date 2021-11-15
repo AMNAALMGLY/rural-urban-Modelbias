@@ -65,16 +65,16 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
                                           save_last=True)
 
     trainer = pl.Trainer(max_epochs=args.max_epochs, gpus=args.no_of_gpus,
-                         logger=logger,
+                        # logger=logger,
                          callbacks=[checkpoint_callback],
-                         resume_from_checkpoint=args.resume,
-                         precision=16,
-                         # overfit_batches=1,
+                         resume_from_checkpoint=args.resume,)
+                         #precision=16,
+                        # overfit_batches=1,
                          #distributed_backend='ddp',
                          #strategy='ddp',
                          #num_nodes=2,
-                         profiler='simple',
-                         flush_logs_every_n_steps=50)
+                         #profiler='simple',
+                         #flush_logs_every_n_steps=50)
     #logger.watch(litmodel,log='all')
     # accumulate_grad_batches=16, )  # understand what it does exactly
     if checkpoints:
@@ -117,14 +117,16 @@ def main(args):
 
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
                                           args.fc_reg, args.conv_reg, args.lr)
-
+    ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
+    model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
+    '''
+    
     dirpath = os.path.join(args.out_dir, 'dhs_ooc', experiment)
     print(f'checkpoints directory: {dirpath}')
     os.makedirs(dirpath, exist_ok=True)
 
 
-    ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
-    model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
+    
     criterion=nn.MSELoss()
     optimizer=torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.conv_reg)
     sched = torch.optim.lr_scheduler.ExponentialLR(optimizer, args.lr_decay)
@@ -169,11 +171,11 @@ def main(args):
                     print(f'Path to best model found during training: \n{dirpath}')
 
         sched.step()
+        '''
 
-
-    #best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
+    best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
     #best_model_ckpt, _, dirpath = setup_experiment(model, trainloader,trainloader ,args.checkpoints, args)
-    #print(f'Path to best model found during training: \n{best_model_ckpt}')
+    print(f'Path to best model found during training: \n{best_model_ckpt}')
 
     # saving data_param:
 
