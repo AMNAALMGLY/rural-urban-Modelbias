@@ -62,12 +62,17 @@ class ResTrain(pl.LightningModule):
 
         start1=time.time()
         outputs = self.model(x)
-        print(f'in forward model_step {time.time() - start1}')
+        end = time.time()
+        print(f'in forward model_step {end - start1}')
         outputs = outputs.squeeze(dim=-1)
         start = time.time()
+
+        print('outputs shape >> ', outputs.shape)
+        print('outputs shape >> ', target.shape)
         loss = self.criterion(outputs, target)
 
         if self.loss_type == 'classification':
+            print('i shouldnot be here')
             preds = nn.functional.softmax(outputs, dim=1)
         else:
             preds = outputs
@@ -137,9 +142,11 @@ class ResTrain(pl.LightningModule):
     def setup_criterion(self):
 
         if self.loss_type == 'classification':
+            print('i shoudnot be here')
             self.criterion = nn.CrossEntropyLoss()
 
         elif self.loss_type == 'regression':
+            print('hiiii')
             self.criterion = nn.MSELoss()
 
 # lr=self.learning_rate * (self.lr_decay ** self.epoch)
