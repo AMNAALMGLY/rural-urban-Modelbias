@@ -26,7 +26,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 
 # TODO split nl_band function
-class Batcher():
+class Batcher(torch.utils.data.IterableDataset):
     """
     The PovertyMap poverty measure prediction dataset Iterator.
     This is a processed version of LandSat 5/7/8 Surface Reflectance,
