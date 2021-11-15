@@ -155,7 +155,7 @@ def main(args):
                 output = model(x).squeeze(-1)
                 valid_loss = criterion(output, target)
                 if valid_loss<train_loss:
-                    torch.save(model.state_dict(),dirpath)
+                    torch.save(model.state_dict(),os.path.join(dirpath,f'Epoch {epoch} loss {valid_loss}.ckpt'))
                     print(f'best loss  is at Epoch {epoch} and is {valid_loss}')
                     print(f'Path to best model found during training: \n{dirpath}')
        sched.step()
