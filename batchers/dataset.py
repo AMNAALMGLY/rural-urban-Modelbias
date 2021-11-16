@@ -7,7 +7,7 @@ import tensorflow as tf
 import os
 import torch
 from batchers.dataset_constants import MEANS_DICT, STD_DEVS_DICT
-from src.configs import args
+from configs import args
 from utils.utils import save_results
 import time
 

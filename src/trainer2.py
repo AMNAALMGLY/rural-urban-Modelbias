@@ -2,7 +2,7 @@ from torch.optim.lr_scheduler import ExponentialLR
 import torch
 import torch.nn as nn
 from utils.utils import Metric
-from src.configs import args
+from configs import args
 
 
 class Trainer:
