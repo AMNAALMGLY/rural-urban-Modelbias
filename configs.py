@@ -4,7 +4,6 @@ import multiprocessing
 import os
 
 ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
-print(ROOT_DIR)
 args = Namespace(
 
     # Model
@@ -46,7 +45,7 @@ args = Namespace(
     mode='min',
     seed=123,
     experiment_name='DHS_OOC_A_rgb_same',
-    out_dir=os.path.join(ROOT_DIR, 'src/outputs/'),
+    out_dir=os.path.join(ROOT_DIR, 'outputs'),
     ckpt=None,
     group=None,
     loss_type='regression',
