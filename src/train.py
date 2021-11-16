@@ -134,7 +134,7 @@ def main(args):
         epoch_loss = 0
         train_steps = len(batcher_train)
         valid_steps = len(batcher_valid)
-        print('----------------Training--------------------------------')
+        print('-----------------------Training--------------------------------')
         model.train()
         for record in batcher_train:
             x = torch.tensor(record['images'], device='cuda')

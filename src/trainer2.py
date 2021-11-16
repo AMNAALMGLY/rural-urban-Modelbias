@@ -44,6 +44,7 @@ class Trainer:
         #self.metric=Accuracy(num_classes=10)
         self.setup_criterion()
 
+    '''
     def forward(self, x):
 
 
@@ -51,7 +52,7 @@ class Trainer:
         output = self.model(x)
 
         return output
-
+    '''
     def _shared_step(self, batch, metric_fn):
         #x,target=batch
         x = torch.tensor(batch['images'])
@@ -76,6 +77,38 @@ class Trainer:
         print(loss)
         return loss
     def fit(self, trainloader, valid_loader,max_epochs,gpus, overfit_batches):
+        self.model.to('cuda')
+        best_loss = float('inf')
+        for epoch in range(args.max_epochs):
+            train_step = 0
+            epoch_loss = 0
+            train_steps = len(trainloader)
+            valid_steps = len(batcher_valid)
+            print('-----------------------Training--------------------------------')
+            model.train()
+            for record in batcher_train:
+                x = torch.tensor(record['images'], device='cuda')
+                x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
+                target = torch.tensor(record['labels'], device='cuda')
+                output = model(x).squeeze(-1)
+
+                train_loss = criterion(output, target)
+                optimizer.zero_grad()
+
+                train_loss.backward()
+
+                optimizer.step()
+                epoch_loss += train_loss.item()
+                # print statistics
+                print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item()}')
+                if train_step % 10 == 0:
+                    writer.add_scalar("Loss/train", train_loss, train_step)
+                    # wandb.log({"train_loss": train_loss})
+                train_step += 1
+
+            avgloss = epoch_loss / train_steps
+            print(f'End of Epoch training average Loss is {avgloss}')
+
 
     def load_from_checkpoint(path, model):
         print(f'loading the model from saved checkpoint at {path}')
@@ -84,14 +117,21 @@ class Trainer:
         return model
 
     def training_step(self, batch, batch_idx):
-        loss = self._shared_step(batch, self.metric)
+        opt=self.configure_optimizers()['optimizer']
+        scheduler=self.configure_optimizers()['lr_scheduler']['scheduler']
+        train_loss = self._shared_step(batch, self.metric)
+        opt.zero_grad()
+
+        train_loss.backward()
+
+        opt.step()
 
 
         # log the outputs!
         self.log('train_loss', loss, on_step=True,
                  on_epoch=True, prog_bar=True, logger=True)
 
-        return {'loss': loss}
+        return {'train_loss': loss}
 
     def training_epoch_end(self, training_step_outputs):
         self.log(f'train_metric_epoch', self.metric.compute(), prog_bar=True, )
