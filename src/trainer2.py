@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 from utils.utils import Metric
 from configs import args
-
+import  wandb
 writer = SummaryWriter()
 
 class Trainer:
@@ -56,7 +56,6 @@ class Trainer:
         return output
     '''
     def _shared_step(self, batch, metric_fn):
-        #x,target=batch
         x = torch.tensor(batch['images'])
         x=x.type_as(self.model.conv1.weight)
         target = torch.tensor(batch['labels'])
@@ -71,14 +70,17 @@ class Trainer:
 
         if self.loss_type == 'classification':
 
-            preds = nn.functional.softmax(outputs, dim=1)
+            preds = nn.functional.softmax(outputs, dim=1,device='cuda')
         else:
             preds = outputs
-        metric_fn.update(preds.to('cuda'), target.to('cuda'))
+        metric_fn.update(preds, target.to('cuda'))
 
         print(loss)
         return loss
     def fit(self, trainloader, validloader,max_epochs,gpus, overfit_batches=None):
+
+        #log the gradients
+        wandb.watch(self.model, self.criterion, log='all')
         self.model.to(gpus)
 
         scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
@@ -96,9 +98,12 @@ class Trainer:
                 epoch_loss += train_loss.item()
                 # print statistics
                 print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item()}')
-                if train_step % 10 == 0:
-                    writer.add_scalar("Loss/train", train_loss, train_step)
-                    # wandb.log({"train_loss": train_loss})
+                if train_step % 20 == 0:
+                    running_train=epoch_loss/train_step
+                    writer.add_scalar("Loss/train", running_train, train_step)
+                    wandb.log({"train_loss": running_train})
+
+
                 train_step += 1
 
             #Metric calulation and average loss
@@ -118,9 +123,10 @@ class Trainer:
                     valid_step += 1
                     print(
                         f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item()}')
-                    if valid_step % 10 == 0:
-                        writer.add_scalar("Loss/valid", valid_loss, valid_step)
-                        # wandb.log({"valid_loss": valid_loss})
+                    if valid_step % 20 == 0:
+                        running_loss=valid_epoch_loss/valid_step
+                        writer.add_scalar("Loss/valid", running_loss, valid_step)
+                        wandb.log({"valid_loss": running_loss})
                 avg_valid_loss=valid_epoch_loss / valid_steps
                 metric_valid=self.metric.compute()
             #Saving best model after a threshold of epochs:

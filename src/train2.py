@@ -10,11 +10,11 @@ from src.trainer2 import Trainer
 from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name
 from configs import args as default_args
 from pytorch_lightning import seed_everything
-
+import wandb
 from torch.utils.tensorboard import SummaryWriter
 
 writer = SummaryWriter()
-#import wandb
+#
 
 #wandb.init(project="rual-urban-torch", entity="amna")
 
@@ -28,6 +28,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
     params = dict(model=model, lr=args.lr, weight_decay=args.conv_reg, loss_type=args.loss_type,
                   num_outputs=args.num_outputs, metric='r2')
 
+    wandb.config.update(params)
     # setting experiment_path
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
                                           args.fc_reg, args.conv_reg, args.lr)
@@ -58,7 +59,7 @@ def main(args):
     data_params = dict(dataset=args.dataset, fold=args.fold, ls_bands=args.ls_bands, nl_band=args.nl_band,
                        label_name=args.label_name,
                        nl_label=args.nl_label, batch_size=args.batch_size, groupby=args.group)
-
+    wandb.config.update(data_params)
     batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', args.augment, args.clipn, args.batch_size, groupby=args.group,
                             cache=True)
@@ -70,7 +71,7 @@ def main(args):
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
 
 
-    best_loss, best_score,path, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
+    best_loss, best_score,path, dirpath , = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
 
     print(f'Path to best model found during training: \n{path}')
 
@@ -90,6 +91,7 @@ def main(args):
 
 
 if __name__ == "__main__":
+    wandb.init(project="rual-urban-torch", config={})
     print('GPUS:', torch.cuda.device_count())
     parser = argparse.ArgumentParser()
     args = parse_arguments(parser, default_args)
