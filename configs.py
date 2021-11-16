@@ -4,7 +4,7 @@ import multiprocessing
 import os
 
 ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
-
+print(ROOT_DIR)
 args = Namespace(
 
     # Model

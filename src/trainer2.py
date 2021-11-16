@@ -1,12 +1,16 @@
+import os
+
+from torch.utils.tensorboard import SummaryWriter
 from torch.optim.lr_scheduler import ExponentialLR
 import torch
 import torch.nn as nn
 from utils.utils import Metric
 from configs import args
 
+writer = SummaryWriter()
 
 class Trainer:
-    def __init__(self, model, lr, weight_decay, loss_type, num_outputs, metric,save_checkpoint, save_dir, **kwargs):
+    def __init__(self, model, lr, weight_decay, loss_type, num_outputs, metric, save_dir, **kwargs):
 
         '''Initializes the Trainer.
         Args
@@ -26,7 +30,7 @@ class Trainer:
         self.lr = lr
         self.weight_decay = weight_decay
         self.loss_type = loss_type
-
+        self.save_dir=save_dir
         if num_outputs is not None:
 
             fc = nn.Linear(model.fc.in_features, num_outputs)
@@ -73,28 +77,19 @@ class Trainer:
 
         print(loss)
         return loss
-    def fit(self, trainloader, valid_loader,max_epochs,gpus, overfit_batches):
-        self.model.to('cuda')
+    def fit(self, trainloader, validloader,max_epochs,gpus, overfit_batches=None):
+        self.model.to(gpus)
+        scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
         best_loss = float('inf')
-        for epoch in range(args.max_epochs):
+        for epoch in range(max_epochs):
             train_step = 0
             epoch_loss = 0
             train_steps = len(trainloader)
-            valid_steps = len(batcher_valid)
+            valid_steps = len(validloader)
             print('-----------------------Training--------------------------------')
-            model.train()
-            for record in batcher_train:
-                x = torch.tensor(record['images'], device='cuda')
-                x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
-                target = torch.tensor(record['labels'], device='cuda')
-                output = model(x).squeeze(-1)
-
-                train_loss = criterion(output, target)
-                optimizer.zero_grad()
-
-                train_loss.backward()
-
-                optimizer.step()
+            self.model.train()
+            for record in trainloader:
+                train_loss=self.training_step(self, record,)
                 epoch_loss += train_loss.item()
                 # print statistics
                 print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item()}')
@@ -103,9 +98,42 @@ class Trainer:
                     # wandb.log({"train_loss": train_loss})
                 train_step += 1
 
-            avgloss = epoch_loss / train_steps
-            print(f'End of Epoch training average Loss is {avgloss}')
+            #Metric calulation and average loss
 
+            avgloss = epoch_loss / train_steps
+            print(f'End of Epoch training average Loss is {avgloss} ')
+
+            with torch.no_grad():
+                valid_step = 0
+                valid_epoch_loss = 0
+                print('--------------------------Validation-------------------- ')
+                self.model.eval()
+                for record in validloader:
+
+                    valid_loss = self.validation_step(record)
+                    valid_epoch_loss += valid_loss.item()
+                    valid_step += 1
+                    print(
+                        f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item()}')
+                    if valid_step % 10 == 0:
+                        writer.add_scalar("Loss/valid", valid_loss, valid_step)
+                        # wandb.log({"valid_loss": valid_loss})
+                avg_valid_loss=valid_epoch_loss / valid_steps
+                metric_valid=self.metric.compute()
+            #Saving best model after a threshold of epochs:
+            if avg_valid_loss< best_loss:
+                best_loss = avg_valid_loss
+                if epoch >100: #TODO changes this to config
+                    save_path = os.path.join(self.save_dir, f'Epoch {epoch} loss {best_loss}.ckpt')
+                    torch.save(self.model.state_dict(), save_path)
+                    print(f'best average validation loss  is at Epoch {epoch} and is {best_loss} , and {self.metric} is {metric_valid}')
+                    print(f'Path to best model found during training: \n{save_path}')
+            self.metric.reset()
+            scheduler.step()
+        return best_loss, metric_valid, save_path
+        #TODO implement overfit batches
+        #TODO savelast
+        #TODO resume from checkpoint
 
     def load_from_checkpoint(path, model):
         print(f'loading the model from saved checkpoint at {path}')
@@ -113,9 +141,9 @@ class Trainer:
         model.eval()
         return model
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch,):
         opt=self.configure_optimizers()['optimizer']
-        scheduler=self.configure_optimizers()['lr_scheduler']['scheduler']
+
         train_loss = self._shared_step(batch, self.metric)
         opt.zero_grad()
 
@@ -123,49 +151,21 @@ class Trainer:
 
         opt.step()
 
-
         # log the outputs!
-        self.log('train_loss', loss, on_step=True,
-                 on_epoch=True, prog_bar=True, logger=True)
 
-        return {'train_loss': loss}
+        return train_loss
 
-    def training_epoch_end(self, training_step_outputs):
-        self.log(f'train_metric_epoch', self.metric.compute(), prog_bar=True, )
 
-        # reset after each epoch
-        self.metric.reset()
-
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch,):
         loss = self._shared_step(batch, self.metric)
 
-        # log the outputs!
-        self.log('val_loss', loss, on_step=True,
-                 on_epoch=True, prog_bar=True, logger=True)
+        return  loss
 
-        return {'loss': loss}
-    '''
-    def validation_epoch_end(self, validation_step_outputs):
-        self.log(f'val_metric_epoch', self.metric.compute(), prog_bar=True, )
-
-        # reset after each epoch
-        self.metric.reset()
-    '''
-    def test_step(self, batch, batch_idx):
+    def test_step(self, batch, ):
         loss = self._shared_step(batch, self.metric)
 
-        # log the outputs!
-        self.log('test_loss', loss, on_step=True,
-                 on_epoch=True, prog_bar=True, logger=True)
+        return loss
 
-        return {'loss': loss}
-    '''
-    def test_epoch_end(self, test_step_outputs):
-        self.log(f'test_metric_epoch', self.metric.compute(), prog_bar=True, )
-
-        # reset after each epoch
-        self.metric.reset()
-    '''
     def configure_optimizers(self):
         opt = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         return {
@@ -181,11 +181,8 @@ class Trainer:
     def setup_criterion(self):
 
         if self.loss_type == 'classification':
-            print('i shoudnot be here')
             self.criterion = nn.CrossEntropyLoss()
 
         elif self.loss_type == 'regression':
-            print('hiiii')
             self.criterion = nn.MSELoss()
 
-# lr=self.learning_rate * (self.lr_decay ** self.epoch)
