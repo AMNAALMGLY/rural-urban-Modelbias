@@ -51,7 +51,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
     best_loss, best_score, path= trainer.fit( train_dataloaders=train_loader, val_dataloaders=valid_loader,max_epochs=args.max_epochs,gpus='cuda')
 
 
-    return best_model_ckpt, best_model_score, dirpath
+    return best_loss, best_score, dirpath
 
 
 def main(args):
@@ -78,80 +78,9 @@ def main(args):
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
 
-    dirpath = os.path.join(args.out_dir, 'dhs_ooc', experiment)
-    print(f'checkpoints directory: {dirpath}')
-    os.makedirs(dirpath, exist_ok=True)
 
-    criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.conv_reg)
-    sched = torch.optim.lr_scheduler.ExponentialLR(optimizer, args.lr_decay)
-    fc = nn.Linear(model.fc.in_features, 1)
-    model.fc = fc
+     best_loss, best_score,path, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
 
-    model.to('cuda')
-    # wandb.require(experiment="service")
-    #wandb.watch(model, criterion, log='all')
-    best_loss = float('inf')
-    for epoch in range(args.max_epochs):
-        train_step = 0
-        epoch_loss = 0
-        train_steps = len(batcher_train)
-        valid_steps = len(batcher_valid)
-        print('-----------------------Training--------------------------------')
-        model.train()
-        for record in batcher_train:
-            x = torch.tensor(record['images'], device='cuda')
-            x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
-            target = torch.tensor(record['labels'], device='cuda')
-            output = model(x).squeeze(-1)
-
-            train_loss = criterion(output, target)
-            optimizer.zero_grad()
-
-            train_loss.backward()
-
-            optimizer.step()
-            epoch_loss += train_loss.item()
-            # print statistics
-            print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item()}')
-            if train_step % 10 == 0:
-                writer.add_scalar("Loss/train", train_loss, train_step)
-                #wandb.log({"train_loss": train_loss})
-            train_step += 1
-
-        avgloss = epoch_loss / train_steps
-        print(f'End of Epoch training average Loss is {avgloss}')
-        with torch.no_grad():
-            valid_step = 0
-            valid_epoch_loss = 0
-            print('--------------------------Validation-------------------- ')
-            model.eval()
-            for record in batcher_valid:
-                x = torch.tensor(record['images'], device='cuda')
-                x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])
-
-                target = torch.tensor(record['labels'], device='cuda')
-                output = model(x).squeeze(-1)
-                valid_loss = criterion(output, target)
-                valid_epoch_loss += valid_loss.item()
-                valid_step += 1
-                print(f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item()}')
-                if valid_step % 10 == 0:
-                    writer.add_scalar("Loss/valid", valid_loss, valid_step)
-                    #wandb.log({"valid_loss": valid_loss})
-            if (valid_epoch_loss / valid_steps) < best_loss:
-                best_loss = valid_epoch_loss / valid_steps
-                if epoch >100: #TODO changes this to config
-                    save_path = os.path.join(dirpath, f'Epoch {epoch} loss {best_loss}.ckpt')
-
-                    torch.save(model.state_dict(), save_path)
-                    print(f'best average validation loss  is at Epoch {epoch} and is {best_loss}')
-                    print(f'Path to best model found during training: \n{save_path}')
-
-        sched.step()
-
-    # best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
-    # best_model_ckpt, _, dirpath = setup_experiment(model, trainloader,trainloader ,args.checkpoints, args)
     # print(f'Path to best model found during training: \n{best_model_ckpt}')
     '''
     # saving data_param:

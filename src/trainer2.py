@@ -79,8 +79,10 @@ class Trainer:
         return loss
     def fit(self, trainloader, validloader,max_epochs,gpus, overfit_batches=None):
         self.model.to(gpus)
+
         scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
         best_loss = float('inf')
+        start=time.time()
         for epoch in range(max_epochs):
             train_step = 0
             epoch_loss = 0
@@ -130,6 +132,7 @@ class Trainer:
                     print(f'Path to best model found during training: \n{save_path}')
             self.metric.reset()
             scheduler.step()
+        print("Time Elapsed : {:.4f}s".format(time.time() - start))
         return best_loss, metric_valid, save_path
         #TODO implement overfit batches
         #TODO savelast

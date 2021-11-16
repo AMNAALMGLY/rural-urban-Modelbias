@@ -21,7 +21,7 @@ from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
 import wandb
 
-wandb.init(project="rual-urban-torch", entity="amna")
+wandb.init(project="rual-urban-torch",)
 
 data_dir = './np_data'
 
