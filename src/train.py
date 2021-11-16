@@ -111,11 +111,7 @@ def main(args):
 
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
                                           args.fc_reg, args.conv_reg, args.lr)
-    wandb.config = {
-        "learning_rate": 0.0001,
-        "epochs": 150,
-        "batch_size": 64
-    }
+
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
 
