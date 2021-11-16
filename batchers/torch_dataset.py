@@ -2,11 +2,7 @@ import os.path
 from glob import glob
 import numpy as np
 import pandas as pd
-import torch.utils.data
 from torch.utils.data import Dataset
-from batchers.dataset import Batcher
-from src.configs import args
-from utils.utils import get_paths
 
 data_dir = './np_data'
 

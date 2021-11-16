@@ -1,12 +1,9 @@
-import time
-
-import pytorch_lightning as pl
 from torch.optim.lr_scheduler import ExponentialLR
 import torch
 import torch.nn as nn
 from utils.utils import Metric
-from src.configs import args
-from torchmetrics import Accuracy
+from configs import args
+
 
 class Trainer:
     def __init__(self, model, lr, weight_decay, loss_type, num_outputs, metric,save_checkpoint, save_dir, **kwargs):

@@ -3,16 +3,13 @@
 from typing import Type, Any, Callable, Union, List, Optional
 
 import torch
-import torch.nn as nn
 from torch import Tensor
 
 import torch.nn as nn
 from models._internally_replaced_utils import load_state_dict_from_url
 from models.utils import _log_api_usage_once
-from src.configs import  args
+from configs import  args
 import time
-import math
-
 
 __all__ = [
     "ResNet",

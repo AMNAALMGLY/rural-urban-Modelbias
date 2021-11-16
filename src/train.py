@@ -1,23 +1,19 @@
 # Setup Experiment #look at utils/trainer.py
 import argparse
 import copy
-import json
 import os
-import time
 
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.loggers import WandbLogger  # newline 1
 from pytorch_lightning.callbacks import ModelCheckpoint
 from torch import nn
 
 from batchers.dataset import Batcher
-from batchers.torch_dataset import Data
 from models.model_generator import get_model
 from src.trainer import ResTrain
 from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name
-from src.configs import args as default_args
+from configs import args as default_args
 from pytorch_lightning import seed_everything
 
 from torch.utils.tensorboard import SummaryWriter
