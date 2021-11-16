@@ -19,9 +19,9 @@ from pytorch_lightning import seed_everything
 from torch.utils.tensorboard import SummaryWriter
 
 writer = SummaryWriter()
-#import wandb
+import wandb
 
-#wandb.init(project="rual-urban-torch",)
+#
 
 data_dir = './np_data'
 
@@ -123,7 +123,7 @@ def main(args):
 
     model.to('cuda')
     # wandb.require(experiment="service")
-    #wandb.watch(model, criterion, log='all')
+    wandb.watch(model, criterion, log='all')
     best_loss = float('inf')
     for epoch in range(args.max_epochs):
         train_step = 0
@@ -149,7 +149,7 @@ def main(args):
             print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item()}')
             if train_step % 10 == 0:
                 writer.add_scalar("Loss/train", train_loss, train_step)
-                #wandb.log({"train_loss": train_loss})
+                wandb.log({"train_loss": train_loss})
             train_step += 1
 
         avgloss = epoch_loss / train_steps
@@ -171,7 +171,7 @@ def main(args):
                 print(f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item()}')
                 if valid_step % 10 == 0:
                     writer.add_scalar("Loss/valid", valid_loss, valid_step)
-                    #wandb.log({"valid_loss": valid_loss})
+                    wandb.log({"valid_loss": valid_loss})
             if (valid_epoch_loss / valid_steps) < best_loss:
                 best_loss = valid_epoch_loss / valid_steps
                 if epoch >100: #TODO changes this to config
@@ -203,6 +203,7 @@ def main(args):
 
 
 if __name__ == "__main__":
+    wandb.init(project="rual-urban-torch", )
     print('GPUS:', torch.cuda.device_count())
     parser = argparse.ArgumentParser()
     args = parse_arguments(parser, default_args)

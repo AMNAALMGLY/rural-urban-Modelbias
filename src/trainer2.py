@@ -74,7 +74,7 @@ class Trainer:
             preds = nn.functional.softmax(outputs, dim=1)
         else:
             preds = outputs
-        metric_fn.update(preds, target)
+        metric_fn.update(preds.to('cuda'), target.to('cuda'))
 
         print(loss)
         return loss
@@ -92,7 +92,7 @@ class Trainer:
             print('-----------------------Training--------------------------------')
             self.model.train()
             for record in trainloader:
-                train_loss=self.training_step(self, record,)
+                train_loss=self.training_step(record,)
                 epoch_loss += train_loss.item()
                 # print statistics
                 print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item()}')
@@ -171,7 +171,7 @@ class Trainer:
         return loss
 
     def configure_optimizers(self):
-        opt = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        opt = torch.optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         return {
             'optimizer': opt,
             'lr_scheduler': {

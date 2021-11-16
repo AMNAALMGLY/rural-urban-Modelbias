@@ -42,7 +42,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
     trainer = Trainer(save_dir=dirpath,**params)
 
 
-    best_loss, best_score, path= trainer.fit( train_dataloaders=train_loader, val_dataloaders=valid_loader,max_epochs=args.max_epochs,gpus='cuda')
+    best_loss, best_score, path= trainer.fit( train_loader, valid_loader,max_epochs=args.max_epochs,gpus='cuda')
 
 
     return best_loss, best_score, path, dirpath
