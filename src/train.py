@@ -13,7 +13,7 @@ from batchers.dataset import Batcher
 from models.model_generator import get_model
 from src.trainer import ResTrain
 from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name
-from configs import args as default_args
+from src.configs import args as default_args
 from pytorch_lightning import seed_everything
 
 from torch.utils.tensorboard import SummaryWriter

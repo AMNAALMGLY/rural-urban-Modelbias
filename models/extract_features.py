@@ -15,7 +15,7 @@ import torch
 import batchers
 from batchers.dataset import Batcher
 from models.model_generator import get_model
-from configs import args
+from src.configs import args
 from src.trainer import ResTrain
 from utils.utils import save_results, get_paths,load_from_checkpoint
 

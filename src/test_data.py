@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from batchers.dataset import Batcher
-from configs import args
+from src.configs import args
 from utils.utils import get_paths
 
 
