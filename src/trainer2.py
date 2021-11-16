@@ -96,15 +96,16 @@ class Trainer:
             for record in trainloader:
                 train_loss=self.training_step(record,)
                 epoch_loss += train_loss.item()
+                train_step += 1
                 # print statistics
                 print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item()}')
                 if train_step % 20 == 0:
-                    running_train=epoch_loss/train_step
+                    running_train=epoch_loss/(train_step)
                     writer.add_scalar("Loss/train", running_train, train_step)
                     wandb.log({"train_loss": running_train})
 
 
-                train_step += 1
+
 
             #Metric calulation and average loss
 
@@ -124,7 +125,7 @@ class Trainer:
                     print(
                         f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item()}')
                     if valid_step % 20 == 0:
-                        running_loss=valid_epoch_loss/valid_step
+                        running_loss=valid_epoch_loss/(valid_step)
                         writer.add_scalar("Loss/valid", running_loss, valid_step)
                         wandb.log({"valid_loss": running_loss})
                 avg_valid_loss=valid_epoch_loss / valid_steps
