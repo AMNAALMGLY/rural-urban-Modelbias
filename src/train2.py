@@ -1,17 +1,11 @@
 # Setup Experiment #look at utils/trainer.py
 import argparse
 import copy
+import json
 import os
-
-import pytorch_lightning as pl
 import torch
-from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.callbacks import ModelCheckpoint
-from torch import nn
-
 from batchers.dataset import Batcher
 from models.model_generator import get_model
-from src.trainer import ResTrain
 from src.trainer2 import Trainer
 from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name
 from configs import args as default_args
@@ -24,7 +18,7 @@ writer = SummaryWriter()
 
 #wandb.init(project="rual-urban-torch", entity="amna")
 
-data_dir = './np_data'
+
 
 
 # ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
@@ -51,7 +45,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
     best_loss, best_score, path= trainer.fit( train_dataloaders=train_loader, val_dataloaders=valid_loader,max_epochs=args.max_epochs,gpus='cuda')
 
 
-    return best_loss, best_score, dirpath
+    return best_loss, best_score, path, dirpath
 
 
 def main(args):
@@ -72,17 +66,14 @@ def main(args):
                             args.nl_label, 'DHS', args.augment, args.clipn, args.batch_size, groupby=args.group,
                             cache=True)
 
-    experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
-                                          args.fc_reg, args.conv_reg, args.lr)
-
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
 
 
-     best_loss, best_score,path, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
+    best_loss, best_score,path, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
 
-    # print(f'Path to best model found during training: \n{best_model_ckpt}')
-    '''
+    print(f'Path to best model found during training: \n{path}')
+
     # saving data_param:
 
     params_filepath = os.path.join(dirpath, 'data_params.json')
@@ -95,7 +86,7 @@ def main(args):
     with open(params_filepath, 'w') as config_file:
         json.dump(params, config_file, indent=4)
 
-    '''
+
 
 
 if __name__ == "__main__":
