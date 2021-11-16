@@ -121,11 +121,7 @@ def init_model(method, ckpt_path=None):
     else:
         return None, False
 
-def load_from_checkpoint(path,model):
-    print(f'loading the model from saved checkpoint at {path}')
-    model.load_state_dict(torch.load(path))
-    model.eval()
-    return model
+
 
 
 class dotdict(dict):

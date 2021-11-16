@@ -19,11 +19,12 @@ from src.trainer import ResTrain
 from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name
 from src.configs import args as default_args
 from pytorch_lightning import seed_everything
-#import  wandb
+
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
-#wandb.init(name='Fold B RGB', project='Modelbias', entity='amna')
+import wandb
 
+wandb.init(project="rual-urban-torch", entity="amna")
 
 
 data_dir = './np_data'
@@ -109,6 +110,11 @@ def main(args):
 
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
                                           args.fc_reg, args.conv_reg, args.lr)
+    wandb.config = {
+        "learning_rate": 0.0001,
+        "epochs": 150,
+        "batch_size": 64
+    }
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
 
@@ -127,7 +133,7 @@ def main(args):
 
     model.to('cuda')
     #wandb.require(experiment="service")
-    #wandb.watch(model, criterion,log='all')
+    wandb.watch(model, criterion,log='all')
     best_loss=float('inf')
     for epoch in range(args.max_epochs):
         train_step = 0
@@ -153,6 +159,7 @@ def main(args):
             print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item()}')
             if train_step % 50 == 0:
                 writer.add_scalar("Loss/train", train_loss, train_step)
+                wandb.log({"train_loss": train_loss})
             train_step += 1
 
         avgloss=epoch_loss/train_steps
@@ -174,11 +181,12 @@ def main(args):
                 print(f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item()}')
                 if valid_step % 50 == 0:
                     writer.add_scalar("Loss/valid", valid_loss, valid_step)
-
+                    wandb.log({"valid_loss": valid_loss})
             if (valid_epoch_loss/valid_steps) < best_loss:
                     best_loss=valid_epoch_loss/valid_steps
                     save_path=os.path.join(dirpath, f'Epoch {epoch} loss {best_loss}.ckpt')
                     torch.save(model.state_dict(), save_path)
+
                     print(f'best average validation loss  is at Epoch {epoch} and is {best_loss}')
                     print(f'Path to best model found during training: \n{save_path}')
 
