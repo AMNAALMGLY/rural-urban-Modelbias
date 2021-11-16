@@ -7,7 +7,7 @@ import torch
 from batchers.dataset import Batcher
 from models.model_generator import get_model
 from src.trainer2 import Trainer
-from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name
+from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name,load_from_checkpoint
 from configs import args as default_args
 from pytorch_lightning import seed_everything
 import wandb
@@ -16,14 +16,19 @@ from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
 #
 
-#wandb.init(project="rual-urban-torch", entity="amna")
+
 
 
 
 
 # ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
 
-def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
+def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args):
+
+    # if resume training:
+    if resume_checkpoints:
+        print((f'resuming training from {resume_checkpoints}'))
+        model = load_from_checkpoint(resume_checkpoints, model)
     # setup lightining model params
     params = dict(model=model, lr=args.lr, weight_decay=args.conv_reg, loss_type=args.loss_type,
                   num_outputs=args.num_outputs, metric='r2')
@@ -37,7 +42,7 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
     print(f'checkpoints directory: {dirpath}')
     os.makedirs(dirpath, exist_ok=True)  # check if it can be created automatically
 
-    # logger
+
 
     # lightning model , trainer
     trainer = Trainer(save_dir=dirpath,**params)

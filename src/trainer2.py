@@ -43,6 +43,9 @@ class Trainer:
                              'against')
 
         self.metric = Metric().get_metric(metric)  # TODO if it is a list
+
+        self.scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
+
         #self.metric=Accuracy(num_classes=10)
         self.setup_criterion()
 
@@ -76,13 +79,12 @@ class Trainer:
         #metric_fn.update(preds.to('cuda'), target.to('cuda'))
 
         return loss
-    def fit(self, trainloader, validloader,max_epochs,gpus, overfit_batches=None):
+    def fit(self, trainloader, validloader,max_epochs,gpus,save_every=10 ,overfit_batches=None):
 
         #log the gradients
         wandb.watch(self.model, self.criterion, log='all')
         self.model.to(gpus)
 
-        scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
         best_loss = float('inf')
         start=time.time()
         for epoch in range(max_epochs):
@@ -133,23 +135,27 @@ class Trainer:
             if avg_valid_loss< best_loss:
                 best_loss = avg_valid_loss
                 if epoch >100: #TODO changes this to config
-                    save_path = os.path.join(self.save_dir, f'Epoch {epoch} loss {best_loss}.ckpt')
+                    save_path = os.path.join(self.save_dir, f'best at Epoch {epoch} loss {best_loss}.ckpt')
                     torch.save(self.model.state_dict(), save_path)
                     print(f'best average validation loss  is at Epoch {epoch} and is {best_loss} ,')
                     print(f'Path to best model found during training: \n{save_path}')
-            self.metric.reset()
-            scheduler.step()
+
+            #Saving the model for later use every 10 epochs:
+            if epoch%save_every==0:
+                save_dir=os.path.join(self.save_dir,'resume_points')
+                os.makedirs(save_dir, exist_ok=True)
+                save_path=os.path.join(save_dir,f'Epoch{epoch}.ckpt')
+                torch.save(self.model.state_dict(), save_path)
+                print(f'Saving model to {save_path}')
+            #self.metric.reset()
+            self.scheduler.step()
         print("Time Elapsed : {:.4f}s".format(time.time() - start))
         return best_loss, save_path
         #TODO implement overfit batches
         #TODO savelast
         #TODO resume from checkpoint
 
-    def load_from_checkpoint(path, model):
-        print(f'loading the model from saved checkpoint at {path}')
-        model.load_state_dict(torch.load(path))
-        model.eval()
-        return model
+
 
     def training_step(self, batch,):
         opt=self.configure_optimizers()['optimizer']
