@@ -70,10 +70,10 @@ class Trainer:
 
         if self.loss_type == 'classification':
 
-            preds = nn.functional.softmax(outputs, dim=1,device='cuda')
+            preds = nn.functional.softmax(outputs, dim=1)
         else:
             preds = outputs
-        metric_fn.update(preds, target.to('cuda'))
+        metric_fn.update(preds.to('cuda'), target.to('cuda'))
 
         print(loss)
         return loss
