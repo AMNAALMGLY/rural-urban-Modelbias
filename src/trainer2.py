@@ -75,7 +75,6 @@ class Trainer:
             preds = outputs
         #metric_fn.update(preds.to('cuda'), target.to('cuda'))
 
-        print(loss)
         return loss
     def fit(self, trainloader, validloader,max_epochs,gpus, overfit_batches=None):
 
