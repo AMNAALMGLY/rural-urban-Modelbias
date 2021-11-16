@@ -19,17 +19,14 @@ from src.trainer import ResTrain
 from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name
 from src.configs import args as default_args
 from pytorch_lightning import seed_everything
-import  wandb
+#import  wandb
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
-wandb.init(name='Fold B RGB',
-           project='Modelbias',
-           entity='amna')
+#wandb.init(name='Fold B RGB', project='Modelbias', entity='amna')
 
 
 
 data_dir = './np_data'
-#wandb.init(project='rural-urban-torch',entity='amna')
 
 # ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
 
@@ -127,7 +124,7 @@ def main(args):
     sched = torch.optim.lr_scheduler.ExponentialLR(optimizer, args.lr_decay)
     fc = nn.Linear(model.fc.in_features, 1)
     model.fc = fc
-    wandb.watch(model)
+
     model.to('cuda')
     #wandb.require(experiment="service")
     #wandb.watch(model, criterion,log='all')
@@ -186,13 +183,7 @@ def main(args):
                     print(f'Path to best model found during training: \n{save_path}')
 
         sched.step()
-        # Log the loss and accuracy values at the end of each epoch
-        wandb.log({
-            "Epoch": epoch,
-            "Train Loss": avgloss,
-            "Valid Loss": valid_epoch_loss,
-            })
-    writer.flush()
+
 
     #best_model_ckpt, _, dirpath = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
     #best_model_ckpt, _, dirpath = setup_experiment(model, trainloader,trainloader ,args.checkpoints, args)
