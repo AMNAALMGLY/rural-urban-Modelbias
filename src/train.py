@@ -174,11 +174,14 @@ def main(args):
                     #wandb.log({"valid_loss": valid_loss})
             if (valid_epoch_loss / valid_steps) < best_loss:
                 best_loss = valid_epoch_loss / valid_steps
-                save_path = os.path.join(dirpath, f'Epoch {epoch} loss {best_loss}.ckpt')
-                torch.save(model.state_dict(), save_path)
+                #save models after 100 epochs threshold
+                if epoch >100: #TODO changes this to config
+                    save_path = os.path.join(dirpath, f'Epoch {epoch} loss {best_loss}.ckpt')
 
-                print(f'best average validation loss  is at Epoch {epoch} and is {best_loss}')
-                print(f'Path to best model found during training: \n{save_path}')
+                    torch.save(model.state_dict(), save_path)
+
+                    print(f'best average validation loss  is at Epoch {epoch} and is {best_loss}')
+                    print(f'Path to best model found during training: \n{save_path}')
 
         sched.step()
 
