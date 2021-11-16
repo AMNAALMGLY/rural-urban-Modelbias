@@ -43,10 +43,10 @@ def setup_experiment(model, train_loader, valid_loader, checkpoints, args):
     trainer = Trainer(save_dir=dirpath,**params)
 
 
-    best_loss, best_score, path= trainer.fit( train_loader, valid_loader,max_epochs=args.max_epochs,gpus='cuda')
+    best_loss, path= trainer.fit( train_loader, valid_loader,max_epochs=args.max_epochs,gpus='cuda')
 
 
-    return best_loss, best_score, path, dirpath
+    return best_loss, path, dirpath
 
 
 def main(args):
@@ -71,7 +71,7 @@ def main(args):
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
 
 
-    best_loss, best_score,path, dirpath , = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
+    best_loss,path, dirpath , = setup_experiment(model, batcher_train, batcher_valid, args.checkpoints, args)
 
     print(f'Path to best model found during training: \n{path}')
 

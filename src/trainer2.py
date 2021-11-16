@@ -73,7 +73,7 @@ class Trainer:
             preds = nn.functional.softmax(outputs, dim=1)
         else:
             preds = outputs
-        metric_fn.update(preds.to('cuda'), target.to('cuda'))
+        #metric_fn.update(preds.to('cuda'), target.to('cuda'))
 
         print(loss)
         return loss
@@ -128,19 +128,19 @@ class Trainer:
                         writer.add_scalar("Loss/valid", running_loss, valid_step)
                         wandb.log({"valid_loss": running_loss})
                 avg_valid_loss=valid_epoch_loss / valid_steps
-                metric_valid=self.metric.compute()
+                #metric_valid=self.metric.compute()
             #Saving best model after a threshold of epochs:
             if avg_valid_loss< best_loss:
                 best_loss = avg_valid_loss
                 if epoch >100: #TODO changes this to config
                     save_path = os.path.join(self.save_dir, f'Epoch {epoch} loss {best_loss}.ckpt')
                     torch.save(self.model.state_dict(), save_path)
-                    print(f'best average validation loss  is at Epoch {epoch} and is {best_loss} , and {self.metric} is {metric_valid}')
+                    print(f'best average validation loss  is at Epoch {epoch} and is {best_loss} ,')
                     print(f'Path to best model found during training: \n{save_path}')
             self.metric.reset()
             scheduler.step()
         print("Time Elapsed : {:.4f}s".format(time.time() - start))
-        return best_loss, metric_valid, save_path
+        return best_loss, save_path
         #TODO implement overfit batches
         #TODO savelast
         #TODO resume from checkpoint
