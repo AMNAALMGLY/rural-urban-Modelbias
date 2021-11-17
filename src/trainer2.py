@@ -142,11 +142,11 @@ class Trainer:
 
             #Saving the model for later use every 10 epochs:
             if epoch%save_every==0:
-                save_dir=os.path.join(self.save_dir,'resume_points')
-                os.makedirs(save_dir, exist_ok=True)
-                save_path=os.path.join(save_dir,f'Epoch{epoch}.ckpt')
-                torch.save(self.model.state_dict(), save_path)
-                print(f'Saving model to {save_path}')
+                resume_dir=os.path.join(self.save_dir,'resume_points')
+                os.makedirs(resume_dir, exist_ok=True)
+                resume_path=os.path.join(resume_dir,f'Epoch{epoch}.ckpt')
+                torch.save(self.model.state_dict(), resume_path)
+                print(f'Saving model to {resume_path}')
             #self.metric.reset()
             self.scheduler.step()
         print("Time Elapsed : {:.4f}s".format(time.time() - start))

@@ -19,30 +19,29 @@ from configs import args
 from src.trainer import ResTrain
 from utils.utils import save_results, get_paths,load_from_checkpoint
 
-OUTPUTS_ROOT_DIR = './outputs'
-
+OUTPUTS_ROOT_DIR = os.path.join(args.out_dir,'dhs_ooc')
 DHS_MODELS: list[str] = [
     # put paths to DHS models here (relative to OUTPUTS_ROOT_DIR)
-    'dhs_ooc/DHS_OOC_A_ms_samescaled_b64_fc01_conv01_lr0001',
-    'dhs_ooc/DHS_OOC_B_ms_samescaled_b64_fc001_conv001_lr0001',
-    'dhs_ooc/DHS_OOC_C_ms_samescaled_b64_fc001_conv001_lr001',
-    'dhs_ooc/DHS_OOC_D_ms_samescaled_b64_fc001_conv001_lr01',
-    'dhs_ooc/DHS_OOC_E_ms_samescaled_b64_fc01_conv01_lr001',
-    'dhs_ooc/DHS_OOC_A_nl_random_b64_fc1.0_conv1.0_lr0001',
-    'dhs_ooc/DHS_OOC_B_nl_random_b64_fc1.0_conv1.0_lr0001',
-    'dhs_ooc/DHS_OOC_C_nl_random_b64_fc1.0_conv1.0_lr0001',
-    'dhs_ooc/DHS_OOC_D_nl_random_b64_fc1.0_conv1.0_lr01',
-    'dhs_ooc/DHS_OOC_E_nl_random_b64_fc1.0_conv1.0_lr0001',
+    #'dhs_ooc/DHS_OOC_A_ms_samescaled_b64_fc01_conv01_lr0001',
+    #'dhs_ooc/DHS_OOC_B_ms_samescaled_b64_fc001_conv001_lr0001',
+   # 'dhs_ooc/DHS_OOC_C_ms_samescaled_b64_fc001_conv001_lr001',
+    #'dhs_ooc/DHS_OOC_D_ms_samescaled_b64_fc001_conv001_lr01',
+   # 'dhs_ooc/DHS_OOC_E_ms_samescaled_b64_fc01_conv01_lr001',
+   # 'dhs_ooc/DHS_OOC_A_nl_random_b64_fc1.0_conv1.0_lr0001',
+   # 'dhs_ooc/DHS_OOC_B_nl_random_b64_fc1.0_conv1.0_lr0001',
+   # 'dhs_ooc/DHS_OOC_C_nl_random_b64_fc1.0_conv1.0_lr0001',
+    #'dhs_ooc/DHS_OOC_D_nl_random_b64_fc1.0_conv1.0_lr01',
+    #'dhs_ooc/DHS_OOC_E_nl_random_b64_fc1.0_conv1.0_lr0001',
     'dhs_ooc/DHS_OOC_A_rgb_same_b64_fc001_conv001_lr01',
-    'dhs_ooc/DHS_OOC_B_rgb_same_b64_fc001_conv001_lr0001',
-    'dhs_ooc/DHS_OOC_C_rgb_same_b64_fc001_conv001_lr0001',
-    'dhs_ooc/DHS_OOC_D_rgb_same_b64_fc1.0_conv1.0_lr01',
-    'dhs_ooc/DHS_OOC_E_rgb_same_b64_fc001_conv001_lr0001',
+    #'dhs_ooc/DHS_OOC_B_rgb_same_b64_fc001_conv001_lr0001',
+    #'dhs_ooc/DHS_OOC_C_rgb_same_b64_fc001_conv001_lr0001',
+    #'dhs_ooc/DHS_OOC_D_rgb_same_b64_fc1.0_conv1.0_lr01',
+  #  'dhs_ooc/DHS_OOC_E_rgb_same_b64_fc001_conv001_lr0001',
 ]
 
 
 def run_extraction_on_models(model_dir: str,
-                             ModelClass,
+
                              model_params: Mapping,
                              batcher: batchers.Batcher,
                              out_root_dir: str,
@@ -70,13 +69,14 @@ def run_extraction_on_models(model_dir: str,
     model=get_model(**model_params)
     checkpoint_pattern = os.path.join(model_dir, '*ckpt')
     checkpoint_path = glob(checkpoint_pattern)
-    model=load_from_checkpoint(checkpoint_path=checkpoint_path,model=model, strict=False)
-    model.eval()
-    model.freeze()
+    model=load_from_checkpoint(path=checkpoint_path,model=model)
+    model.to('cuda')
+    #model.eval()
+    #model.freeze()
     with torch.no_grad:
         for record in batcher:
             np_dict = {}
-            output = model(record['image'])
+            output = model(torch.tensor(record['image'],device='cuda'))
             for key in batch_keys:
                 np_dict[key] = record[key]
             np_dict['features'] = output.numpy()
@@ -105,7 +105,6 @@ def main(args):
         print(data_params)
         print(model_params)
         run_extraction_on_models(model_dir,
-                                 ResTrain,  # to do put typing hint
                                  model_params,
                                  batcher=batcher,
                                  out_root_dir=OUTPUTS_ROOT_DIR,
