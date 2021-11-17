@@ -258,6 +258,7 @@ class Batcher(torch.utils.data.IterableDataset):
 
           Returns: ex, with img replaced with an augmented image
           """
+        print('in augment ex')
         img = ex['images']
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
