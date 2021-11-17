@@ -19,7 +19,7 @@ from configs import args
 from utils.utils import save_results, get_paths,load_from_checkpoint
 
 OUTPUTS_ROOT_DIR = os.path.join(args.out_dir,'dhs_ooc')
-DHS_MODELS: list[str] = [
+DHS_MODELS= [
     # put paths to DHS models here (relative to OUTPUTS_ROOT_DIR)
     #'dhs_ooc/DHS_OOC_A_ms_samescaled_b64_fc01_conv01_lr0001',
     #'dhs_ooc/DHS_OOC_B_ms_samescaled_b64_fc001_conv001_lr0001',
