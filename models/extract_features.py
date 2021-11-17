@@ -84,7 +84,7 @@ def run_extraction_on_models(model_dir: str,
         for record in batcher:
             np_dict = {}
             #feature
-            output = model(torch.tensor(record['image'],
+            output = model(torch.tensor(record['images'],
                                         device='cuda'))
             for key in batch_keys:
                 np_dict[key] = record[key]
