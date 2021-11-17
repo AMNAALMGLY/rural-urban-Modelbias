@@ -72,6 +72,14 @@ def get_full_experiment_name(experiment_name: str, batch_size: int,
     fc_str = str(fc_reg).replace('.', '')
     conv_str = str(conv_reg).replace('.', '')
     lr_str = str(lr).replace('.', '')
+    if fc_reg <1:
+        fc_str=fc_str[1:]
+    if conv_str <1:
+        conv_str = conv_str[1:]
+    if lr_str<1:
+        lr_str = lr_str[1:]
+
+
     return f'{experiment_name}_b{batch_size}_fc{fc_str}_conv{conv_str}_lr{lr_str}'
 
 
