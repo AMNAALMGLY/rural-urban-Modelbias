@@ -182,6 +182,7 @@ class Batcher(torch.utils.data.IterableDataset):
         if self.scalar_features_keys:
             for key in self.scalar_features_keys:
                 result[key] = ex[key]
+        print('finished converting to dict')
         return result
 
     def tfDatase_to_np(self):
@@ -230,9 +231,11 @@ class Batcher(torch.utils.data.IterableDataset):
             dataset = dataset.filter(lambda x: x['urban_rural'] == 0.0)
 
         if cache:
+            print('in cache ')
             dataset = dataset.cache()
 
         if self.augment:
+            print('in augment')
             counter = tf.data.experimental.Counter()
             dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
             dataset = dataset.map(self.augment_ex, num_parallel_calls=args.num_workers)
