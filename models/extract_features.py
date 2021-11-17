@@ -71,7 +71,7 @@ def run_extraction_on_models(model_dir: str,
     print(checkpoint_pattern)
     checkpoint_path = glob(checkpoint_pattern)
     print(checkpoint_path)
-    model=load_from_checkpoint(path=checkpoint_path,model=model)
+    model=load_from_checkpoint(path=checkpoint_path[0],model=model)
     #model.to('cuda')
     #model.eval()
     #model.freeze()
