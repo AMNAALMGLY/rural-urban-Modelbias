@@ -59,3 +59,7 @@ echo "All jobs launched!"
 echo "Waiting for child processes to finish..."
 wait
 echo "Done!"
+sbatch --output="/atlas/u/amna/logs/resnet18_logs/"/%j.out --error="/atlas/u/amna/logs/resnet18_logs/"/%j.err \
+    --nodes=1 --ntasks-per-node=1 --time=2-00:00:00 --mem=100G \
+    --partition=atlas --cpus-per-task=10 --exclude=atlas5 \
+    --gres=gpu:1 --job-name='foldD resnet18' --wrap="python -m src.train2 --fold 'D' --lr 0.01 --fc_reg 1.0 --conv_reg 1.0 --experiment_name='DHS_OOC_D_rgb_same' "
