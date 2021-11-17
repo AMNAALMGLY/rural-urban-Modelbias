@@ -89,11 +89,11 @@ def run_extraction_on_models(model_dir: str,
 def main(args):
     for model_dir in DHS_MODELS:
         # TODO check existing
-        json_path = os.path.join(model_dir, 'params.json')
+        json_path = os.path.join(OUTPUTS_ROOT_DIR,model_dir, 'params.json')
         with open(json_path, 'r') as f:
             model_params = json.load(f)
 
-        json_data_path = os.path.join(model_dir, 'data_params.json')
+        json_data_path = os.path.join(OUTPUTS_ROOT_DIR,model_dir, 'data_params.json')
         with open(json_data_path, 'r') as f:
             data_params = json.load(f)
         paths = get_paths(data_params.dataset, 'all', data_params.fold, args.datapath)
