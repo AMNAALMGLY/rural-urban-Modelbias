@@ -80,7 +80,7 @@ def run_extraction_on_models(model_dir: str,
     model.to('cuda')
     #model.eval()
     #model.freeze()
-    with torch.no_grad:
+    with torch.no_grad():
         for record in batcher:
             np_dict = {}
             #feature
