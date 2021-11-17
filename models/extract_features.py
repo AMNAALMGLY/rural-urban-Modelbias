@@ -31,7 +31,7 @@ DHS_MODELS: list[str] = [
    # 'dhs_ooc/DHS_OOC_C_nl_random_b64_fc1.0_conv1.0_lr0001',
     #'dhs_ooc/DHS_OOC_D_nl_random_b64_fc1.0_conv1.0_lr01',
     #'dhs_ooc/DHS_OOC_E_nl_random_b64_fc1.0_conv1.0_lr0001',
-    'dhs_ooc/DHS_OOC_A_rgb_same_b64_fc001_conv001_lr01',
+    'dhs_ooc/DHS_OOC_A_rgb_same_b64_fc0001_conv0001_lr001',
     #'dhs_ooc/DHS_OOC_B_rgb_same_b64_fc001_conv001_lr0001',
     #'dhs_ooc/DHS_OOC_C_rgb_same_b64_fc001_conv001_lr0001',
     #'dhs_ooc/DHS_OOC_D_rgb_same_b64_fc1.0_conv1.0_lr01',
