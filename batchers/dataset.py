@@ -236,8 +236,8 @@ class Batcher(torch.utils.data.IterableDataset):
 
         if self.augment:
             print('in augment')
-            #counter = tf.data.experimental.Counter()
-            #dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
+            counter = tf.data.experimental.Counter()
+            dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
             print('befor mapping augment')
             dataset = dataset.map(self.augment_ex, num_parallel_calls=args.num_workers)
         print('after augmentation')
