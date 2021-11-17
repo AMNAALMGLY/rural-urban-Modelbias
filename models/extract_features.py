@@ -16,7 +16,6 @@ import batchers
 from batchers.dataset import Batcher
 from models.model_generator import get_model
 from configs import args
-from src.trainer import ResTrain
 from utils.utils import save_results, get_paths,load_from_checkpoint
 
 OUTPUTS_ROOT_DIR = os.path.join(args.out_dir,'dhs_ooc')
@@ -70,13 +69,14 @@ def run_extraction_on_models(model_dir: str,
     checkpoint_pattern = os.path.join(model_dir, 'best*.ckpt')
     checkpoint_path = glob(checkpoint_pattern)
     model=load_from_checkpoint(path=checkpoint_path,model=model)
-    model.to('cuda')
+    #model.to('cuda')
     #model.eval()
     #model.freeze()
     with torch.no_grad:
         for record in batcher:
             np_dict = {}
-            output = model(torch.tensor(record['image'],device='cuda'))
+            output = model(torch.tensor(record['image'],))
+                                        #device='cuda'))
             for key in batch_keys:
                 np_dict[key] = record[key]
             np_dict['features'] = output.numpy()
