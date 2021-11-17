@@ -67,8 +67,10 @@ def run_extraction_on_models(model_dir: str,
     print(f'Building model from {model_dir} checkpoint')
     
     model=get_model(**model_params)
-    checkpoint_pattern = os.path.join(model_dir, '*ckpt')
+    checkpoint_pattern = os.path.join(model_dir, '*.ckpt')
+    print(checkpoint_pattern)
     checkpoint_path = glob(checkpoint_pattern)
+    print(checkpoint_path)
     model=load_from_checkpoint(path=checkpoint_path,model=model)
     #model.to('cuda')
     #model.eval()
