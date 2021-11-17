@@ -15,7 +15,6 @@ AUTO: int = tf.data.experimental.AUTOTUNE
 
 # choose which GPU to run on
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-seed=args.seed
 
 # TODO split nl_band function
 class Batcher(torch.utils.data.IterableDataset):
@@ -247,7 +246,7 @@ class Batcher(torch.utils.data.IterableDataset):
         print(f'Time in getdataset: {time.time() - start}')
         return tfds.as_numpy(dataset)
 
-    def augment_ex(self, ex: dict[str, tf.Tensor]) -> dict[str, tf.Tensor]:
+    def augment_ex(self, ex: dict[str, tf.Tensor],seed) -> dict[str, tf.Tensor]:
         """Performs image augmentation (random flips + levels brightnes/contrast adjustments).
           Does not perform level adjustments on NL band(s).
 
