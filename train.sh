@@ -48,8 +48,8 @@ conda activate envi
 #{content}
 sbatch --output="/atlas/u/amna/logs/resnet18_logs/"/%j.out --error=$"/atlas/u/amna/logs/resnet18_logs/"/%j.err \
     --nodes=1 --ntasks-per-node=1 --time=1-00:00:00 --mem=80G \
-    --partition=atlas9 --cpus-per-task=10 --exclude=atlas5 \
-    --gres=gpu:0 --job-name='resnet18' --wrap="python -m src.train2"
+    --partition=atlas --cpus-per-task=10 --exclude=atlas5 \
+    --gres=gpu:1 --job-name='resnet18' --wrap="python -m src.train2"
 
 export CUDA_VISIBLE_DEVICES=0
 
