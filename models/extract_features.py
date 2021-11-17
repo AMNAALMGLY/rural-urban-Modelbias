@@ -96,11 +96,11 @@ def main(args):
         json_data_path = os.path.join(OUTPUTS_ROOT_DIR,model_dir, 'data_params.json')
         with open(json_data_path, 'r') as f:
             data_params = json.load(f)
-        paths = get_paths(data_params.dataset, 'all', data_params.fold, args.datapath)
+        paths = get_paths(data_params['dataset'], 'all', data_params['fold'], args.datapath)
 
-        batcher = Batcher(paths, None, data_params.ls_bands, data_params.nl_band, data_params.label_name,
-                          data_params.nl_label, data_params.batch_size,
-                          groupby=data_params.group, )  # assumes no scalar features are present
+        batcher = Batcher(paths, None, data_params['ls_bands'], data_params['nl_band'], data_params['label_name'],
+                          data_params['nl_label'], data_params['batch_size'],
+                          groupby=data_params['group'], )  # assumes no scalar features are present
         ## TODO fix in the future
         print('===Current Config ===')
         print(data_params)
