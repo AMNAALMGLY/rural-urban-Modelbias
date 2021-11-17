@@ -241,6 +241,7 @@ class Batcher(torch.utils.data.IterableDataset):
             dataset = dataset.map(self.augment_ex, num_parallel_calls=args.num_workers)
 
         dataset = dataset.batch(batch_size=self.batch_size)
+        print('in batching')
         dataset = dataset.prefetch(2)
         print(f'Time in getdataset: {time.time() - start}')
         return tfds.as_numpy(dataset)
