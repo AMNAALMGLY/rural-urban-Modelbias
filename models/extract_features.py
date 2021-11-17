@@ -18,7 +18,7 @@ from models.model_generator import get_model
 from configs import args
 from utils.utils import save_results, get_paths,load_from_checkpoint
 
-OUTPUTS_ROOT_DIR = os.path.join(args.out_dir,'dhs_ooc')
+OUTPUTS_ROOT_DIR = args.out_dir
 print(OUTPUTS_ROOT_DIR)
 DHS_MODELS= [
     # put paths to DHS models here (relative to OUTPUTS_ROOT_DIR)
