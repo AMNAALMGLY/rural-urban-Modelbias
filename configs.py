@@ -19,9 +19,9 @@ args = Namespace(
     gpu=-1,
     max_epochs=200,
 
-    lr=0.01,
-    fc_reg=1.0,
-    conv_reg=1.0,
+    lr=.0001,
+    fc_reg=.001,
+    conv_reg=.001,
 
     # data
 
@@ -32,7 +32,7 @@ args = Namespace(
     clipn=True,
     ooc=True,
     dataset='DHS_OOC',
-    fold='D',
+    fold='E',
     ls_bands='rgb',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
@@ -44,7 +44,7 @@ args = Namespace(
     monitor='val_loss',
     mode='min',
     seed=123,
-    experiment_name='DHS_OOC_D_rgb_same',
+    experiment_name='DHS_OOC_E_rgb_same',
     out_dir=os.path.join(ROOT_DIR, 'outputs'),
     ckpt=None,
     group=None,

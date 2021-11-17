@@ -59,3 +59,4 @@ echo "All jobs launched!"
 echo "Waiting for child processes to finish..."
 wait
 echo "Done!"
+

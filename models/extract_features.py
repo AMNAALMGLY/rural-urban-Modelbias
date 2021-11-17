@@ -11,6 +11,7 @@ from typing import Iterable, Mapping
 from glob import glob
 
 import torch
+from torch import nn
 
 import batchers
 from batchers.dataset import Batcher
@@ -67,19 +68,24 @@ def run_extraction_on_models(model_dir: str,
     print(f'Building model from {model_dir} checkpoint')
     
     model=get_model(**model_params)
+    #redefine the model according to num_outputs
+    fc = nn.Linear(model.fc.in_features, args.num_outputs)
+    model.fc = fc
+
     checkpoint_pattern = os.path.join(out_root_dir,model_dir, '*.ckpt')
-    print(checkpoint_pattern)
     checkpoint_path = glob(checkpoint_pattern)
-    print(checkpoint_path)
     model=load_from_checkpoint(path=checkpoint_path[0],model=model)
-    #model.to('cuda')
+    #freeze the last layer for feature extraction
+    model.fc=nn.Sequential()
+    model.to('cuda')
     #model.eval()
     #model.freeze()
     with torch.no_grad:
         for record in batcher:
             np_dict = {}
-            output = model(torch.tensor(record['image'],))
-                                        #device='cuda'))
+            #feature
+            output = model(torch.tensor(record['image'],
+                                        device='cuda'))
             for key in batch_keys:
                 np_dict[key] = record[key]
             np_dict['features'] = output.numpy()
