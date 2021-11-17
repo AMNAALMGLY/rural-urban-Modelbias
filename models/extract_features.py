@@ -42,7 +42,7 @@ DHS_MODELS= [
 def run_extraction_on_models(model_dir: str,
 
                              model_params: Mapping,
-                             batcher: batchers.Batcher,
+                             batcher,
                              out_root_dir: str,
                              save_filename: str,
                              batch_keys: Iterable[str] = (),
