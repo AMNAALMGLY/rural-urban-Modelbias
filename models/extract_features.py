@@ -107,7 +107,7 @@ def main(args):
         paths = get_paths(data_params['dataset'], 'all', data_params['fold'], args.data_path)
         print(paths[:10])
         batcher = Batcher(paths, None, data_params['ls_bands'], data_params['nl_band'], data_params['label_name'],
-                          data_params['nl_label'], data_params['batch_size'],
+                          data_params['nl_label'], data_params['batch_size'],normalize='DHS',
                           groupby=data_params['groupby'],augment=False, )  # assumes no scalar features are present
         print(data_params['label_name'])
         for i in batcher:
