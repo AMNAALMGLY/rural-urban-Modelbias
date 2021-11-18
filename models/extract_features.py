@@ -109,6 +109,9 @@ def main(args):
         batcher = Batcher(paths, None, data_params['ls_bands'], data_params['nl_band'], data_params['label_name'],
                           data_params['nl_label'], data_params['batch_size'],
                           groupby=data_params['groupby'], )  # assumes no scalar features are present
+        for i in batcher:
+            print (i)
+            break
         ## TODO fix in the future
         print('===Current Config ===')
         print(data_params)
