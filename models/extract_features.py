@@ -84,8 +84,9 @@ def run_extraction_on_models(model_dir: str,
         for record in batcher:
             np_dict = {}
             # feature
-            output = model(torch.tensor(record['images'],
-                                        device='cuda'))
+            x=torch.tensor(record['images'], device='cuda')
+            x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
+            output = model(x)
             for key in batch_keys:
                 np_dict[key] = record[key]
             np_dict['features'] = output.numpy()
@@ -105,15 +106,12 @@ def main(args):
         with open(json_data_path, 'r') as f:
             data_params = json.load(f)
         paths = get_paths(data_params['dataset'], 'all', data_params['fold'], args.data_path)
-        print(paths[:10])
+
         batcher = Batcher(paths, None, data_params['ls_bands'], data_params['nl_band'], data_params['label_name'],
                           data_params['nl_label'], 'DHS', augment=False, clipn=True,
                           batch_size=data_params['batch_size'], groupby=data_params['groupby'],
                           cache=True)  # assumes no scalar features are present
-        print(data_params['label_name'])
-        for i in batcher:
-            print(i)
-            break
+
         ## TODO fix in the future
         print('===Current Config ===')
         print(data_params)
