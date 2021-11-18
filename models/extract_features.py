@@ -105,10 +105,11 @@ def main(args):
         with open(json_data_path, 'r') as f:
             data_params = json.load(f)
         paths = get_paths(data_params['dataset'], 'all', data_params['fold'], args.data_path)
-
+        print(len(paths))
         batcher = Batcher(paths, None, data_params['ls_bands'], data_params['nl_band'], data_params['label_name'],
                           data_params['nl_label'], data_params['batch_size'],
                           groupby=data_params['groupby'], )  # assumes no scalar features are present
+        print(data_params['ls_bands'])
         for i in batcher:
             print (i)
             break
