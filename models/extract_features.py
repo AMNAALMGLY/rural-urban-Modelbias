@@ -83,12 +83,14 @@ def run_extraction_on_models(model_dir: str,
     # model.freeze()
     with torch.no_grad():
         for record in batcher:
-            np_dict = defaultdict()
+            np_dict = defaultdict(lambda  x :[])
             # feature
             x=torch.tensor(record['images'], device='cuda')
             x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
             output = model(x)
             for key in batch_keys:
+                print(key,np_dict)
+                print(record[key])
                 np_dict[key] += [record[key]]
             np_dict['features'] += [output.to('cpu').numpy()]
     save_dir = os.path.join(out_root_dir, model_dir)
