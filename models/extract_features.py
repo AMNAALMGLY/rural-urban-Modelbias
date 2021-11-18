@@ -7,6 +7,7 @@
 # save results to .npz file
 import json
 import os.path
+from collections import defaultdict
 from typing import Iterable, Mapping
 from glob import glob
 
@@ -82,7 +83,7 @@ def run_extraction_on_models(model_dir: str,
     # model.freeze()
     with torch.no_grad():
         for record in batcher:
-            np_dict = {}
+            np_dict = defaultdict()
             # feature
             x=torch.tensor(record['images'], device='cuda')
             x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
