@@ -47,7 +47,7 @@ class Batcher(torch.utils.data.IterableDataset):
 
     def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label, normalize='DHS',
                  augment=False, clipn=True,
-                 batch_size=64, groupby=None, cache=None, save_dir=None):
+                 batch_size=64, groupby=None, cache=None, shuffel=False,save_dir=None):
 
         '''
         initializes the loader as follows :
@@ -65,7 +65,7 @@ class Batcher(torch.utils.data.IterableDataset):
         self.groupby = groupby  # str representing the name of the feature to be grouped by ['urban_rural',...]
         self.cache = cache
         self.save_dir = save_dir
-
+        self.shuffel=shuffel
         self.batch_size = batch_size
         self._iterator = None
 
@@ -289,7 +289,7 @@ class Batcher(torch.utils.data.IterableDataset):
         implement iterator of the  loader
         '''
         start = time.time()
-        self.ds = self.get_dataset(self.cache)
+        self.ds = self.get_dataset(self.cache,self.shuffel)
         if self._iterator is None:
             self._iterator = iter(self.ds)
         else:
