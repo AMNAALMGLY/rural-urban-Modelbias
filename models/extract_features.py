@@ -91,7 +91,6 @@ def run_extraction_on_models(model_dir: str,
             x=torch.tensor(record['images'], device='cuda')
             x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
             output = model(x)
-            if i ==0:
 
             for key in batch_keys:
                 if i==0:
