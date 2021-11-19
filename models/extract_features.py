@@ -14,7 +14,7 @@ from glob import glob
 import numpy as np
 import torch
 from torch import nn
-
+import  tensorflow as tf
 import batchers
 from batchers.dataset import Batcher
 from models.model_generator import get_model
@@ -36,10 +36,10 @@ DHS_MODELS = [
     # 'dhs_ooc/DHS_OOC_D_nl_random_b64_fc1.0_conv1.0_lr01',
     # 'dhs_ooc/DHS_OOC_E_nl_random_b64_fc1.0_conv1.0_lr0001',
     'dhs_ooc/DHS_OOC_A_rgb_same_b64_fc0001_conv0001_lr001',
-    # 'dhs_ooc/DHS_OOC_B_rgb_same_b64_fc001_conv001_lr0001',
-    # 'dhs_ooc/DHS_OOC_C_rgb_same_b64_fc001_conv001_lr0001',
-    # 'dhs_ooc/DHS_OOC_D_rgb_same_b64_fc1.0_conv1.0_lr01',
-    #  'dhs_ooc/DHS_OOC_E_rgb_same_b64_fc001_conv001_lr0001',
+     'dhs_ooc/DHS_OOC_B_rgb_same_b64_fc001_conv001_lr0001',
+    'dhs_ooc/DHS_OOC_C_rgb_same_b64_fc001_conv001_lr0001',
+    'dhs_ooc/DHS_OOC_D_rgb_same_b64_fc1.0_conv1.0_lr01',
+     'dhs_ooc/DHS_OOC_E_rgb_same_b64_fc001_conv001_lr0001',
 ]
 
 
@@ -82,7 +82,7 @@ def run_extraction_on_models(model_dir: str,
     model.to('cuda')
     # model.eval()
     # model.freeze()
-    i=0
+
     with torch.no_grad():
         # initalizating
         np_dict = defaultdict()
@@ -124,7 +124,7 @@ def main(args):
             data_params = json.load(f)
         paths = get_paths(data_params['dataset'], 'all', data_params['fold'], args.data_path)
 
-        batcher = Batcher(paths, None, data_params['ls_bands'], data_params['nl_band'], data_params['label_name'],
+        batcher = Batcher(paths, {'urban_rural',tf.int64}, data_params['ls_bands'], data_params['nl_band'], data_params['label_name'],
                           data_params['nl_label'], 'DHS', augment=False, clipn=True,
                           batch_size=data_params['batch_size'], groupby=data_params['groupby'],
                           cache=True)  # assumes no scalar features are present
@@ -139,7 +139,7 @@ def main(args):
                                  batcher=batcher,
                                  out_root_dir=OUTPUTS_ROOT_DIR,
                                  save_filename='features.npz',
-                                 batch_keys=['labels', 'locs', 'years'],
+                                 batch_keys=['labels', 'locs', 'years','urban_rural'],
                                  )
 
 
