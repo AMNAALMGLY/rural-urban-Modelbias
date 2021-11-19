@@ -81,6 +81,7 @@ def run_extraction_on_models(model_dir: str,
     model.to('cuda')
     # model.eval()
     # model.freeze()
+    i=0
     with torch.no_grad():
         for record in batcher:
             np_dict = defaultdict(list)
@@ -91,9 +92,11 @@ def run_extraction_on_models(model_dir: str,
             for key in batch_keys:
                 np_dict[key] += [record[key]]
             np_dict['features'] += [output.to('cpu').numpy()]
-    print(np_dict)
+    print(len(np_dict['features']))
+    i+=1
     save_dir = os.path.join(out_root_dir, model_dir)
     print(f'saving features to {save_dir} under the name {save_filename}')
+    print('in saving ...',i)
     save_results(model_dir, np_dict, save_filename)
 
 
