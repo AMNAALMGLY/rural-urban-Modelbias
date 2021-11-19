@@ -48,6 +48,7 @@ args = Namespace(
     out_dir=os.path.join(ROOT_DIR, 'outputs'),
     ckpt=None,
     group=None,
+
     loss_type='regression',
     num_outputs=1,
     #resume='../last.ckpt',
