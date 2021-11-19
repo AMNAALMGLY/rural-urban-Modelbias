@@ -107,9 +107,9 @@ def run_extraction_on_models(model_dir: str,
 
     save_dir = os.path.join(out_root_dir, model_dir)
 
-    print(f'saving features to {save_dir} under the name {save_filename}')
+    print(f'saving features to {save_dir} named {save_filename}')
 
-    save_results(model_dir, np_dict, save_filename)
+    save_results(save_dir, np_dict, save_filename)
 
 
 def main(args):
