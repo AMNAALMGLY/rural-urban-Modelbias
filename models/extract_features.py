@@ -11,6 +11,7 @@ from collections import defaultdict
 from typing import Iterable, Mapping
 from glob import glob
 
+import numpy as np
 import torch
 from torch import nn
 
@@ -84,16 +85,17 @@ def run_extraction_on_models(model_dir: str,
     i=0
     with torch.no_grad():
         for record in batcher:
-            np_dict = defaultdict(list)
+            np_dict = defaultdict(lambda : np.ndarray())
             # feature
             x=torch.tensor(record['images'], device='cuda')
             x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
             output = model(x)
             for key in batch_keys:
-                print(record[key].shape)
-                np_dict[key] = record[key]
-            np_dict['features'] = output.to('cpu').numpy()
-            print(i)
+
+                np_dict[key] = np.append(np_dict[key],record[key],axis=0)
+            features = output.to('cpu').numpy()
+            np_dict['features']=np.append(np_dict['features'],features,axis=0)
+
             i += 1
 
     save_dir = os.path.join(out_root_dir, model_dir)
