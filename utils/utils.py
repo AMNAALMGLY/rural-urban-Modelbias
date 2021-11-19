@@ -60,7 +60,9 @@ def save_results(dir_path: str, np_dict: dict, filename: str
         print('Creating directory at:', dir_path)
         os.makedirs(dir_path)
     npz_path = os.path.join(dir_path, filename)
-    assert os.path.exists(npz_path), f'Path {npz_path} already existed!'
+    if os.path.exists(npz_path):
+        print(f'Path {npz_path} already existed! ,removing old file ....')
+        os.remove(npz_path)
     for key, nparr in np_dict.items():
         print(f'{key}: shape {nparr.shape}, dtype {nparr.dtype}')
     print(f'Saving results to {npz_path}')
