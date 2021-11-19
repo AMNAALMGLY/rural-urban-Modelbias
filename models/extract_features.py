@@ -90,9 +90,9 @@ def run_extraction_on_models(model_dir: str,
             x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
             output = model(x)
             for key in batch_keys:
-                np_dict[key] += [record[key]]
-            np_dict['features'] += [output.to('cpu').numpy()]
-    print(np_dict['features'])
+                np_dict[key] = record[key]
+            np_dict['features'] = output.to('cpu').numpy()
+    print(len(np_dict['features']))
     i+=1
     save_dir = os.path.join(out_root_dir, model_dir)
     print('in saving ...', i)
