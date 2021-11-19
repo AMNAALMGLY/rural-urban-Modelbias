@@ -73,6 +73,7 @@ def main(args):
                             cache=True)
 
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
+
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)  ##TEST
 
 
