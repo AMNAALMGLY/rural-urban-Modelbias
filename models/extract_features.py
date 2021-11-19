@@ -85,7 +85,7 @@ def run_extraction_on_models(model_dir: str,
     i=0
     with torch.no_grad():
         for record in batcher:
-            np_dict = defaultdict(lambda : np.ndarray())
+            np_dict = defaultdict(lambda : np.ndarray(0))
             # feature
             x=torch.tensor(record['images'], device='cuda')
             x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
