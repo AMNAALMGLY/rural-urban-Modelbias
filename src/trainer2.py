@@ -132,8 +132,8 @@ class Trainer:
                 avg_valid_loss=valid_epoch_loss / valid_steps
                 #metric_valid=self.metric.compute()
             #Saving best model after a threshold of epochs:
-            if avg_valid_loss< best_loss:
-                best_loss = avg_valid_loss
+            if avg_valid_loss< avgloss:
+                #best_loss = avg_valid_loss
                 if epoch >100: #TODO changes this to config
                     save_path = os.path.join(self.save_dir, f'best at Epoch {epoch} loss {best_loss}.ckpt')
                     torch.save(self.model.state_dict(), save_path)

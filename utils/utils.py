@@ -68,6 +68,27 @@ def save_results(dir_path: str, np_dict: dict, filename: str
     print(f'Saving results to {npz_path}')
     np.savez_compressed(npz_path, **np_dict)
 
+def load_npz(path,verbose=True, check=None):
+    '''
+    loads a npz file into a dictionary
+    :param path:
+    :param check:dict :dict, key (str) => np.array, values to check
+    :return: dict
+
+    '''
+    result={}
+    with np.load(path) as f :
+        for key , value in f.items():
+            result[key]=value
+            if verbose:
+                print(f'key {key} with shape {value.shape}')
+        if check:
+            for key in check:
+                assert key in result
+                assert  np.allclose(result[key],check[key])
+    return result
+
+
 
 def get_full_experiment_name(experiment_name: str, batch_size: int,
                              fc_reg: float, conv_reg: float, lr: float, ):
