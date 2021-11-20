@@ -84,15 +84,17 @@ def main(args):
 
     # dataloader
     paths_train = get_paths(args.dataset, ['train'], args.fold, args.data_path)
-    print(len(paths_train))
+
     paths_valid = get_paths(args.dataset, ['val'], args.fold, args.data_path)
-    print(len(paths_valid))
+
     batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', args.augment, args.clipn, args.batch_size, groupby=args.group,
                             cache=True)
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', args.augment, args.clipn, args.batch_size, groupby=args.group,
                             cache=True)
+    print(len(batcher_train)*args.batch_size)
+
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
 
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)
