@@ -40,7 +40,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
 
     dirpath = os.path.join(args.out_dir, 'dhs_ooc', experiment)
     print(f'checkpoints directory: {dirpath}')
-    os.makedirs(dirpath, exist_ok=True)  # check if it can be created automatically
+    os.makedirs(dirpath, exist_ok=True)
 
 
 
@@ -62,6 +62,8 @@ def main(args):
                                           args.fc_reg, args.conv_reg, args.lr)
 
     dirpath = os.path.join(args.out_dir, 'dhs_ooc', experiment)
+
+    os.makedirs(dirpath, exist_ok=True)
 
     # save data_params for later use
     data_params = dict(dataset=args.dataset, fold=args.fold, ls_bands=args.ls_bands, nl_band=args.nl_band,
