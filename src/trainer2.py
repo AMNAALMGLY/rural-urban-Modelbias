@@ -84,14 +84,14 @@ class Trainer:
         #log the gradients
         wandb.watch(self.model, self.criterion, log='all')
         self.model.to(gpus)
-
+        train_steps = len(trainloader)
+        valid_steps = len(validloader)
         best_loss = float('inf')
         start=time.time()
         for epoch in range(max_epochs):
             train_step = 0
             epoch_loss = 0
-            train_steps = len(trainloader)
-            valid_steps = len(validloader)
+
             print('-----------------------Training--------------------------------')
             self.model.train()
             for record in trainloader:
