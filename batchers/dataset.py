@@ -88,7 +88,7 @@ class Batcher(torch.utils.data.IterableDataset):
                 nbatches += 1
             return nbatches
         else:
-            raise NotImplementedError
+            return sum(1 for i in self)
 
     def group(self, example_proto: tf.Tensor) -> tf.Tensor:
         '''
