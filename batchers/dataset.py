@@ -222,12 +222,10 @@ class Batcher(torch.utils.data.IterableDataset):
         dataset = dataset.prefetch(2 * self.batch_size)
 
         dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex), num_parallel_calls=args.num_workers)
-        for ex in dataset:
-            print(ex['urban_rural'])
-            break
         if self.groupby == 'urban':
-
+            print('in grouping',dataset)
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 1.0))
+            print('after grouping', dataset)
         elif self.groupby == 'rural':
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 1.0))
 
