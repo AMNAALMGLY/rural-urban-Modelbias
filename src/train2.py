@@ -90,11 +90,13 @@ def main(args):
     batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', args.augment, args.clipn, args.batch_size, groupby=args.group,
                             cache=True)
-    print(len(batcher_train))
+    i=0
+    for b in batcher_train:
+        i+=1
+    print('length of batcher',i)
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', args.augment, args.clipn, args.batch_size, groupby=args.group,
                             cache=True)
-    print(len(batcher_valid))
 
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
 

@@ -82,10 +82,13 @@ class Batcher(torch.utils.data.IterableDataset):
         '''
          length of the iterator
         '''
-        nbatches = len(self.tfrecords) // self.batch_size
-        if len(self.tfrecords) % self.batch_size != 0:
-            nbatches += 1
-        return nbatches
+        if self.groupby is None:
+            nbatches = len(self.tfrecords) // self.batch_size
+            if len(self.tfrecords) % self.batch_size != 0:
+                nbatches += 1
+            return nbatches
+        else:
+            raise NotImplementedError
 
     def group(self, example_proto: tf.Tensor) -> tf.Tensor:
         '''
@@ -223,9 +226,8 @@ class Batcher(torch.utils.data.IterableDataset):
 
         dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex), num_parallel_calls=args.num_workers)
         if self.groupby == 'urban':
-            print('in grouping',dataset)
-            dataset = dataset.filter(lambda ex: tf.equal(ex['year'], 2012))
-            print('after grouping', dataset)
+
+            dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 1.0))
         elif self.groupby == 'rural':
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
 
