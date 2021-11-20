@@ -47,7 +47,7 @@ args = Namespace(
     experiment_name='DHS_OOC_E_rgb_same',
     out_dir=os.path.join(ROOT_DIR, 'outputs'),
     ckpt=None,
-    group=None,
+    group='urban',
 
     loss_type='regression',
     num_outputs=1,
