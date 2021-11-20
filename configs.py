@@ -2,6 +2,7 @@ from argparse import Namespace
 import torch
 import multiprocessing
 import os
+import  tensorflow as tf
 
 ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
 args = Namespace(
@@ -36,7 +37,7 @@ args = Namespace(
     ls_bands='ms',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    scaler_features_keys=None,
+    scaler_features_keys={'urban_rural':tf.float32},
     # keep_frac {keep_frac}
 
     # Experiment
