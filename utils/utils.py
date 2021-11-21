@@ -187,7 +187,7 @@ def parse_arguments(parser, default_args):
 
     # initialization
     parser.add_argument(
-        '--init_ckpt_dir', default=default_args.ckpt,
+        '--init_ckpt_dir', default=default_args.init_ckpt_dir,
         help='path to checkpoint prefix from which to initialize weights')
     parser.add_argument(
         '--hs_weight_init', choices=[None, 'random', 'same', 'samescaled'],
