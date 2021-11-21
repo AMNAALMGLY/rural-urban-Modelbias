@@ -199,7 +199,7 @@ class Batcher(torch.utils.data.IterableDataset):
             save_results(self.save_dir, record, f'{idx:05d}')
             idx += 1
 
-    def get_dataset(self, cache=None, shuffle=True):
+    def get_dataset(self, cache=None, shuffle=False):
         '''
         do the tf_to dict operation to the whole dataset in numpy dtype
         '''
@@ -240,6 +240,7 @@ class Batcher(torch.utils.data.IterableDataset):
             dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
             dataset = dataset.map(self.augment_ex, num_parallel_calls=args.num_workers)
         dataset = dataset.batch(batch_size=self.batch_size)
+        dataset=dataset.repeat(args.max_epochs)
         print('in batching')
         dataset = dataset.prefetch(2)
         print(f'Time in getdataset: {time.time() - start}')
