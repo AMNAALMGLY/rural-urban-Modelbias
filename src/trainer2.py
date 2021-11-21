@@ -82,6 +82,7 @@ class Trainer:
             preds = nn.functional.softmax(outputs, dim=1,device='cuda')
         else:
             preds = torch.tensor(outputs,device='cuda')
+        print(preds.device, target.device)
         metric_fn.update(preds, target)
 
         return loss
