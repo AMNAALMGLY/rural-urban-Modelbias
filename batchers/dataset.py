@@ -199,7 +199,7 @@ class Batcher(torch.utils.data.IterableDataset):
             save_results(self.save_dir, record, f'{idx:05d}')
             idx += 1
 
-    def get_dataset(self, cache=None, shuffle=False):
+    def get_dataset(self, cache=None, shuffle=True):
         '''
         do the tf_to dict operation to the whole dataset in numpy dtype
         '''

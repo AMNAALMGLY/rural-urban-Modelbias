@@ -51,7 +51,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
 
 
 
-    # lightning model , trainer
+    # Trainer
     trainer = Trainer(save_dir=dirpath,**params)
 
 

@@ -287,7 +287,6 @@ def _resnet(
         **kwargs: Any,
 ) -> ResNet:
     model = ResNet(block, in_channels, layers, **kwargs)
-    print(in_channels)
     if pretrained:
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         state_dict['conv1.weight'] = nn.Parameter(

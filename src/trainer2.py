@@ -35,7 +35,12 @@ class Trainer:
         if num_outputs is not None:
 
             fc = nn.Linear(model.fc.in_features, num_outputs)
+            #initialization
+            torch.nn.init.normal(fc.weight)
+            fc.bias.data.fill_(0)
+
             model.fc = fc
+
 
         else:  # fearture extraction   #TODO fix this!
             # model.fc = nn.Sequential()
@@ -45,6 +50,7 @@ class Trainer:
         self.metric = Metric().get_metric(metric)  # TODO if it is a list
 
         self.scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
+        self.opt=self.configure_optimizers()['optimizer']
 
         #self.metric=Accuracy(num_classes=10)
         self.setup_criterion()
@@ -76,14 +82,15 @@ class Trainer:
             preds = nn.functional.softmax(outputs, dim=1)
         else:
             preds = outputs
-        #metric_fn.update(preds.to('cuda'), target.to('cuda'))
+        metric_fn.update(preds.to('cuda'), target.to('cuda'))
 
         return loss
     def fit(self, trainloader, validloader,max_epochs,gpus,save_every=10 ,overfit_batches=None):
 
-        #log the gradients
-        wandb.watch(self.model, self.criterion, log='all')
+
         self.model.to(gpus)
+        # log the gradients
+        wandb.watch(self.model, log='all')
         train_steps = len(trainloader)
         valid_steps = len(validloader)
         best_loss = float('inf')
@@ -109,10 +116,10 @@ class Trainer:
 
 
             #Metric calulation and average loss
-
+            r2=self.metric.compute()
             avgloss = epoch_loss / train_steps
-            print(f'End of Epoch training average Loss is {avgloss} ')
-
+            print(f'End of Epoch training average Loss is {avgloss} and R2 is {r2}')
+            self.metric.reset()
             with torch.no_grad():
                 valid_step = 0
                 valid_epoch_loss = 0
@@ -130,9 +137,10 @@ class Trainer:
                         writer.add_scalar("Loss/valid", running_loss, valid_step)
                         wandb.log({"valid_loss": running_loss})
                 avg_valid_loss=valid_epoch_loss / valid_steps
-                #metric_valid=self.metric.compute()
+                r2_valid=self.metric.compute()
+                print(f'Validation R2 is {r2_valid}')
             #Saving best model after a threshold of epochs:
-            if avg_valid_loss< avgloss  or avg_valid_loss < best_loss:
+            if avg_valid_loss< avgloss  or avg_valid_loss < best_loss or r2_valid > r2:
                 best_loss = avg_valid_loss
                 if epoch >100: #TODO changes this to config
                     save_path = os.path.join(self.save_dir, f'best at Epoch {epoch} loss {best_loss}.ckpt')
@@ -147,9 +155,9 @@ class Trainer:
                 resume_path=os.path.join(resume_dir,f'Epoch{epoch}.ckpt')
                 torch.save(self.model.state_dict(), resume_path)
                 print(f'Saving model to {resume_path}')
-            #self.metric.reset()
+            self.metric.reset()
             self.scheduler.step()
-        print("Time Elapsed : {:.4f}s".format(time.time() - start))
+        print("Time Elapsed for all epochs : {:.4f}s".format(time.time() - start))
         return best_loss,save_path
         #TODO implement overfit batches
         #TODO savelast
@@ -158,14 +166,14 @@ class Trainer:
 
 
     def training_step(self, batch,):
-        opt=self.configure_optimizers()['optimizer']
+
 
         train_loss = self._shared_step(batch, self.metric)
-        opt.zero_grad()
+        self.opt.zero_grad()
 
         train_loss.backward()
 
-        opt.step()
+        self.opt.step()
 
         # log the outputs!
 

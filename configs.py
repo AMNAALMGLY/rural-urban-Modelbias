@@ -20,7 +20,7 @@ args = Namespace(
     gpu=-1,
     max_epochs=200,
 
-    lr=.001,
+    lr=.0001,
     fc_reg=.01,
     conv_reg=.01,
 
@@ -33,20 +33,20 @@ args = Namespace(
     clipn=True,
     ooc=True,
     dataset='DHS_OOC',
-    fold='E',
+    fold='A',
     ls_bands='ms',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    scaler_features_keys={'urban_rural':tf.float32},
+    scaler_features_keys=  None,                 #{'urban_rural':tf.float32},
     # keep_frac {keep_frac}
 
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_E_ms_samescaled',
+    experiment_name='DHS_OOC_A_ms_samescaled',
     out_dir=os.path.join(ROOT_DIR, 'outputs'),
     init_ckpt_dir=None,
-    group='urban',
+    group=None, #'urban',
 
     loss_type='regression',
     num_outputs=1,
