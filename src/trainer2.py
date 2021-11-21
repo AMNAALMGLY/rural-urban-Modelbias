@@ -36,7 +36,7 @@ class Trainer:
 
             fc = nn.Linear(model.fc.in_features, num_outputs)
             #initialization
-            torch.nn.init.normal(fc.weight)
+            torch.nn.init.normal_(fc.weight)
             fc.bias.data.fill_(0)
 
             model.fc = fc
