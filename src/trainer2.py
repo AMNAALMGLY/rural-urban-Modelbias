@@ -68,7 +68,7 @@ class Trainer:
         x = torch.tensor(batch['images'],)
         x=x.type_as(self.model.conv1.weight)
         target = torch.tensor(batch['labels'],)
-        #target=target.type_as(self.model.conv1.weight)
+        target=target.type_as(self.model.conv1.weight)
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
 
         outputs = self.model(x)
@@ -79,9 +79,9 @@ class Trainer:
 
         if self.loss_type == 'classification':
 
-            preds = nn.functional.softmax(outputs, dim=1)
+            preds = nn.functional.softmax(outputs, dim=1,device='cuda')
         else:
-            preds = outputs
+            preds = torch.tensor(outputs,device='cuda')
         metric_fn.update(preds, target)
 
         return loss
