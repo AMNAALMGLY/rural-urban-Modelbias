@@ -37,7 +37,7 @@ args = Namespace(
     ls_bands='ms',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    scaler_features_keys=None,
+    scaler_features_keys={'urban_rural':tf.float32},
     # keep_frac {keep_frac}
 
     # Experiment
@@ -45,13 +45,13 @@ args = Namespace(
     seed=123,
     experiment_name='DHS_OOC_E_ms_samescaled',
     out_dir=os.path.join(ROOT_DIR, 'outputs'),
-    ckpt=None,
-    group=None,
+    init_ckpt_dir=None,
+    group='urban',
 
     loss_type='regression',
     num_outputs=1,
-    resume='./outputs/dhs_ooc/DHS_OOC_E_ms_samescaled_b64_fc01_conv01_lr001/resume_points/Epoch120.ckpt',
-    checkpoints= None,
+    resume=None,
+
 )
 args.num_workers = multiprocessing.cpu_count()
 args.no_of_gpus = torch.cuda.device_count()
