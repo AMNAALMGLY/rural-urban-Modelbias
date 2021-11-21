@@ -4,6 +4,8 @@ import copy
 import json
 import os
 import torch
+from torch import nn
+
 from batchers.dataset import Batcher
 from models.model_generator import get_model
 from src.trainer2 import Trainer
@@ -25,11 +27,16 @@ writer = SummaryWriter()
 
 def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args):
 
+
     # if resume training:
     if resume_checkpoints:
         print((f'resuming training from {resume_checkpoints}'))
+        # redefine the model according to num_outputs              #TODO refactor this model redefinintion to be less redundant
+        fc = nn.Linear(model.fc.in_features, args.num_outputs)
+        model.fc = fc
         model = load_from_checkpoint(resume_checkpoints, model)
-    # setup lightining model params
+
+    # setup Trainer params
     params = dict(model=model, lr=args.lr, weight_decay=args.conv_reg, loss_type=args.loss_type,
                   num_outputs=args.num_outputs, metric='r2')
 
@@ -107,7 +114,7 @@ def main(args):
     print(f'Path to best model found during training: \n{path}')
 
 
-
+#TODO save hyperparameters .
 
 
 
