@@ -68,7 +68,7 @@ class Trainer:
         x = torch.tensor(batch['images'],)
         x=x.type_as(self.model.conv1.weight)
         target = torch.tensor(batch['labels'],)
-        target=target.type_as(self.model.conv1.weight)
+        #target=target.type_as(self.model.conv1.weight)
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
 
         outputs = self.model(x)
@@ -82,7 +82,7 @@ class Trainer:
             preds = nn.functional.softmax(outputs, dim=1)
         else:
             preds = outputs
-        metric_fn.update(preds.to('cuda'), target.to('cuda'))
+        metric_fn.update(preds, target)
 
         return loss
     def fit(self, trainloader, validloader,max_epochs,gpus,save_every=10 ,overfit_batches=None):
