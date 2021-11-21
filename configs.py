@@ -10,7 +10,7 @@ args = Namespace(
     # Model
 
     model_name='resnet18',
-    hs_weight_init='same',       #[same, samescaled,random]
+    hs_weight_init='samescaled',       #[same, samescaled,random]
     model_init='imagenet',
 
     # Training
@@ -20,9 +20,9 @@ args = Namespace(
     gpu=-1,
     max_epochs=200,
 
-    lr=.0001,
-    fc_reg=.001,
-    conv_reg=.001,
+    lr=.001,
+    fc_reg=.01,
+    conv_reg=.01,
 
     # data
 
@@ -37,23 +37,20 @@ args = Namespace(
     ls_bands='ms',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    scaler_features_keys={'urban_rural':tf.float32},
+    scaler_features_keys=None,
     # keep_frac {keep_frac}
 
     # Experiment
 
-    monitor='val_loss',
-    mode='min',
     seed=123,
-    experiment_name='DHS_OOC_E_rgb_same',
+    experiment_name='DHS_OOC_E_ms_samescaled',
     out_dir=os.path.join(ROOT_DIR, 'outputs'),
     ckpt=None,
-    group='urban',
+    group=None,
 
     loss_type='regression',
     num_outputs=1,
-    #resume='../last.ckpt',
-    resume=None,
+    resume='./outputs/dhs_ooc/DHS_OOC_E_ms_samescaled_b64_fc01_conv01_lr001/resume_points/Epoch120.ckpt',
     checkpoints= None,
 )
 args.num_workers = multiprocessing.cpu_count()
