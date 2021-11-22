@@ -129,10 +129,11 @@ def main(args):
             data_params = json.load(f)
         paths = get_paths(data_params['dataset'], 'all', data_params['fold'], args.data_path)
 
+
         batcher = Batcher(paths, {'urban_rural':tf.float32}, data_params['ls_bands'], data_params['nl_band'], data_params['label_name'],
                           data_params['nl_label'], 'DHS', augment=False, clipn=True,
                           batch_size=data_params['batch_size'], groupby=data_params['groupby'],
-                          cache=True)  # assumes no scalar features are present
+                          cache=True,shuffle=False)  # assumes no scalar features are present
 
         ## TODO fix in the future
         print('===Current Config ===')
