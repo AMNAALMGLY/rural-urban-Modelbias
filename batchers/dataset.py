@@ -207,12 +207,13 @@ class Batcher(torch.utils.data.IterableDataset):
         '''
         start = time.time()
         if self.shuffle:
+            print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
             dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords)
             dataset = dataset.shuffle(buffer_size=1000)
-            dataset = dataset.interleave(
-                    lambda filename: tf.data.TFRecordDataset(filename),
-                    cycle_length=args.num_workers,block_length=1,num_parallel_calls=args.num_workers)
+            #dataset = dataset.interleave(
+                #    lambda filename: tf.data.TFRecordDataset(filename),
+                  #  cycle_length=args.num_workers,block_length=1,num_parallel_calls=args.num_workers)
         else:
             # convert to individual records
             dataset = tf.data.TFRecordDataset(
@@ -233,8 +234,9 @@ class Batcher(torch.utils.data.IterableDataset):
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
 
 
-
+        print('after shuffle')
         if cache:
+
             dataset = dataset.cache()
 
         if self.shuffle:
