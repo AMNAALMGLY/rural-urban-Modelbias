@@ -206,14 +206,15 @@ class Batcher(torch.utils.data.IterableDataset):
         do the tf_to dict operation to the whole dataset in numpy dtype
         '''
         start = time.time()
+        print(self.shuffle)
         if self.shuffle:
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
             dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords)
             dataset = dataset.shuffle(buffer_size=1000)
-            #dataset = dataset.interleave(
-                #    lambda filename: tf.data.TFRecordDataset(filename),
-                  #  cycle_length=args.num_workers,block_length=1,num_parallel_calls=args.num_workers)
+            dataset = dataset.interleave(
+                lambda file_path: tf.data.TFRecordDataset(file_path, compression_type='GZIP'),
+                cycle_length=AUTO, block_length=1,)
         else:
             # convert to individual records
             dataset = tf.data.TFRecordDataset(
@@ -238,6 +239,7 @@ class Batcher(torch.utils.data.IterableDataset):
         if cache:
 
             dataset = dataset.cache()
+            print('in cahce')
 
         if self.shuffle:
             dataset = dataset.shuffle(buffer_size=1000)
