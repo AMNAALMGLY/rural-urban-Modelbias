@@ -101,7 +101,7 @@ def main(args):
                             cache=True)
 
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                            args.nl_label, 'DHS', args.augment, args.clipn, args.batch_size, groupby=args.group,
+                            args.nl_label, 'DHS', False, args.clipn, args.batch_size, groupby=args.group,
                             cache=True,shuffle=False)
 
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )

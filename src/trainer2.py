@@ -96,6 +96,7 @@ class Trainer:
         train_steps = len(trainloader)
         valid_steps = len(validloader)
         best_loss = float('inf')
+        best_valid=0
         start=time.time()
         for epoch in range(max_epochs):
             train_step = 0
@@ -119,6 +120,7 @@ class Trainer:
 
             #Metric calulation and average loss
             r2=self.metric.compute()
+            wandb.log({'r2_train':r2})
             avgloss = epoch_loss / train_steps
             print(f'End of Epoch training average Loss is {avgloss} and R2 is {r2}')
             self.metric.reset()
@@ -141,13 +143,16 @@ class Trainer:
                 avg_valid_loss=valid_epoch_loss / valid_steps
                 r2_valid=self.metric.compute()
                 print(f'Validation R2 is {r2_valid}')
+                wandb.log({'r2_valid': r2_valid})
             #Saving best model after a threshold of epochs:
-            if avg_valid_loss< avgloss  or avg_valid_loss < best_loss or r2_valid > r2:
-                best_loss = avg_valid_loss
+            #if avg_valid_loss< avgloss  or avg_valid_loss < best_loss or r2_valid > best_valid:
+            if r2_valid > best_valid:
+                #best_loss = avg_valid_loss
+                best_valid=r2_valid
                 if epoch >100: #TODO changes this to config
-                    save_path = os.path.join(self.save_dir, f'best at Epoch {epoch} loss {best_loss}.ckpt')
+                    save_path = os.path.join(self.save_dir, f'best at Epoch{epoch}.ckpt')
                     torch.save(self.model.state_dict(), save_path)
-                    print(f'best average validation loss  is at Epoch {epoch} and is {best_loss} ,')
+                    print(f'best model  at Epoch {epoch}  ,')
                     print(f'Path to best model found during training: \n{save_path}')
 
             #Saving the model for later use every 10 epochs:
