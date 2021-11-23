@@ -81,7 +81,8 @@ def run_extraction_on_models(model_dir: str,
 
     checkpoint_pattern = os.path.join(out_root_dir, model_dir, '*.ckpt')
     checkpoint_path = glob(checkpoint_pattern)
-    model = load_from_checkpoint(path=checkpoint_path[0], model=model)
+    print(checkpoint_path)
+    model = load_from_checkpoint(path=checkpoint_path[-1], model=model)
     # freeze the last layer for feature extraction
     model.fc = nn.Sequential()
     model.to('cuda')
@@ -116,7 +117,10 @@ def run_extraction_on_models(model_dir: str,
 
     save_results(save_dir, np_dict, save_filename)
 
-
+#best at Epoch 177 loss 0.3836648819908019.ckpt  B
+#best at Epoch 117 loss 0.38881643032354696.ckpt C
+#best at Epoch 160 loss 0.4024718254804611.ckpt D
+#best at Epoch 149 loss 0.4684090583074477.ckpt E
 def main(args):
     for model_dir in DHS_MODELS:
         # TODO check existing

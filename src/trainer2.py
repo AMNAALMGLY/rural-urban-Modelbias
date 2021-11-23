@@ -109,7 +109,7 @@ class Trainer:
                 epoch_loss += train_loss.item()
                 train_step += 1
                 # print statistics
-                print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item()}')
+                print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item():.2f}')
                 if train_step % 20 == 0:
                     running_train=epoch_loss/(train_step)
                     writer.add_scalar("Loss/train", running_train, train_step)
@@ -122,7 +122,7 @@ class Trainer:
             r2=self.metric.compute()
             wandb.log({'r2_train':r2})
             avgloss = epoch_loss / train_steps
-            print(f'End of Epoch training average Loss is {avgloss} and R2 is {r2}')
+            print(f'End of Epoch training average Loss is {avgloss:.2f} and R2 is {r2:.2f}')
             self.metric.reset()
             with torch.no_grad():
                 valid_step = 0
@@ -135,14 +135,14 @@ class Trainer:
                     valid_epoch_loss += valid_loss.item()
                     valid_step += 1
                     print(
-                        f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item()}')
+                        f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item():.2f}')
                     if valid_step % 20 == 0:
                         running_loss=valid_epoch_loss/(valid_step)
                         writer.add_scalar("Loss/valid", running_loss, valid_step)
                         wandb.log({"valid_loss": running_loss})
                 avg_valid_loss=valid_epoch_loss / valid_steps
                 r2_valid=self.metric.compute()
-                print(f'Validation R2 is {r2_valid}')
+                print(f'Validation R2 is {r2_valid:.2f}')
                 wandb.log({'r2_valid': r2_valid})
             #Saving best model after a threshold of epochs:
             #if avg_valid_loss< avgloss  or avg_valid_loss < best_loss or r2_valid > best_valid:
