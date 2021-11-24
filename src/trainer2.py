@@ -90,7 +90,7 @@ class Trainer:
         metric_fn.update(preds, target)
 
         return loss
-    def fit(self, trainloader, validloader,max_epochs,gpus,save_every=10 ,overfit_batches=None):
+    def fit(self, trainloader, validloader,max_epochs,gpus,early_stopping=True,save_every=10 ,overfit_batches=None):
 
 
         self.model.to(gpus)
@@ -99,7 +99,7 @@ class Trainer:
         train_steps = len(trainloader)
         valid_steps = len(validloader)
         best_loss = float('inf')
-        best_valid=0
+        count2=0
         start=time.time()
 
         for epoch in range(max_epochs):
@@ -150,38 +150,93 @@ class Trainer:
                 r2_valid=self.metric.compute()
                 print(f'Validation R2 is {r2_valid:.2f}')
                 wandb.log({'r2_valid': r2_valid})
-            #Saving best model after a threshold of epochs:
-            #if avg_valid_loss< avgloss  or avg_valid_loss < best_loss or r2_valid > best_valid:
-            if r2_valid > best_valid:
-                #best_loss = avg_valid_loss
-                best_valid=r2_valid
 
-                if epoch >100: #TODO changes this to config
-                    save_path = os.path.join(self.save_dir, f'best at Epoch{epoch}.ckpt')
-                    torch.save(self.model.state_dict(), save_path)
-                    print(f'best model  at Epoch {epoch}  ,')
-                    print(f'Path to best model found during training: \n{save_path}')
-            '''
-            #early stopping
-            if best_loss-avg_valid_loss >=0.1:
-                #loss is improving
-                counter=0
-                best_loss=avg_valid_loss
-            elif best_loss-avg_valid_loss <0.1:
-                #loss is degrading 
-                counter+=1
-                if counter>=patience:
-                    save_path = os.path.join(self.save_dir, f'best at Epoch{epoch}.ckpt')
-                    torch.save(self.model.state_dict(), save_path)
-                    print(f'best model  at Epoch {epoch}  ,')
-                    print(f'Path to best model found during training: \n{save_path}')
+                # early stopping with r2:
+                '''
+             
+                if r2_valid - best_valid>=0.05:
+                    #best_loss = avg_valid_loss
+                    wait=0
+                    best_valid=r2_valid
+                    if epoch > 100:
+                        save_path = os.path.join(self.save_dir, f'best at metric Epoch{epoch}.ckpt')
+                        torch.save(self.model.state_dict(), save_path)
+                        print(f'best model at metric at Epoch {epoch}  metric {r2_valid} ,')
+                        print(f'Path to best model found during training: \n{save_path}')
+                else:
+                    wait+=1
+                    if wait >= patience and early_stopping:
+                        print('.................Early Stopping .....................')
+                        break
+                        
+    
+                '''
+                #early stopping with loss
+                if best_loss-avg_valid_loss >=0.1:
+                    #loss is improving
+                    counter=0
+                    count2+=1
+                    best_loss=avg_valid_loss
+                    #start saving after a threshold of epochs and a patience of improvement
+                    if epoch >= 70 and count2 >=patience:
+                        save_path = os.path.join(self.save_dir, f'best  at loss Epoch{epoch}.ckpt')
+                        torch.save(self.model.state_dict(), save_path)
+                        print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
+                        print(f'Path to best model at loss found during training: \n{save_path}')
+                elif best_loss-avg_valid_loss <0.1:
+                    #loss is degrading
+                    counter+=1         #degrading tracker
+                    count2=0           #improving tracker
+                    if counter>=patience and early_stopping:
+                        print('.................Early Stopping .....................')
+                        break
+
                     
 
-            '''
+
             #Saving the model for later use every 10 epochs:
             if epoch%save_every==0:
                 resume_dir=os.path.join(self.save_dir,'resume_points')
-                os.makedirs(resume_dir, exist_ok=True)
+                os.makedirs(resume_dir, exist_ok=True)# early stopping with r2:
+            '''
+         
+            if r2_valid - best_valid>=0.05:
+                #best_loss = avg_valid_loss
+                wait=0
+                best_valid=r2_valid
+                if epoch > 100:
+                    save_path = os.path.join(self.save_dir, f'best at metric Epoch{epoch}.ckpt')
+                    torch.save(self.model.state_dict(), save_path)
+                    print(f'best model at metric at Epoch {epoch}  metric {r2_valid} ,')
+                    print(f'Path to best model found during training: \n{save_path}')
+            else:
+                wait+=1
+                if wait >= patience and early_stopping:
+                    print('.................Early Stopping .....................')
+                    break
+                    
+
+            '''
+            #early stopping with loss
+            if best_loss-avg_valid_loss >=0.1:
+                #loss is improving
+                counter=0
+                count2+=1
+                best_loss=avg_valid_loss
+                #start saving after a threshold of epochs and a patience of improvement
+                if epoch >= 70 and count2 >=patience:
+                    save_path = os.path.join(self.save_dir, f'best  at loss Epoch{epoch}.ckpt')
+                    torch.save(self.model.state_dict(), save_path)
+                    print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
+                    print(f'Path to best model at loss found during training: \n{save_path}')
+            elif best_loss-avg_valid_loss <0.1:
+                #loss is degrading
+                counter+=1         #degrading tracker
+                count2=0           #improving tracker
+                if counter>=patience and early_stopping:
+                    print('.................Early Stopping .....................')
+                    break
+
                 resume_path=os.path.join(resume_dir,f'Epoch{epoch}.ckpt')
                 torch.save(self.model.state_dict(), resume_path)
                 print(f'Saving model to {resume_path}')

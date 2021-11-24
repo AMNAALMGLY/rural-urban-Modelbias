@@ -49,7 +49,6 @@ DHS_MODELS = [
 
 
 def run_extraction_on_models(model_dir: str,
-
                              model_params: Mapping,
                              batcher,
                              out_root_dir: str,
