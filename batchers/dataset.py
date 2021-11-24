@@ -47,7 +47,7 @@ class Batcher(torch.utils.data.IterableDataset):
 
     def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label, normalize='DHS',
                  augment=False, clipn=True,
-                 batch_size=64, groupby=None, cache=None,shuffle=True,save_dir=None):
+                 batch_size=64, groupby=None, cache=None,shuffle=False,save_dir=None):
 
         '''
         initializes the loader as follows :
@@ -208,7 +208,7 @@ class Batcher(torch.utils.data.IterableDataset):
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
             dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords)
-            dataset = dataset.shuffle(buffer_size=1024 * 1024 * 128)
+            dataset = dataset.shuffle(buffer_size=1000)
             dataset = dataset.interleave(
                 lambda file_path: tf.data.TFRecordDataset(file_path, compression_type='GZIP'),
                 cycle_length=AUTO, block_length=1,)
@@ -238,8 +238,8 @@ class Batcher(torch.utils.data.IterableDataset):
             dataset = dataset.cache()
             print('in cahce')
 
-        if self.shuffle:
-            dataset = dataset.shuffle(buffer_size=1024 * 1024 * 128)
+        #if self.shuffle:
+           # dataset = dataset.shuffle(buffer_size=1000)
 
         if self.augment:
             print('in augment')
