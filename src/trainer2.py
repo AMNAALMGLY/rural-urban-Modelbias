@@ -5,10 +5,13 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.optim.lr_scheduler import ExponentialLR
 import torch
 import torch.nn as nn
+from tqdm import tqdm
+
 from utils.utils import Metric
 from configs import args
 import  wandb
 writer = SummaryWriter()
+patience=4
 
 class Trainer:
     def __init__(self, model, lr, weight_decay, loss_type, num_outputs, metric, save_dir, **kwargs):
@@ -98,24 +101,27 @@ class Trainer:
         best_loss = float('inf')
         best_valid=0
         start=time.time()
+
         for epoch in range(max_epochs):
-            train_step = 0
-            epoch_loss = 0
+            with tqdm(trainloader, unit="batch") as tepoch:
+                train_step = 0
+                epoch_loss = 0
 
-            print('-----------------------Training--------------------------------')
-            self.model.train()
-            for record in trainloader:
-                train_loss=self.training_step(record,)
-                epoch_loss += train_loss.item()
-                train_step += 1
-                # print statistics
-                print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item():.2f}')
-                if train_step % 20 == 0:
-                    running_train=epoch_loss/(train_step)
-                    writer.add_scalar("Loss/train", running_train, train_step)
-                    wandb.log({"train_loss": running_train})
+                print('-----------------------Training--------------------------------')
+                self.model.train()
+                for record in tepoch:
+                    tepoch.set_description(f"Epoch {epoch}")
+                    train_loss=self.training_step(record,)
+                    epoch_loss += train_loss.item()
+                    train_step += 1
+                    # print statistics
+                    print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item():.2f}')
+                    if train_step % 20 == 0:
+                        running_train=epoch_loss/(train_step)
+                        writer.add_scalar("Loss/train", running_train, train_step)
+                        wandb.log({"train_loss": running_train})
 
-
+                    tepoch.set_postfix(loss=train_loss.item())
 
 
             #Metric calulation and average loss
@@ -149,12 +155,29 @@ class Trainer:
             if r2_valid > best_valid:
                 #best_loss = avg_valid_loss
                 best_valid=r2_valid
+
                 if epoch >100: #TODO changes this to config
                     save_path = os.path.join(self.save_dir, f'best at Epoch{epoch}.ckpt')
                     torch.save(self.model.state_dict(), save_path)
                     print(f'best model  at Epoch {epoch}  ,')
                     print(f'Path to best model found during training: \n{save_path}')
+            '''
+            #early stopping
+            if best_loss-avg_valid_loss >=0.1:
+                #loss is improving
+                counter=0
+                best_loss=avg_valid_loss
+            elif best_loss-avg_valid_loss <0.1:
+                #loss is degrading 
+                counter+=1
+                if counter>=patience:
+                    save_path = os.path.join(self.save_dir, f'best at Epoch{epoch}.ckpt')
+                    torch.save(self.model.state_dict(), save_path)
+                    print(f'best model  at Epoch {epoch}  ,')
+                    print(f'Path to best model found during training: \n{save_path}')
+                    
 
+            '''
             #Saving the model for later use every 10 epochs:
             if epoch%save_every==0:
                 resume_dir=os.path.join(self.save_dir,'resume_points')
