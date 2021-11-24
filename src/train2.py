@@ -11,7 +11,7 @@ from models.model_generator import get_model
 from src.trainer2 import Trainer
 from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name,load_from_checkpoint
 from configs import args as default_args
-from pytorch_lightning import seed_everything
+from utils.utils import seed_everything
 import wandb
 from torch.utils.tensorboard import SummaryWriter
 
