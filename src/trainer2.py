@@ -1,5 +1,6 @@
 import os
 import time
+from collections import defaultdict
 
 from torch.utils.tensorboard import SummaryWriter
 from torch.optim.lr_scheduler import ExponentialLR
@@ -100,6 +101,7 @@ class Trainer:
         valid_steps = len(validloader)
         best_loss = float('inf')
         count2=0
+        r2_dict=defaultdict(lambda x:'')
         start=time.time()
 
         for epoch in range(max_epochs):
@@ -147,7 +149,7 @@ class Trainer:
                         writer.add_scalar("Loss/valid", running_loss, valid_step)
                         wandb.log({"valid_loss": running_loss})
                 avg_valid_loss=valid_epoch_loss / valid_steps
-                r2_valid=self.metric.compute()
+                r2_valid=round(self.metric.compute(),3)
                 print(f'Validation R2 is {r2_valid:.2f}')
                 wandb.log({'r2_valid': r2_valid})
 
@@ -225,8 +227,11 @@ class Trainer:
                 best_loss=avg_valid_loss
                 #start saving after a threshold of epochs and a patience of improvement
                 if epoch >= 70 and count2 >=patience:
+
                     save_path = os.path.join(self.save_dir, f'best  at loss Epoch{epoch}.ckpt')
                     torch.save(self.model.state_dict(), save_path)
+                    # save r2 values
+                    r2_dict[r2_valid] = save_path
                     print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
                     print(f'Path to best model at loss found during training: \n{save_path}')
             elif best_loss-avg_valid_loss <0.1:
@@ -242,8 +247,12 @@ class Trainer:
                 print(f'Saving model to {resume_path}')
             self.metric.reset()
             self.scheduler.step()
+        #choose the best model between the saved models in regard to r2 value
+        best_path=r2_dict[max(r2_dict)]
+        os.rename(best_path,os.path.join(self.save_dir,'best.ckpt'))
         print("Time Elapsed for all epochs : {:.4f}s".format(time.time() - start))
-        return best_loss,save_path
+
+        return best_loss, best_path
         #TODO implement overfit batches
         #TODO savelast
 

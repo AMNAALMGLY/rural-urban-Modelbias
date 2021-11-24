@@ -91,19 +91,16 @@ class Batcher(torch.utils.data.IterableDataset):
             return nbatches
         else:
             return sum(1 for i in self)
-
+    '''
     def group(self, example_proto: tf.Tensor) -> tf.Tensor:
-        '''
-
-        group by urban/rural
-
-        '''
+     
         key_to_feature = self.groupby
         keys_to_features = {
             key_to_feature: tf.io.FixedLenFeature(shape=[], dtype=tf.float32)}  # I'm assuming that it is float feature.
         ex = tf.io.parse_single_example(example_proto, features=keys_to_features)
         do_keep = tf.equal(ex[self.groupby], 0.0)
         return do_keep
+    '''
 
     def tfrecords_to_dict(self, example: tf.Tensor) -> dict[str, tf.Tensor]:
         '''
@@ -315,22 +312,4 @@ class Batcher(torch.utils.data.IterableDataset):
         return batch
 
 
-'''
-paths_train = get_paths(args.dataset, ['train'], args.fold, args.data_path)
-batcher_train = Batcher(paths_train, None, 'ms', args.nl_band, args.label_name,
-                        None, None, None, 64, None,
-                        None)
 
-dataset = tf.data.TFRecordDataset(
-    paths_train,
-    compression_type='GZIP',
-    buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
-)
-# dataset=dataset.map(batcher_train.tfrecords_to_dict)
-i = 0
-for el in dataset:
-    if i < 3:
-        print(el)
-        print(i)
-        i += 1
-'''

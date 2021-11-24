@@ -78,7 +78,7 @@ def run_extraction_on_models(model_dir: str,
     fc = nn.Linear(model.fc.in_features, args.num_outputs)
     model.fc = fc
 
-    checkpoint_pattern = os.path.join(out_root_dir, model_dir, '*.ckpt')
+    checkpoint_pattern = os.path.join(out_root_dir, model_dir, 'best.ckpt')
     checkpoint_path = glob(checkpoint_pattern)
     print(checkpoint_path)
     model = load_from_checkpoint(path=checkpoint_path[-1], model=model)

@@ -14,7 +14,6 @@ from configs import args as default_args
 from utils.utils import seed_everything
 import wandb
 from torch.utils.tensorboard import SummaryWriter
-
 writer = SummaryWriter()
 #
 
