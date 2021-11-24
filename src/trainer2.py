@@ -150,7 +150,7 @@ class Trainer:
                         writer.add_scalar("Loss/valid", running_loss, valid_step)
                         wandb.log({"valid_loss": running_loss})
                 avg_valid_loss=valid_epoch_loss / valid_steps
-                r2_valid=np.round(self.metric.compute().numpy())
+                r2_valid=self.metric.compute()
                 print(f'Validation R2 is {r2_valid:.2f}')
                 wandb.log({'r2_valid': r2_valid})
 
