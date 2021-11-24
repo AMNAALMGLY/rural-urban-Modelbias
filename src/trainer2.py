@@ -2,6 +2,7 @@ import os
 import time
 from collections import defaultdict
 
+import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 from torch.optim.lr_scheduler import ExponentialLR
 import torch
@@ -124,7 +125,7 @@ class Trainer:
                         wandb.log({"train_loss": running_train})
 
                     tepoch.set_postfix(loss=train_loss.item())
-
+                    time.sleep(0.1)
 
             #Metric calulation and average loss
             r2=self.metric.compute()
@@ -149,7 +150,7 @@ class Trainer:
                         writer.add_scalar("Loss/valid", running_loss, valid_step)
                         wandb.log({"valid_loss": running_loss})
                 avg_valid_loss=valid_epoch_loss / valid_steps
-                r2_valid=round(self.metric.compute(),3)
+                r2_valid=np.round(self.metric.compute().numpy())
                 print(f'Validation R2 is {r2_valid:.2f}')
                 wandb.log({'r2_valid': r2_valid})
 
