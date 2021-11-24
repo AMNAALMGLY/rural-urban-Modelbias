@@ -249,10 +249,14 @@ class Trainer:
             self.scheduler.step()
         #choose the best model between the saved models in regard to r2 value
         best_path=r2_dict[max(r2_dict)]
+        del r2_dict[max(r2_dict)]
+        better_path=r2_dict[max(r2_dict)]
+
         os.rename(best_path,os.path.join(self.save_dir,'best.ckpt'))
+        os.rename(better_path,os.path.join(self.save_dir,'better.ckpt'))
         print("Time Elapsed for all epochs : {:.4f}s".format(time.time() - start))
 
-        return best_loss, best_path
+        return best_loss, best_path,better_path
         #TODO implement overfit batches
         #TODO savelast
 

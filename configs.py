@@ -37,7 +37,7 @@ args = Namespace(
     ls_bands='ms',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    scaler_features_keys= {'urban_rural':tf.float32},
+    scaler_features_keys= None    ,#{'urban_rural':tf.float32},
     # keep_frac {keep_frac}
 
     # Experiment
@@ -46,7 +46,7 @@ args = Namespace(
     experiment_name='DHS_OOC_A_ms_samescaled',
     out_dir=os.path.join(ROOT_DIR, 'outputs'),
     init_ckpt_dir=None,
-    group='urban',
+    group=None,
 
     loss_type='regression',
     num_outputs=1,

@@ -95,11 +95,16 @@ def main(args):
 
     paths_valid = get_paths(args.dataset, ['val'], args.fold, args.data_path)
 
+    paths_test=get_paths(args.dataset, ['test'], args.fold, args.data_path)
+
     batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', args.augment, args.clipn, args.batch_size, groupby=args.group,
                             cache=True)
 
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
+                            args.nl_label, 'DHS', False, args.clipn, args.batch_size, groupby=args.group,
+                            cache=True,shuffle=False)
+    batcher_test=Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', False, args.clipn, args.batch_size, groupby=args.group,
                             cache=True,shuffle=False)
 
@@ -108,9 +113,9 @@ def main(args):
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)
 
 
-    best_loss,path  = setup_experiment(model, batcher_train, batcher_valid, args.resume, args)
+    best_loss,best_path,_ = setup_experiment(model, batcher_train, batcher_test, args.resume, args)
 
-    print(f'Path to best model found during training: \n{path}')
+    print(f'Path to best model found during training: \n{best_path}')
 
 
 #TODO save hyperparameters .
