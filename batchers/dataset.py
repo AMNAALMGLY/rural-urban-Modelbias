@@ -353,7 +353,7 @@ def get_dataset(tfrecords, batch_size, tfrecords_to_dict: Callable, cache, shuff
         print('in cahce')
 
     if shuffle:
-        dataset = dataset.shuffle(buffer_size=1024 * 1024 * 1024 * 128)
+        dataset = dataset.shuffle(buffer_size=1000)
 
     if augment:
         print('in augment')
