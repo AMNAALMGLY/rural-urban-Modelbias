@@ -239,7 +239,7 @@ class Batcher(torch.utils.data.IterableDataset):
             print('in cahce')
 
         if self.shuffle:
-            dataset = dataset.shuffle(buffer_size=1000)
+            dataset = dataset.shuffle(buffer_size=1024 * 1024  *1024* 128)
 
         if self.augment:
             print('in augment')
