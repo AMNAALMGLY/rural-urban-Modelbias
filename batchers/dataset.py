@@ -296,10 +296,10 @@ class Batcher(torch.utils.data.IterableDataset):
         self.ds = self.ds.batch(batch_size=self.batch_size)
         print('in batching')
         self.ds = self.ds.prefetch(2)
-        self.ds=self.ds.as_numpy_iterator()
+        dataset=self.ds.as_numpy_iterator()
         if self._iterator is None:
 
-            self._iterator = iter(self.ds)
+            self._iterator = iter(dataset)
         else:
             self._reset()
         print(self.ds)
