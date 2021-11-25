@@ -161,8 +161,8 @@ class Batcher(torch.utils.data.IterableDataset):
         else:
             raise ValueError
 
-        if self.label:
-            label_ms = ex.get(self.label, float('nan'))
+
+        label_ms = ex.get(self.label, float('nan'))
 
         if self.nl_label:
             if self.nl_label == 'mean':
@@ -252,7 +252,7 @@ class Batcher(torch.utils.data.IterableDataset):
         dataset = dataset.prefetch(2)
         print(f'Time in getdataset: {time.time() - start}')
         return dataset.as_numpy_iterator()
-
+    '''
     def augment_ex(self, ex: dict[str, tf.Tensor],seed) -> dict[str, tf.Tensor]:
         """Performs image augmentation (random flips + levels brightnes/contrast adjustments).
           Does not perform level adjustments on NL band(s).
@@ -289,7 +289,7 @@ class Batcher(torch.utils.data.IterableDataset):
         print(img, ex['images'])
         ex['images'] = img
         return ex
-    '''
+
 
     def __iter__(self):
         '''
