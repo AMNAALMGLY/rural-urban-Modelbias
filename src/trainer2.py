@@ -70,7 +70,7 @@ class Trainer:
         return output
     '''
     def _shared_step(self, batch, metric_fn):
-        print(batch)
+
         x = torch.tensor(batch['images'],)
 
         x=x.type_as(self.model.conv1.weight)
