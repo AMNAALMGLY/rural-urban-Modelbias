@@ -435,7 +435,7 @@ def augment_ex( ex: dict[str, tf.Tensor],seed,nl_bands,ls_bands,nl_label) -> dic
         ex['images'] = img
         return ex
 def get_dataset(tfrecords, batch_size, label,nl_label,ls_bands,nl_bands,scalar_features_keys,clipn,normalize, cache, shuffle, groupby, augment,
-                augment_ex: Callable):
+                ):
     '''
         do the tf_to dict operation to the whole dataset in numpy dtype
         '''
