@@ -1,6 +1,9 @@
 # credit goes to https://github.com/sustainlab-group/sustainbench.git https://github.com/sustainlab-group/africa_poverty.git
 # https://www.kaggle.com/hidehisaarai1213/g2net-read-from-tfrecord-train-with-pytorch
 from __future__ import annotations
+
+from typing import Callable
+
 import tensorflow_datasets as tfds
 
 import tensorflow as tf
@@ -15,6 +18,7 @@ AUTO: int = tf.data.experimental.AUTOTUNE
 
 # choose which GPU to run on
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+
 
 # TODO split nl_band function
 class Batcher(torch.utils.data.IterableDataset):
@@ -47,7 +51,7 @@ class Batcher(torch.utils.data.IterableDataset):
 
     def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label, normalize='DHS',
                  augment=False, clipn=True,
-                 batch_size=64, groupby=None, cache=None,shuffle=True,save_dir=None):
+                 batch_size=64, groupby=None, cache=None, shuffle=True, save_dir=None):
 
         '''
         initializes the loader as follows :
@@ -66,10 +70,10 @@ class Batcher(torch.utils.data.IterableDataset):
         self.cache = cache
         self.save_dir = save_dir
         self.batch_size = batch_size
-        self.shuffle=shuffle
+        self.shuffle = shuffle
         self._iterator = None
-        self.ds = self.get_dataset(self.cache)
-
+        self.ds = get_dataset(tfrecords, batch_size, self.tfrecords_to_dict, cache, shuffle, groupby, augment,
+                self.augment_ex)
 
         # TODO:check values of arguments passed
 
@@ -92,6 +96,7 @@ class Batcher(torch.utils.data.IterableDataset):
             return nbatches
         else:
             return sum(1 for i in self)
+
     '''
     def group(self, example_proto: tf.Tensor) -> tf.Tensor:
      
@@ -150,7 +155,7 @@ class Batcher(torch.utils.data.IterableDataset):
                         ex[band] = (ex[band] - means[band]) / stds[band]
             # TODO augmentation
             img = tf.stack([ex[band] for band in ex_bands], axis=2)
-            #img=tf.image.resize_with_crop_or_pad(img,32,32)
+            # img=tf.image.resize_with_crop_or_pad(img,32,32)
 
 
         else:
@@ -199,10 +204,10 @@ class Batcher(torch.utils.data.IterableDataset):
             save_results(self.save_dir, record, f'{idx:05d}')
             idx += 1
 
-    def get_dataset(self, cache=None, ):
-        '''
-        do the tf_to dict operation to the whole dataset in numpy dtype
-        '''
+    # do the tf_to dict operation to the whole dataset in numpy dtype
+    '''
+    def get_dataset(self, cache=None):
+      
         start = time.time()
         print(self.shuffle)
         if self.shuffle:
@@ -212,16 +217,14 @@ class Batcher(torch.utils.data.IterableDataset):
             dataset = dataset.shuffle(buffer_size=1000)
             dataset = dataset.interleave(
                 lambda file_path: tf.data.TFRecordDataset(file_path, compression_type='GZIP'),
-                cycle_length=AUTO, block_length=1,)
+                cycle_length=AUTO, block_length=1, )
         else:
             # convert to individual records
             dataset = tf.data.TFRecordDataset(
                 filenames=self.tfrecords,
                 compression_type='GZIP',
-                buffer_size=1024 * 1024  * 128,  # 128 MB buffer size
+                buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
                 num_parallel_reads=args.num_workers)
-
-
 
         dataset = dataset.prefetch(2 * self.batch_size)
 
@@ -232,24 +235,23 @@ class Batcher(torch.utils.data.IterableDataset):
         elif self.groupby == 'rural':
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
 
-
         if cache:
-
             dataset = dataset.cache()
             print('in cahce')
 
         if self.shuffle:
-            dataset = dataset.shuffle(buffer_size=1024 * 1024  *1024* 128)
+            dataset = dataset.shuffle(buffer_size=1024 * 1024 * 1024 * 128)
 
         if self.augment:
             print('in augment')
             counter = tf.data.experimental.Counter()
             dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
             dataset = dataset.map(self.augment_ex, num_parallel_calls=args.num_workers)
-
+        dataset = dataset.batch(batch_size=self.batch_size)
+        print('in batching')
+        dataset = dataset.prefetch(2)
         print(f'Time in getdataset: {time.time() - start}')
-        return dataset
-
+        return dataset.as_numpy_iterator()
 
     def augment_ex(self, ex: dict[str, tf.Tensor],seed) -> dict[str, tf.Tensor]:
         """Performs image augmentation (random flips + levels brightnes/contrast adjustments).
@@ -287,19 +289,17 @@ class Batcher(torch.utils.data.IterableDataset):
         print(img, ex['images'])
         ex['images'] = img
         return ex
+    '''
 
     def __iter__(self):
         '''
         implement iterator of the  loader
         '''
         start = time.time()
-        self.ds = self.ds.batch(batch_size=self.batch_size)
-        print('in batching')
-        self.ds = self.ds.prefetch(2)
-        dataset=self.ds.as_numpy_iterator()
+
         if self._iterator is None:
 
-            self._iterator = iter(dataset)
+            self._iterator = iter(self.ds)
         else:
             self._reset()
         print(self.ds)
@@ -316,4 +316,52 @@ class Batcher(torch.utils.data.IterableDataset):
         return batch
 
 
+def get_dataset(tfrecords, batch_size, tfrecords_to_dict: Callable, cache, shuffle, groupby, augment,
+                augment_ex: Callable):
+    '''
+        do the tf_to dict operation to the whole dataset in numpy dtype
+        '''
+    start = time.time()
+    print(shuffle)
+    if shuffle:
+        print('in shuffle')
+        # shuffle the order of the input files, then interleave their individual records
+        dataset = tf.data.Dataset.from_tensor_slices(tfrecords)
+        dataset = dataset.shuffle(buffer_size=1000)
+        dataset = dataset.interleave(
+            lambda file_path: tf.data.TFRecordDataset(file_path, compression_type='GZIP'),
+            cycle_length=AUTO, block_length=1, )
+    else:
+        # convert to individual records
+        dataset = tf.data.TFRecordDataset(
+            filenames=tfrecords,
+            compression_type='GZIP',
+            buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
+            num_parallel_reads=args.num_workers)
 
+    dataset = dataset.prefetch(2 * batch_size)
+
+    dataset = dataset.map(lambda ex: tfrecords_to_dict(ex), num_parallel_calls=args.num_workers)
+    if groupby == 'urban':
+
+        dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 1.0))
+    elif groupby == 'rural':
+        dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
+
+    if cache:
+        dataset = dataset.cache()
+        print('in cahce')
+
+    if shuffle:
+        dataset = dataset.shuffle(buffer_size=1024 * 1024 * 1024 * 128)
+
+    if augment:
+        print('in augment')
+        counter = tf.data.experimental.Counter()
+        dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
+        dataset = dataset.map(augment_ex, num_parallel_calls=args.num_workers)
+    dataset = dataset.batch(batch_size=batch_size)
+    print('in batching')
+    dataset = dataset.prefetch(2)
+    print(f'Time in getdataset: {time.time() - start}')
+    return dataset.as_numpy_iterator()
