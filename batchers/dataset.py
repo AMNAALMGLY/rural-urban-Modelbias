@@ -68,6 +68,7 @@ class Batcher(torch.utils.data.IterableDataset):
         self.batch_size = batch_size
         self.shuffle=shuffle
         self._iterator = None
+        self.ds = self.get_dataset(self.cache)
 
 
         # TODO:check values of arguments passed
@@ -295,7 +296,7 @@ class Batcher(torch.utils.data.IterableDataset):
         '''
         start = time.time()
         if self._iterator is None:
-            self.ds=self.get_dataset(self.cache)
+
             self._iterator = iter(self.ds)
         else:
             self._reset()
