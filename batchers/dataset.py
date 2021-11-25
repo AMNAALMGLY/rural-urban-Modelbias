@@ -300,6 +300,7 @@ class Batcher(torch.utils.data.IterableDataset):
             self._iterator = iter(self.ds)
         else:
             self._reset()
+        print(self.ds)
         print(f'time in iter: {time.time() - start}')
         return self._iterator
 
