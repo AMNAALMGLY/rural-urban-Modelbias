@@ -218,7 +218,7 @@ class Batcher(torch.utils.data.IterableDataset):
             dataset = tf.data.TFRecordDataset(
                 filenames=self.tfrecords,
                 compression_type='GZIP',
-                buffer_size=1024 * 1024 * 1024 * 128,  # 128 MB buffer size
+                buffer_size=1024 * 1024  * 128,  # 128 MB buffer size
                 num_parallel_reads=args.num_workers)
 
 
@@ -233,25 +233,23 @@ class Batcher(torch.utils.data.IterableDataset):
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
 
 
-        print('after shuffle')
         if cache:
 
             dataset = dataset.cache()
             print('in cahce')
 
-        #if self.shuffle:
-           # dataset = dataset.shuffle(buffer_size=1000)
+        if self.shuffle:
+            dataset = dataset.shuffle(buffer_size=1000)
 
         if self.augment:
             print('in augment')
             counter = tf.data.experimental.Counter()
             dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
             dataset = dataset.map(self.augment_ex, num_parallel_calls=args.num_workers)
-        dataset = dataset.batch(batch_size=self.batch_size)
-        print('in batching')
-        dataset = dataset.prefetch(2)
+
         print(f'Time in getdataset: {time.time() - start}')
-        return tfds.as_numpy(dataset)
+        return dataset
+
 
     def augment_ex(self, ex: dict[str, tf.Tensor],seed) -> dict[str, tf.Tensor]:
         """Performs image augmentation (random flips + levels brightnes/contrast adjustments).
@@ -295,6 +293,10 @@ class Batcher(torch.utils.data.IterableDataset):
         implement iterator of the  loader
         '''
         start = time.time()
+        self.ds = self.ds.batch(batch_size=self.batch_size)
+        print('in batching')
+        self.ds = self.ds.prefetch(2)
+        self.ds=self.ds.as_numpy_iterator()
         if self._iterator is None:
 
             self._iterator = iter(self.ds)
