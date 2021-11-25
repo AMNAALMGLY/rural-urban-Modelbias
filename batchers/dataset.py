@@ -18,7 +18,7 @@ AUTO: int = tf.data.experimental.AUTOTUNE
 
 # choose which GPU to run on
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-
+seed=123
 
 # TODO split nl_band function
 class Batcher(torch.utils.data.IterableDataset):
@@ -73,7 +73,7 @@ class Batcher(torch.utils.data.IterableDataset):
         self.shuffle = shuffle
         self._iterator = None
 
-        self.ds = get_dataset(tfrecords, batch_size, label, nl_label, ls_bands, nl_bands, scalar_features_keys, clipn,
+        self.ds = get_dataset(tfrecords, batch_size, label, nl_label, ls_bands, nl_bands,seed, scalar_features_keys, clipn,
                               normalize, cache, shuffle, groupby, augment,
                               )
 
@@ -442,7 +442,7 @@ def augment_ex(ex: dict[str, tf.Tensor], seed, nl_bands, ls_bands, nl_label) -> 
     return ex
 
 
-def get_dataset(tfrecords, batch_size, label, nl_label, ls_bands, nl_bands, scalar_features_keys, clipn, normalize,
+def get_dataset(tfrecords, batch_size, label, nl_label, ls_bands, nl_bands, seed,scalar_features_keys, clipn, normalize,
                 cache, shuffle, groupby,
                 augment):
     '''
@@ -488,7 +488,7 @@ def get_dataset(tfrecords, batch_size, label, nl_label, ls_bands, nl_bands, scal
         print('in augment')
         counter = tf.data.experimental.Counter()
         dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
-        seed = 123
+
         dataset = dataset.map(lambda ex: augment_ex(ex, seed, nl_bands, ls_bands, nl_label),
                               num_parallel_calls=args.num_workers)
     dataset = dataset.batch(batch_size=batch_size)
