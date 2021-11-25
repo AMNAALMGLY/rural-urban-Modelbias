@@ -217,7 +217,7 @@ class Batcher(torch.utils.data.IterableDataset):
             dataset = tf.data.TFRecordDataset(
                 filenames=self.tfrecords,
                 compression_type='GZIP',
-                buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
+                buffer_size=1024 * 1024 * 1024 * 128,  # 128 MB buffer size
                 num_parallel_reads=args.num_workers)
 
 
@@ -294,8 +294,8 @@ class Batcher(torch.utils.data.IterableDataset):
         implement iterator of the  loader
         '''
         start = time.time()
-        self.ds = self.get_dataset(self.cache)
         if self._iterator is None:
+            self.ds=self.get_dataset(self.cache)
             self._iterator = iter(self.ds)
         else:
             self._reset()
