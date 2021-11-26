@@ -305,10 +305,10 @@ class Batcher(torch.utils.data.IterableDataset):
         start = time.time()
 
         #self.ds=self.get_dataset()
-        self.ds=self.ds.as_numpy_iterator()
+
         if self._iterator is None:
 
-            self._iterator = iter(self.ds)
+            self._iterator = iter(self.ds.as_numpy_iterator())
         else:
             self._reset()
 
@@ -316,7 +316,7 @@ class Batcher(torch.utils.data.IterableDataset):
         return self._iterator
 
     def _reset(self):
-        self._iterator = iter(self.ds)
+        self._iterator = iter(self.ds.as_numpy_iterator())
     '''
     def __next__(self):
         start = time.time()
