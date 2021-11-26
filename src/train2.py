@@ -97,14 +97,14 @@ def main(args):
 
     paths_test=get_paths(args.dataset, ['test'], args.fold, args.data_path)
 
-    batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
+    batcher_train = Batcher(paths_train[:1000], args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS',args.augment, args.clipn, args.batch_size, groupby=args.group,
                             cache=True,shuffle=True)
 
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', False, args.clipn, args.batch_size, groupby=args.group,
                             cache=True,shuffle=False)
-    batcher_test=Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
+    batcher_test=Batcher(paths_test[:1000], args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS', False, args.clipn, args.batch_size, groupby=args.group,
                             cache=True,shuffle=False)
 

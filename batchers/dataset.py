@@ -252,12 +252,13 @@ class Batcher(torch.utils.data.IterableDataset):
             counter = tf.data.experimental.Counter()
             dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
             dataset = dataset.map(self.augment_ex, num_parallel_calls=args.num_workers)
-        dataset = dataset.repeat(args.max_epochs)
+        #dataset = dataset.repeat(args.max_epochs)
         dataset = dataset.batch(batch_size=self.batch_size)
         print('in batching')
         dataset = dataset.prefetch(2)
         print(f'Time in getdataset: {time.time() - start}')
-        return dataset.as_numpy_iterator()
+        return dataset
+        #return dataset.as_numpy_iterator()
 
     def augment_ex(self, ex: dict[str, tf.Tensor],seed) -> dict[str, tf.Tensor]:
         """Performs image augmentation (random flips + levels brightnes/contrast adjustments).
@@ -304,7 +305,7 @@ class Batcher(torch.utils.data.IterableDataset):
         start = time.time()
 
         #self.ds=self.get_dataset()
-
+        self.ds=self.ds.as_numpy_iterator()
         if self._iterator is None:
 
             self._iterator = iter(self.ds)

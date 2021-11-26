@@ -131,8 +131,8 @@ class Trainer:
 
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
-                    if train_step==train_steps:
-                        break
+                    #if train_step==train_steps:
+                     #   break
 
             #Metric calulation and average loss
             r2=self.metric.compute()
@@ -156,8 +156,8 @@ class Trainer:
                         running_loss=valid_epoch_loss/(valid_step)
                         writer.add_scalar("Loss/valid", running_loss, valid_step)
                         wandb.log({"valid_loss": running_loss})
-                    if valid_step==valid_steps:
-                        break
+                    #if valid_step==valid_steps:
+                     #   break
                 avg_valid_loss=valid_epoch_loss / valid_steps
                 r2_valid=self.metric.compute()
                 print(f'Validation R2 is {r2_valid:.2f}')
