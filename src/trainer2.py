@@ -246,7 +246,7 @@ class Trainer:
 
         os.rename(best_path,os.path.join(self.save_dir,'best.ckpt'))
         os.rename(better_path,os.path.join(self.save_dir,'better.ckpt'))
-        print("Time Elapsed for all epochs : {:.4f}s".format(time.time() - start))
+        print("Time Elapsed for all epochs : {:.4f}m".format((time.time() - start)/60))
 
         return best_loss, best_path,better_path
         #TODO implement overfit batches
