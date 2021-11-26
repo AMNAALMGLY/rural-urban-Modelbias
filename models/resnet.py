@@ -326,11 +326,10 @@ def resnet50(in_channels: int, pretrained: bool = False, progress: bool = True, 
 
 
 def init_first_layer_weights(in_channels: int, rgb_weights,
-                             hs_weight_init: str) -> None:
+                                 hs_weight_init: str) -> Tensor:
     out_channels, rgb_channels, H, W = rgb_weights.shape
     print('rgb weight shape ',rgb_weights.shape)
     ms_channels = in_channels - rgb_channels
-
     if in_channels == 3:
         final_weights = rgb_weights
     elif in_channels > 3:

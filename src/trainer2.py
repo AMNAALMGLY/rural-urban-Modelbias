@@ -41,8 +41,9 @@ class Trainer:
 
             fc = nn.Linear(model.fc.in_features, num_outputs)
             #initialization
-            torch.nn.init.normal_(fc.weight)
-            fc.bias.data.fill_(0)
+            torch.nn.init.trunc_normal_(fc.weight.data,std=0.01)
+            torch.nn.init.constant_(fc.bias.data)
+
 
             model.fc = fc
 
@@ -105,6 +106,7 @@ class Trainer:
         best_loss = float('inf')
         count2=0
         r2_dict=defaultdict(lambda x:'')
+        resume_path=None
         start=time.time()
 
         for epoch in range(max_epochs):
@@ -146,7 +148,7 @@ class Trainer:
                     valid_epoch_loss += valid_loss.item()
                     valid_step += 1
                     print(
-                        f'Epoch {epoch} validation Step {valid_step}/{valid_steps} vatrain_steplidation_loss {valid_loss.item():.2f}')
+                        f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item():.2f}')
                     if valid_step % 20 == 0:
                         running_loss=valid_epoch_loss/(valid_step)
                         writer.add_scalar("Loss/valid", running_loss, valid_step)
@@ -177,7 +179,7 @@ class Trainer:
     
                 '''
                 # early stopping with loss
-                if best_loss - avg_valid_loss >= 0.1:
+                if best_loss - avg_valid_loss >= 0:
                     # loss is improving
                     counter = 0
                     count2 += 1
@@ -190,7 +192,7 @@ class Trainer:
                         r2_dict[r2_valid] = save_path
                         print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
                         print(f'Path to best model at loss found during training: \n{save_path}')
-                elif best_loss - avg_valid_loss < 0.1:
+                elif best_loss - avg_valid_loss < 0:
                     # loss is degrading
                     counter += 1  # degrading tracker
                     count2 = 0  # improving tracker
@@ -198,9 +200,6 @@ class Trainer:
                         print('.................Early Stopping .....................')
                         break
 
-                    resume_path = os.path.join(resume_dir, f'Epoch{epoch}.ckpt')
-                    torch.save(self.model.state_dict(), resume_path)
-                    print(f'Saving model to {resume_path}')
 
 
 
@@ -208,6 +207,10 @@ class Trainer:
             if epoch%save_every==0:
                 resume_dir=os.path.join(self.save_dir,'resume_points')
                 os.makedirs(resume_dir, exist_ok=True)
+                resume_path = os.path.join(resume_dir, f'Epoch{epoch}.ckpt')
+                torch.save(self.model.state_dict(), resume_path)
+                print(f'Saving model to {resume_path}')
+
                 # early stopping with r2:
             '''
          
@@ -232,9 +235,14 @@ class Trainer:
             self.metric.reset()
             self.scheduler.step()
         #choose the best model between the saved models in regard to r2 value
-        best_path=r2_dict[max(r2_dict)]
-        del r2_dict[max(r2_dict)]
-        better_path=r2_dict[max(r2_dict)]
+        if r2_dict:
+            best_path=r2_dict[max(r2_dict)]
+            del r2_dict[max(r2_dict)]
+            better_path=r2_dict[max(r2_dict)]
+        else:
+            #best path is the last path
+            best_path=resume_path
+            better_path=resume_path
 
         os.rename(best_path,os.path.join(self.save_dir,'best.ckpt'))
         os.rename(better_path,os.path.join(self.save_dir,'better.ckpt'))
@@ -278,9 +286,8 @@ class Trainer:
             'optimizer': opt,
             'lr_scheduler': {
                 'scheduler': ExponentialLR(opt,
-                                           gamma=args.lr_decay,
-                                           verbose=True),
-                'monitor': 'val_loss',
+                                           gamma=args.lr_decay),
+
             }
         }
 

@@ -313,13 +313,13 @@ class Batcher(torch.utils.data.IterableDataset):
 
     def _reset(self):
         self._iterator = iter(self.ds)
-
+    '''
     def __next__(self):
         start = time.time()
         batch = next(self._iterator)
         print(f'time in next: {time.time() - start}')
         return batch
-
+    '''
 
 def tfrecords_to_dict(label, nl_label, ls_bands, nl_bands, scalar_features_keys, clipn, normalize,
                       example: tf.Tensor) -> dict[str, tf.Tensor]:
