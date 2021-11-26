@@ -108,8 +108,9 @@ class Trainer:
         r2_dict=defaultdict(lambda x:'')
         resume_path=None
         start=time.time()
-        print(next(trainloader))
+
         for epoch in range(max_epochs):
+            print(next(trainloader))
             with tqdm(trainloader, unit="batch") as tepoch:
                 train_step = 0
                 epoch_loss = 0
