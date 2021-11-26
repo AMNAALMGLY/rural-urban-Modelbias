@@ -110,7 +110,7 @@ class Trainer:
         start=time.time()
 
         for epoch in range(max_epochs):
-            print(next(trainloader))
+            #print(next(trainloader))
             with tqdm(trainloader, unit="batch") as tepoch:
                 train_step = 0
                 epoch_loss = 0
