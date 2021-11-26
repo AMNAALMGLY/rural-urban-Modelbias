@@ -486,8 +486,8 @@ def get_dataset(tfrecords, batch_size, label, nl_label, ls_bands, nl_bands, seed
 
     if augment:
         print('in augment')
-        counter = tf.data.experimental.Counter()
-        dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
+        #counter = tf.data.experimental.Counter()
+        #dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
 
         dataset = dataset.map(lambda ex: augment_ex(ex, seed, nl_bands, ls_bands, nl_label),
                               num_parallel_calls=args.num_workers)
