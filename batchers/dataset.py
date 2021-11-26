@@ -240,12 +240,14 @@ class Batcher(torch.utils.data.IterableDataset):
         elif self.groupby == 'rural':
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
 
+        if self.shuffle:
+            dataset = dataset.shuffle(buffer_size=1000)
+
         if cache:
             dataset = dataset.cache()
             print('in cahce')
 
-        if self.shuffle:
-            dataset = dataset.shuffle(buffer_size=1000)
+
 
         if self.augment:
             print('in augment')
