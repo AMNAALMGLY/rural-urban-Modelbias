@@ -307,7 +307,6 @@ class Batcher(torch.utils.data.IterableDataset):
         if self._iterator is None:
 
             self._iterator = iter(self.ds)
-            print(next(self._iterator))
         else:
             self._reset()
 
