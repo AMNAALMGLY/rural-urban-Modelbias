@@ -73,9 +73,9 @@ class Batcher(torch.utils.data.IterableDataset):
         self.shuffle = shuffle
         self._iterator = None
 
-        self.ds = get_dataset(tfrecords, batch_size, label, nl_label, ls_bands, nl_bands,seed, scalar_features_keys, clipn,
-                              normalize, cache, shuffle, groupby, augment,
-                              )
+        #self.ds = get_dataset(tfrecords, batch_size, label, nl_label, ls_bands, nl_bands,seed, scalar_features_keys, clipn,
+                           #   normalize, cache, shuffle, groupby, augment,
+                             # )
 
         # TODO:check values of arguments passed
 
@@ -99,7 +99,7 @@ class Batcher(torch.utils.data.IterableDataset):
         else:
             return sum(1 for i in self)
 
-    '''
+
     def group(self, example_proto: tf.Tensor) -> tf.Tensor:
      
         key_to_feature = self.groupby
@@ -192,7 +192,7 @@ class Batcher(torch.utils.data.IterableDataset):
                 result[key] = ex[key]
         print('finished converting to dict')
         return result
-    '''
+
 
     def tfDatase_to_np(self):
         # TODO:test, move to utils.py
@@ -208,7 +208,7 @@ class Batcher(torch.utils.data.IterableDataset):
             idx += 1
 
     # do the tf_to dict operation to the whole dataset in numpy dtype
-    '''
+
     def get_dataset(self, cache=None):
       
         start = time.time()
@@ -255,8 +255,7 @@ class Batcher(torch.utils.data.IterableDataset):
         dataset = dataset.prefetch(2)
         print(f'Time in getdataset: {time.time() - start}')
         return dataset.as_numpy_iterator()
-    '''
-    '''
+
     def augment_ex(self, ex: dict[str, tf.Tensor],seed) -> dict[str, tf.Tensor]:
         """Performs image augmentation (random flips + levels brightnes/contrast adjustments).
           Does not perform level adjustments on NL band(s).
@@ -293,14 +292,14 @@ class Batcher(torch.utils.data.IterableDataset):
         print(img, ex['images'])
         ex['images'] = img
         return ex
-    '''
+
 
     def __iter__(self):
         '''
         implement iterator of the  loader
         '''
         start = time.time()
-
+        self.ds=self.get_dataset(cache=self.cache)
         if self._iterator is None:
 
             self._iterator = iter(self.ds)
