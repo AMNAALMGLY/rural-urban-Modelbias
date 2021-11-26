@@ -14,7 +14,7 @@ from utils.utils import Metric
 from configs import args
 import  wandb
 writer = SummaryWriter()
-patience=6
+patience=8
 
 class Trainer:
     def __init__(self, model, lr, weight_decay, loss_type, num_outputs, metric, save_dir, **kwargs):
@@ -199,7 +199,7 @@ class Trainer:
                         r2_dict[r2_valid] = save_path
                         print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
                         print(f'Path to best model at loss found during training: \n{save_path}')
-                elif best_loss - avg_valid_loss < 0:
+                elif best_loss - avg_valid_loss < 0.1:
                     # loss is degrading
                     counter += 1  # degrading tracker
                     count2 = 0  # improving tracker
@@ -248,13 +248,20 @@ class Trainer:
             del r2_dict[max(r2_dict)]
             better_path=r2_dict[max(r2_dict)]
 
+            shutil.move(best_path,
+                        os.path.join(self.save_dir, 'best.ckpt'))
+            shutil.move(better_path,
+                        os.path.join(self.save_dir, 'best.ckpt'))
+
         else:
-            #best path is the last path
+            #best path is the last path which is saved at resume_points dir
             best_path=resume_path
             better_path=resume_path
 
-        shutil.move(best_path,os.path.join(self.save_dir,'best.ckpt'))
-        shutil.move(better_path,os.path.join(self.save_dir,'better.ckpt'))
+            shutil.move(os.join(self.save_dir,best_path.split('/')[-2],best_path.split('/')[-1]),os.path.join(self.save_dir,'best.ckpt'))
+            shutil.move(os.join(self.save_dir, better_path.split('/')[-2], better_path.split('/')[-1]),
+                        os.path.join(self.save_dir, 'best.ckpt'))
+
         print("Time Elapsed for all epochs : {:.4f}m".format((time.time() - start)/60))
 
         return best_loss, best_path,better_path
