@@ -252,7 +252,7 @@ class Batcher(torch.utils.data.IterableDataset):
             counter = tf.data.experimental.Counter()
             dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
             dataset = dataset.map(self.augment_ex, num_parallel_calls=args.num_workers)
-        dataset = dataset.repeat(args.max_epochs)
+        #dataset = dataset.repeat(args.max_epochs)
         dataset = dataset.batch(batch_size=self.batch_size)
         print('in batching')
         dataset = dataset.prefetch(2)
