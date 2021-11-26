@@ -21,7 +21,7 @@ args = Namespace(
     max_epochs=200,
 
     lr=.0001,
-    fc_reg=.01,
+    fc_reg=.01,                #fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
     conv_reg=.01,
 
     # data
