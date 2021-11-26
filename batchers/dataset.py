@@ -301,10 +301,13 @@ class Batcher(torch.utils.data.IterableDataset):
         implement iterator of the  loader
         '''
         start = time.time()
+
         self.ds=self.get_dataset()
+
         if self._iterator is None:
 
             self._iterator = iter(self.ds)
+            print(next(self._iterator))
         else:
             self._reset()
 
