@@ -1,4 +1,5 @@
 import os
+import shutil
 import time
 from collections import defaultdict
 
@@ -110,6 +111,7 @@ class Trainer:
         start=time.time()
 
         for epoch in range(max_epochs):
+            epoch_start=time.time()
             #print(next(trainloader))
             with tqdm(trainloader, unit="batch") as tepoch:
                 train_step = 0
@@ -239,18 +241,20 @@ class Trainer:
 
             self.metric.reset()
             self.scheduler.step()
+            print("Time Elapsed for one epochs : {:.4f}m".format((time.time() - epoch_start) / 60))
         #choose the best model between the saved models in regard to r2 value
         if r2_dict:
             best_path=r2_dict[max(r2_dict)]
             del r2_dict[max(r2_dict)]
             better_path=r2_dict[max(r2_dict)]
+
         else:
             #best path is the last path
             best_path=resume_path
             better_path=resume_path
 
-        os.rename(best_path,os.path.join(self.save_dir,'best.ckpt'))
-        os.rename(better_path,os.path.join(self.save_dir,'better.ckpt'))
+        shutil.move(best_path,os.path.join(self.save_dir,'best.ckpt'))
+        shutil.move(better_path,os.path.join(self.save_dir,'better.ckpt'))
         print("Time Elapsed for all epochs : {:.4f}m".format((time.time() - start)/60))
 
         return best_loss, best_path,better_path
