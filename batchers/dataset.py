@@ -72,6 +72,7 @@ class Batcher(torch.utils.data.IterableDataset):
         self.batch_size = batch_size
         self.shuffle = shuffle
         self._iterator = None
+        self.ds = self.get_dataset()
 
         #self.ds = get_dataset(tfrecords, batch_size, label, nl_label, ls_bands, nl_bands,seed, scalar_features_keys, clipn,
                            #   normalize, cache, shuffle, groupby, augment,
@@ -108,12 +109,13 @@ class Batcher(torch.utils.data.IterableDataset):
         ex = tf.io.parse_single_example(example_proto, features=keys_to_features)
         do_keep = tf.equal(ex[self.groupby], 0.0)
         return do_keep
-    '''
-    '''      #convert the records to dictionaries of {'feature_name' : tf.Tensor}
-    def tfrecords_to_dict(self, example: tf.Tensor) -> dict[str, tf.Tensor]:
-        
-   
 
+    def tfrecords_to_dict(self, example: tf.Tensor) -> dict[str, tf.Tensor]:
+
+        '''
+        convert the records to dictionaries of {'feature_name' : tf.Tensor}
+
+        '''
         
         # TODO:NIGHTLIGHT band/label
 
@@ -243,7 +245,7 @@ class Batcher(torch.utils.data.IterableDataset):
             print('in cahce')
 
         if self.shuffle:
-            dataset = dataset.shuffle(buffer_size=1024 * 1024 * 1024 * 128)
+            dataset = dataset.shuffle(buffer_size=1000)
 
         if self.augment:
             print('in augment')
@@ -299,13 +301,13 @@ class Batcher(torch.utils.data.IterableDataset):
         implement iterator of the  loader
         '''
         start = time.time()
-        self.ds=self.get_dataset(cache=self.cache)
+
         if self._iterator is None:
 
             self._iterator = iter(self.ds)
         else:
             self._reset()
-        print(self.ds)
+
         print(f'time in iter: {time.time() - start}')
         return self._iterator
 
