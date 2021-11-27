@@ -307,8 +307,9 @@ class Trainer:
         return {
             'optimizer': opt,
             'lr_scheduler': {
-                'scheduler': ExponentialLR(opt,
-                                           gamma=args.lr_decay),
+               # 'scheduler': ExponentialLR(opt,
+                #                           gamma=args.lr_decay),
+                'scheduler': torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=7,verbose=True)
 
             }
         }

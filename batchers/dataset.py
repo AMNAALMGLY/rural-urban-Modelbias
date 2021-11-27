@@ -218,7 +218,7 @@ class Batcher(torch.utils.data.IterableDataset):
         if self.shuffle:
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
-            dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords).interleave(
+            dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords).shuffle(buffer_size=10000,reshuffle_each_iteration=False).interleave(
                 lambda file_path: tf.data.TFRecordDataset(file_path, compression_type='GZIP'),
                 cycle_length=AUTO, block_length=1, )
 
