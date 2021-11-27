@@ -26,10 +26,13 @@ Drop dmsp nl for year <2012
 add cluster column(kmean) and then repeat the same experiments above .
 
 #Sanity checks Experiments :
-    knn NL mean scalar
-    resnet18 MS
-    resnet18 ms+NL concat (trained on NL seperately, ms seperately concat the fc , run ridge on top)
-    transfer:resnet 18 RGB transfer
+knn NL mean scalar
+
+resnet18 MS
+
+resnet18 ms+NL concat (trained on NL seperately, ms seperately concat the fc , run ridge on top)
+
+transfer:resnet 18 RGB transfer
 
 # TODO
 
