@@ -194,7 +194,7 @@ class Trainer:
                     count2 += 1
                     best_loss = avg_valid_loss
                     # start saving after a threshold of epochs and a patience of improvement
-                    if epoch >= 70 and count2 >= patience:
+                    if epoch >= 70 and count2 >= 5:
                         save_path = os.path.join(self.save_dir, f'best  at loss Epoch{epoch}.ckpt')
                         torch.save(self.model.state_dict(), save_path)
                         # save r2 values

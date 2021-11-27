@@ -61,13 +61,12 @@ def run_extraction_on_models(model_dir: str,
     Args
     - model_dirs: list of str, names of folders where models are saved, should
         be subfolders of out_root_dir
-    - ModelClass: class, an instance `model` of ModelClass
     - model_params: dict, parameters to pass to ModelClass constructor
     - batcher: Batcher, whose batch_op includes 'images' key
     - out_root_dir: str, path to main directory where all model checkpoints and
         TensorBoard logs are saved
     - save_filename: str, name of file to save
-    - batch_keys: list of str
+    - batch_keys: list of str to columns to be saved with the images
 
     '''
 
