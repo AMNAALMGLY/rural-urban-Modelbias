@@ -108,7 +108,9 @@ class Trainer:
         count2=0
         r2_dict=defaultdict(lambda x:'')
         resume_path=None
+        last_loss=float('inf')
         start=time.time()
+
 
         for epoch in range(max_epochs):
             epoch_start=time.time()
@@ -186,7 +188,7 @@ class Trainer:
     
                 '''
                 # early stopping with loss
-                if best_loss - avg_valid_loss >= 0:
+                if last_loss - avg_valid_loss >= 0.1:
                     # loss is improving
                     counter = 0
                     count2 += 1
@@ -199,7 +201,7 @@ class Trainer:
                         r2_dict[r2_valid] = save_path
                         print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
                         print(f'Path to best model at loss found during training: \n{save_path}')
-                elif best_loss - avg_valid_loss < 0.1:
+                elif last_loss - avg_valid_loss < 0.1:
                     # loss is degrading
                     counter += 1  # degrading tracker
                     count2 = 0  # improving tracker
@@ -241,6 +243,7 @@ class Trainer:
 
             self.metric.reset()
             self.scheduler.step()
+            last_loss=avg_valid_loss
             print("Time Elapsed for one epochs : {:.4f}m".format((time.time() - epoch_start) / 60))
         #choose the best model between the saved models in regard to r2 value
         if r2_dict:
