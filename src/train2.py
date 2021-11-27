@@ -12,6 +12,7 @@ from src.trainer2 import Trainer
 from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name,load_from_checkpoint
 from configs import args as default_args
 from utils.utils import seed_everything
+from torchsample.callbacks import EarlyStopping
 import wandb
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
@@ -48,7 +49,9 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
     print(f'checkpoints directory: {dirpath}')
     os.makedirs(dirpath, exist_ok=True)
 
-
+    #setup callback
+    callbacks = [EarlyStopping(monitor='val_loss', patience=5)]
+    model.set_callbacks(callbacks)
 
     # Trainer
     trainer = Trainer(save_dir=dirpath,**params)

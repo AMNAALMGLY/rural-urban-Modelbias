@@ -205,7 +205,7 @@ class Trainer:
                     # loss is degrading
                     counter += 1  # degrading tracker
                     count2 = 0  # improving tracker
-                    if counter >= patience and early_stopping:
+                    if counter >= patience and early_stopping and epoch>100:
                         print('.................Early Stopping .....................')
                         break
 
@@ -261,8 +261,8 @@ class Trainer:
             best_path=resume_path
             better_path=resume_path
 
-            shutil.move(os.join(self.save_dir,best_path.split('/')[-2],best_path.split('/')[-1]),os.path.join(self.save_dir,'best.ckpt'))
-            shutil.move(os.join(self.save_dir, better_path.split('/')[-2], better_path.split('/')[-1]),
+            shutil.move(os.path.join(self.save_dir,best_path.split('/')[-2],best_path.split('/')[-1]),os.path.join(self.save_dir,'best.ckpt'))
+            shutil.move(os.path.join(self.save_dir, better_path.split('/')[-2], better_path.split('/')[-1]),
                         os.path.join(self.save_dir, 'best.ckpt'))
 
         print("Time Elapsed for all epochs : {:.4f}m".format((time.time() - start)/60))
