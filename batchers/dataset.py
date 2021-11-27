@@ -242,6 +242,7 @@ class Batcher(torch.utils.data.IterableDataset):
 
         if self.shuffle:
             dataset = dataset.shuffle(buffer_size=1000)
+            dataset = dataset.prefetch(2 * self.batch_size)
 
         if cache:
             dataset = dataset.cache()
