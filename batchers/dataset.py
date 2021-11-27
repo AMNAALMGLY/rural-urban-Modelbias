@@ -218,11 +218,10 @@ class Batcher(torch.utils.data.IterableDataset):
         if self.shuffle:
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
-            dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords)
-            dataset = dataset.shuffle(buffer_size=1000)
-            dataset = dataset.interleave(
+            dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords).shuffle(buffer_size=1000).interleave(
                 lambda file_path: tf.data.TFRecordDataset(file_path, compression_type='GZIP'),
                 cycle_length=AUTO, block_length=1, )
+
         else:
             # convert to individual records
             dataset = tf.data.TFRecordDataset(
@@ -231,34 +230,35 @@ class Batcher(torch.utils.data.IterableDataset):
                 buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
                 num_parallel_reads=args.num_workers)
 
-        dataset = dataset.prefetch(2 * self.batch_size)
+        dataset = dataset.prefetch(4 * self.batch_size)
 
+        print('workers',args.num_workers)
         dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex), num_parallel_calls=args.num_workers)
         if self.groupby == 'urban':
 
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 1.0))
         elif self.groupby == 'rural':
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
-
-        if self.shuffle:
-            dataset = dataset.shuffle(buffer_size=1000)
-            dataset = dataset.prefetch(2 * self.batch_size)
+        dataset = dataset.prefetch(4 * self.batch_size)
 
         if cache:
             dataset = dataset.cache()
             print('in cahce')
 
+        if self.shuffle:
+            dataset = dataset.shuffle(buffer_size=1000,reshuffle_each_iteration=True)
+            dataset = dataset.prefetch(4 * self.batch_size)
 
-
+        dataset = dataset.batch(batch_size=self.batch_size)
+        print('in batching')
+        dataset = dataset.prefetch(4)
         if self.augment:
             print('in augment')
             counter = tf.data.experimental.Counter()
             dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
             dataset = dataset.map(self.augment_ex, num_parallel_calls=args.num_workers)
-        #dataset = dataset.repeat(args.max_epochs)
-        dataset = dataset.batch(batch_size=self.batch_size)
-        print('in batching')
-        dataset = dataset.prefetch(2)
+        # dataset = dataset.repeat(args.max_epochs)
+        dataset = dataset.prefetch(4)
         print(f'Time in getdataset: {time.time() - start}')
         return dataset
         #return dataset.as_numpy_iterator()
