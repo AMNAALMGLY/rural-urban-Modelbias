@@ -16,7 +16,8 @@ python -m src.train2.py
 any new experiment you can add it to train2.py.
 
 
-#New_experiments:
+# New_experiments:
+
 add open building dataset
 
 add covertype dataset 
@@ -25,7 +26,7 @@ Drop dmsp nl for year <2012
 
 add cluster column(kmean) and then repeat the same experiments above .
 
-#Sanity checks Experiments :
+# Sanity checks Experiments :
 knn NL mean scalar
 
 resnet18 MS
