@@ -220,7 +220,7 @@ class Batcher():
             dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords)\
                 .shuffle(buffer_size=1000).\
                 interleave(
-                 lambda file_path: tf.data.TFRecordDataset(file_path,  compression_type='GZIP'),
+                 lambda file_path: tf.data.TFRecordDataset(file_path,  compression_type='GZIP',num_parallel_reads=AUTO),
                 cycle_length=5,
                 block_length=1,
                 num_parallel_calls=tf.data.experimental.AUTOTUNE
