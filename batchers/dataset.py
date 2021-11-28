@@ -217,21 +217,15 @@ class Batcher():
         if self.shuffle:
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
-            # dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords).shuffle(buffer_size=1000,
-            #                                                                      reshuffle_each_iteration=False).interleave(
-            #     lambda file_path: tf.data.TFRecordDataset(file_path, buffer_size=1024 * 1024 * 128,
-            #                                               compression_type='GZIP', num_parallel_reads=AUTO),
-            #     cycle_length=AUTO, block_length=1)
+            dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords)\
+                .shuffle(buffer_size=1000).\
+                interleave(
+                 lambda file_path: tf.data.TFRecordDataset(file_path,  compression_type='GZIP'),
+                cycle_length=5,
+                block_length=1,
+                num_parallel_calls=tf.data.experimental.AUTOTUNE
+            )
 
-            dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords)
-            # cache all the dataset into the memory
-            dataset = dataset.cache()
-            # then shuffle the dataset
-            dataset = dataset.shuffle(buffer_size=1000,
-                     reshuffle_each_iteration=False).interleave(
-                lambda file_path: tf.data.TFRecordDataset(file_path, buffer_size=1024 * 1024 * 128,
-                                                          compression_type='GZIP', num_parallel_reads=AUTO),
-                cycle_length=AUTO, block_length=1)
 
         else:
             # convert to individual records
@@ -246,7 +240,7 @@ class Batcher():
         if self.nl_bands == 'split':
             dataset = dataset.map(self.split_nl_band)
 
-        dataset = dataset.prefetch(4 * self.batch_size)
+        dataset = dataset.prefetch(2 * self.batch_size)
 
         if self.groupby == 'urban':
 
@@ -255,17 +249,13 @@ class Batcher():
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
         # dataset = dataset.prefetch(4 * self.batch_size)      #Not sure of this
 
-       # if cache:
-        #    dataset = dataset.cache()
-        #    print('in cahce')
+        if cache:
+            dataset = dataset.cache()
+            print('in cahce')
 
         if self.shuffle:
-            dataset = dataset.shuffle(buffer_size=1000, reshuffle_each_iteration=True)
-            dataset = dataset.prefetch(4 * self.batch_size)
-
-        dataset = dataset.batch(batch_size=self.batch_size)
-        print('in batching')
-        dataset = dataset.prefetch(4)
+            dataset = dataset.shuffle(buffer_size=1000,)
+            #dataset = dataset.prefetch(4 * self.batch_size)
 
         if self.augment:
             print('in augment')
@@ -273,7 +263,12 @@ class Batcher():
             dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
             dataset = dataset.map(self.augment_ex, num_parallel_calls=AUTO)
 
-        dataset = dataset.prefetch(6)
+        dataset = dataset.batch(batch_size=self.batch_size)
+        print('in batching')
+       # dataset = dataset.prefetch(4)
+
+
+        dataset = dataset.prefetch(2)
         print(f'Time in getdataset: {time.time() - start}')
         return dataset
         # return dataset.as_numpy_iterator()
