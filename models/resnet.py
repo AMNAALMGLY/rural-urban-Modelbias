@@ -332,6 +332,11 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
     ms_channels = in_channels - rgb_channels
     if in_channels == 3:
         final_weights = rgb_weights
+    elif in_channels <3:
+        with torch.no_grad():
+            mean = rgb_weights.mean()
+            std = rgb_weights.std()
+            final_weights = torch.normal(mean, std, size=(out_channels, in_channels, H, W))
     elif in_channels > 3:
         # spectral images
 
