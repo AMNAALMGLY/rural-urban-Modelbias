@@ -33,7 +33,7 @@ args = Namespace(
     clipn=True,
     ooc=True,
     dataset='DHS_OOC',
-    fold='A',
+    fold='B',
     ls_bands=None,
     nl_band='split',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
@@ -43,7 +43,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_A_nl_random',
+    experiment_name='DHS_OOC_B_nl_random',
     out_dir=os.path.join(ROOT_DIR, 'outputs'),
     init_ckpt_dir=None,
     group=None,
