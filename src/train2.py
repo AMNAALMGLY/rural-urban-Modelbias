@@ -124,7 +124,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    wandb.init(project="rual-urban-torch", config={})
+    wandb.init(project="Resnet_bias", config={})
     print('GPUS:', torch.cuda.device_count())
     parser = argparse.ArgumentParser()
     args = parse_arguments(parser, default_args)
