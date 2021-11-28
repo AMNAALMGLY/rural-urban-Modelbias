@@ -230,13 +230,17 @@ class Batcher(torch.utils.data.IterableDataset):
                 buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
                 num_parallel_reads=args.num_workers)
 
+
+
+
+
+        dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex), num_parallel_calls=AUTO)
+
         if self.nl_bands == 'split':
             dataset = dataset.map(self.split_nl_band)
 
         dataset = dataset.prefetch(4 * self.batch_size)
 
-
-        dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex), num_parallel_calls=AUTO)
         if self.groupby == 'urban':
 
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 1.0))
