@@ -18,7 +18,8 @@ AUTO: int = tf.data.experimental.AUTOTUNE
 
 # choose which GPU to run on
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-seed=123
+seed = 123
+
 
 # TODO split nl_band function
 class Batcher():
@@ -74,9 +75,9 @@ class Batcher():
         self._iterator = None
         self.ds = self.get_dataset()
 
-        #self.ds = get_dataset(tfrecords, batch_size, label, nl_label, ls_bands, nl_bands,seed, scalar_features_keys, clipn,
-                           #   normalize, cache, shuffle, groupby, augment,
-                             # )
+        # self.ds = get_dataset(tfrecords, batch_size, label, nl_label, ls_bands, nl_bands,seed, scalar_features_keys, clipn,
+        #   normalize, cache, shuffle, groupby, augment,
+        # )
 
         # TODO:check values of arguments passed
 
@@ -101,9 +102,8 @@ class Batcher():
             # TODO: save the length in a static variable (less time)
             return sum(1 for i in self)
 
-
     def group(self, example_proto: tf.Tensor) -> tf.Tensor:
-     
+
         key_to_feature = self.groupby
         keys_to_features = {
             key_to_feature: tf.io.FixedLenFeature(shape=[], dtype=tf.float32)}  # I'm assuming that it is float feature.
@@ -117,7 +117,7 @@ class Batcher():
         convert the records to dictionaries of {'feature_name' : tf.Tensor}
 
         '''
-        
+
         # TODO:NIGHTLIGHT band/label
 
         bands = {'rgb': ['BLUE', 'GREEN', 'RED'], 'ms': ['BLUE', 'GREEN', 'RED', 'SWIR1', 'SWIR2', 'TEMP1', 'NIR'],
@@ -126,7 +126,7 @@ class Batcher():
         scalar_float_keys = ['lat', 'lon', 'year']
         if self.label is not None:
             scalar_float_keys.append(self.label)
-        ex_bands = bands.get(self.ls_bands,[]) + bands.get(self.nl_bands, [])
+        ex_bands = bands.get(self.ls_bands, []) + bands.get(self.nl_bands, [])
         print('ex_bands :', ex_bands)
         for band in ex_bands:
             keys_to_features[band] = tf.io.FixedLenFeature(shape=[255 ** 2], dtype=tf.float32)
@@ -167,7 +167,6 @@ class Batcher():
         else:
             raise ValueError
 
-
         label_ms = ex.get(self.label, float('nan'))
 
         if self.nl_label:
@@ -197,7 +196,6 @@ class Batcher():
         print('finished converting to dict')
         return result
 
-
     def tfDatase_to_np(self):
         # TODO:test, move to utils.py
         '''
@@ -219,9 +217,11 @@ class Batcher():
         if self.shuffle:
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
-            dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords).shuffle(buffer_size=1000,reshuffle_each_iteration=False).interleave(
-                lambda file_path: tf.data.TFRecordDataset(file_path, buffer_size=1024 * 1024 * 1024 * 20, compression_type='GZIP',num_parallel_reads=AUTO),
-                cycle_length=AUTO, block_length=1, )
+            dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords).shuffle(buffer_size=1000,
+                                                                                 reshuffle_each_iteration=False).interleave(
+                lambda file_path: tf.data.TFRecordDataset(file_path, buffer_size=1024 * 1024 * 128,
+                                                          compression_type='GZIP', num_parallel_reads=AUTO),
+                cycle_length=AUTO, block_length=1,num_parallel_calls=AUTO )
 
         else:
             # convert to individual records
@@ -230,10 +230,6 @@ class Batcher():
                 compression_type='GZIP',
                 buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
                 num_parallel_reads=AUTO)
-
-
-
-
 
         dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex), num_parallel_calls=AUTO)
 
@@ -247,17 +243,15 @@ class Batcher():
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 1.0))
         elif self.groupby == 'rural':
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
-        #dataset = dataset.prefetch(4 * self.batch_size)      #Not sure of this
+        # dataset = dataset.prefetch(4 * self.batch_size)      #Not sure of this
 
         if cache:
             dataset = dataset.cache()
             print('in cahce')
 
         if self.shuffle:
-
-          dataset = dataset.shuffle(buffer_size=1000,reshuffle_each_iteration=True)
-          dataset = dataset.prefetch(4 * self.batch_size)
-
+            dataset = dataset.shuffle(buffer_size=1000, reshuffle_each_iteration=True)
+            dataset = dataset.prefetch(4 * self.batch_size)
 
         dataset = dataset.batch(batch_size=self.batch_size)
         print('in batching')
@@ -267,12 +261,12 @@ class Batcher():
             print('in augment')
             counter = tf.data.experimental.Counter()
             dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
-            dataset = dataset.map(self.augment_ex, num_parallel_calls=args.num_workers)
+            dataset = dataset.map(self.augment_ex, num_parallel_calls=AUTO)
 
         dataset = dataset.prefetch(6)
         print(f'Time in getdataset: {time.time() - start}')
         return dataset
-        #return dataset.as_numpy_iterator()
+        # return dataset.as_numpy_iterator()
 
     def split_nl_band(self, ex: dict[str, tf.Tensor]) -> dict[str, tf.Tensor]:
         '''Splits the NL band into separate DMSP and VIIRS bands.
@@ -299,7 +293,7 @@ class Batcher():
         )
         return ex
 
-    def augment_ex(self, ex: dict[str, tf.Tensor],seed) -> dict[str, tf.Tensor]:
+    def augment_ex(self, ex: dict[str, tf.Tensor], seed) -> dict[str, tf.Tensor]:
         """Performs image augmentation (random flips + levels brightnes/contrast adjustments).
           Does not perform level adjustments on NL band(s).
 
@@ -336,13 +330,12 @@ class Batcher():
         ex['images'] = img
         return ex
 
-
     def __iter__(self):
         '''
         implement iterator of the  loader
         '''
         start = time.time()
-        #self.ds=self.get_dataset()
+        # self.ds=self.get_dataset()
         if self._iterator is None:
             self._iterator = iter(self.ds.as_numpy_iterator())
         else:
@@ -353,6 +346,7 @@ class Batcher():
 
     def _reset(self):
         self._iterator = iter(self.ds.as_numpy_iterator())
+
     '''
     def __next__(self):
         start = time.time()
@@ -360,4 +354,3 @@ class Batcher():
         print(f'time in next: {time.time() - start}')
         return batch
     '''
-
