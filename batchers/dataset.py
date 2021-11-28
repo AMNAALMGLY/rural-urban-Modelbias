@@ -21,7 +21,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 seed=123
 
 # TODO split nl_band function
-class Batcher(torch.utils.data.IterableDataset):
+class Batcher():
     """
     The PovertyMap poverty measure prediction dataset Iterator.
     This is a processed version of LandSat 5/7/8 Surface Reflectance,
@@ -98,6 +98,7 @@ class Batcher(torch.utils.data.IterableDataset):
                 nbatches += 1
             return nbatches
         else:
+            # TODO: save the length in a static variable (less time)
             return sum(1 for i in self)
 
 
@@ -213,14 +214,13 @@ class Batcher(torch.utils.data.IterableDataset):
     # do the tf_to dict operation to the whole dataset in numpy dtype
 
     def get_dataset(self, cache=None):
-      
         start = time.time()
-        print(self.shuffle)
+        # print(self.shuffle)
         if self.shuffle:
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
             dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords).shuffle(buffer_size=1000,reshuffle_each_iteration=False).interleave(
-                lambda file_path: tf.data.TFRecordDataset(file_path, compression_type='GZIP'),
+                lambda file_path: tf.data.TFRecordDataset(file_path, buffer_size=1024 * 1024 * 1024 * 20, compression_type='GZIP'),
                 cycle_length=AUTO, block_length=1, )
 
         else:
@@ -342,11 +342,8 @@ class Batcher(torch.utils.data.IterableDataset):
         implement iterator of the  loader
         '''
         start = time.time()
-
         #self.ds=self.get_dataset()
-
         if self._iterator is None:
-
             self._iterator = iter(self.ds.as_numpy_iterator())
         else:
             self._reset()

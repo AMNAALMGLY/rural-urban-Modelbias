@@ -15,7 +15,7 @@ from utils.utils import seed_everything
 import wandb
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
-#
+wandp=default_args.wandb_p
 
 
 
@@ -124,7 +124,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    wandb.init(project="Resnet_bias", config={})
+    wandb.init(project=wandp, config={})
     print('GPUS:', torch.cuda.device_count())
     parser = argparse.ArgumentParser()
     args = parse_arguments(parser, default_args)

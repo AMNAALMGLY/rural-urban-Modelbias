@@ -52,6 +52,10 @@ args = Namespace(
     num_outputs=1,
     resume=None,
 
+    #Visualization
+    #wandb project:
+    wandb_p='Resnet_bias'
+
 )
 args.num_workers = multiprocessing.cpu_count()
 args.no_of_gpus = torch.cuda.device_count()
