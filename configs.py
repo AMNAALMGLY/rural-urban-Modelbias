@@ -36,7 +36,7 @@ args = Namespace(
     fold='A',
     ls_bands=None,
     nl_band='split',  # [None , merge , split]
-    nl_label='mean',  # [center, mean,None]
+    nl_label=None,  # [center, mean,None]
     scaler_features_keys= None    ,#{'urban_rural':tf.float32},
     # keep_frac {keep_frac}
 
