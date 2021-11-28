@@ -195,7 +195,7 @@ class Trainer:
                     count2 += 1
                     best_loss = avg_valid_loss
                     # start saving after a threshold of epochs and a patience of improvement
-                    if epoch >= 70 and count2 >= 2:
+                    if epoch >= 60 and count2 >= 2:
                         print('in best path saving')
                         save_path = os.path.join(self.save_dir, f'best  at loss Epoch{epoch}.ckpt')
                         torch.save(self.model.state_dict(), save_path)
@@ -209,10 +209,9 @@ class Trainer:
                     print(last_loss-avg_valid_loss)
                     counter += 1  # degrading tracker
                     count2 = 0  # improving tracker
-                    if counter >= patience and early_stopping and epoch>=100:
+                    if counter >= patience and early_stopping and epoch>=60:
                         print('.................Early Stopping .....................')
                         break
-
 
 
 

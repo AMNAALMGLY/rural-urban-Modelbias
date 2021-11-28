@@ -218,7 +218,7 @@ class Batcher(torch.utils.data.IterableDataset):
         if self.shuffle:
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
-            dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords).shuffle(buffer_size=10000,reshuffle_each_iteration=False).interleave(
+            dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords).shuffle(buffer_size=1000,reshuffle_each_iteration=False).interleave(
                 lambda file_path: tf.data.TFRecordDataset(file_path, compression_type='GZIP'),
                 cycle_length=AUTO, block_length=1, )
 
@@ -232,8 +232,8 @@ class Batcher(torch.utils.data.IterableDataset):
 
         dataset = dataset.prefetch(4 * self.batch_size)
 
-        print('workers',args.num_workers)
-        dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex), num_parallel_calls=args.num_workers)
+
+        dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex), num_parallel_calls=AUTO)
         if self.groupby == 'urban':
 
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 1.0))
@@ -247,7 +247,7 @@ class Batcher(torch.utils.data.IterableDataset):
 
         if self.shuffle:
           t=time.time()
-          dataset = dataset.shuffle(buffer_size=1000,reshuffle_each_iteration=True)
+          dataset = dataset.shuffle(buffer_size=1000,reshuffle_each_iteration=False)
           dataset = dataset.prefetch(4 * self.batch_size)
           print('time in shuffle ',time.time()-t)
 
