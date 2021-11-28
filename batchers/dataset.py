@@ -151,10 +151,11 @@ class Batcher(torch.utils.data.IterableDataset):
                 if self.normalize:
                     means = MEANS_DICT[self.normalize]
                     stds = STD_DEVS_DICT[self.normalize]
-                    if band == 'NIGHTLIGHTS' and year < 2012:
-                        ex[band] = (ex[band] - means['DMSP']) / stds['DMSP']
-                    elif band == 'NIGHTLIGHTS' and year > 2012:
-                        ex[band] = (ex[band] - means['VIIRS']) / stds['VIIRS']
+                    if band == 'NIGHTLIGHTS'
+                        ex[band] = (tf.cond(
+                            year < 2012,  # true = DMSP
+                            true_fn=lambda: (ex[band] - means['DMSP']) / stds['DMSP'],
+                            false_fn=lambda: (ex[band] - means['VIIRS']) / stds['VIIRS']))
                     else:
                         ex[band] = (ex[band] - means[band]) / stds[band]
             # TODO augmentation
