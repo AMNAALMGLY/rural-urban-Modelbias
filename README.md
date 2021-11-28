@@ -11,7 +11,7 @@ To run this you have to configure directory of data in train.py then create envi
 conda env create --file envi.yml
 ````
 ````
-python -m src.train2.py
+python -m src.train2
 ````
 any new experiment you can add it to train2.py.
 
