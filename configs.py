@@ -10,7 +10,7 @@ args = Namespace(
     # Model
 
     model_name='resnet18',
-    hs_weight_init='samescaled',       #[same, samescaled,random]
+    hs_weight_init='random',       #[same, samescaled,random]
     model_init='imagenet',
 
     # Training
@@ -21,29 +21,29 @@ args = Namespace(
     max_epochs=200,
 
     lr=.0001,
-    fc_reg=.01,                #fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=.01,
+    fc_reg=1.,                #fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
+    conv_reg=1.,
 
     # data
 
     data_path='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     label_name='wealthpooled',
     cache=['train', 'train_eval', 'val'],
-    augment=False,
+    augment=True,
     clipn=True,
     ooc=True,
     dataset='DHS_OOC',
-    fold='D',
-    ls_bands='ms',
-    nl_band=None,  # [None , merge , split]
-    nl_label=None,  # [center, mean,None]
+    fold='A',
+    ls_bands=None,
+    nl_band='split',  # [None , merge , split]
+    nl_label='mean',  # [center, mean,None]
     scaler_features_keys= None    ,#{'urban_rural':tf.float32},
     # keep_frac {keep_frac}
 
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_D_ms_samescaled',
+    experiment_name='DHS_OOC_A_nl_random',
     out_dir=os.path.join(ROOT_DIR, 'outputs'),
     init_ckpt_dir=None,
     group=None,

@@ -230,6 +230,9 @@ class Batcher(torch.utils.data.IterableDataset):
                 buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
                 num_parallel_reads=args.num_workers)
 
+        if self.nl_band == 'split':
+            dataset = dataset.map(self.split_nl_band)
+
         dataset = dataset.prefetch(4 * self.batch_size)
 
 
@@ -246,10 +249,10 @@ class Batcher(torch.utils.data.IterableDataset):
             print('in cahce')
 
         if self.shuffle:
-          t=time.time()
+
           dataset = dataset.shuffle(buffer_size=1000,reshuffle_each_iteration=True)
           dataset = dataset.prefetch(4 * self.batch_size)
-          print('time in shuffle ',time.time()-t)
+
 
         dataset = dataset.batch(batch_size=self.batch_size)
         print('in batching')
@@ -265,6 +268,31 @@ class Batcher(torch.utils.data.IterableDataset):
         print(f'Time in getdataset: {time.time() - start}')
         return dataset
         #return dataset.as_numpy_iterator()
+
+    def split_nl_band(self, ex: dict[str, tf.Tensor]) -> dict[str, tf.Tensor]:
+        '''Splits the NL band into separate DMSP and VIIRS bands.
+
+        Args
+        - ex: dict {'images': img, 'years': year, ...}
+            - img: tf.Tensor, shape [H, W, C], type float32, final band is NL
+            - year: tf.Tensor, scalar, type int32
+
+        Returns: ex, with img updated to have 2 NL bands
+        - img: tf.Tensor, shape [H, W, C], type float32, last two bands are [DMSP, VIIRS]
+        '''
+        assert self.nl_band == 'split'
+        all_0 = tf.zeros(shape=[224, 224, 1], dtype=tf.float32, name='all_0')
+        img = ex['images']
+        year = ex['years']
+
+        ex['images'] = tf.cond(
+            year < 2012,
+            # if DMSP, then add an all-0 VIIRS band to the end
+            true_fn=lambda: tf.concat([img, all_0], axis=2),
+            # if VIIRS, then insert an all-0 DMSP band before the last band
+            false_fn=lambda: tf.concat([img[:, :, 0:-1], all_0, img[:, :, -1:]], axis=2)
+        )
+        return ex
 
     def augment_ex(self, ex: dict[str, tf.Tensor],seed) -> dict[str, tf.Tensor]:
         """Performs image augmentation (random flips + levels brightnes/contrast adjustments).
