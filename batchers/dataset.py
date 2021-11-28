@@ -125,7 +125,7 @@ class Batcher(torch.utils.data.IterableDataset):
         scalar_float_keys = ['lat', 'lon', 'year']
         if self.label is not None:
             scalar_float_keys.append(self.label)
-        ex_bands = bands[self.ls_bands] + bands.get(self.nl_bands, [])
+        ex_bands = bands.get(self.ls_bands,[]) + bands.get(self.nl_bands, [])
         print('ex_bands :', ex_bands)
         for band in ex_bands:
             keys_to_features[band] = tf.io.FixedLenFeature(shape=[255 ** 2], dtype=tf.float32)
