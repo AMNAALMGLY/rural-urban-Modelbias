@@ -188,7 +188,7 @@ class Trainer:
     
                 '''
                 # early stopping with loss
-                if last_loss - avg_valid_loss >= 0:
+                if best_loss - avg_valid_loss >= 0:
                     print('in loss improving loop')
                     # loss is improving
                     counter = 0
@@ -203,7 +203,7 @@ class Trainer:
                         r2_dict[r2_valid] = save_path
                         print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
                         print(f'Path to best model at loss found during training: \n{save_path}')
-                elif last_loss - avg_valid_loss < 0:
+                elif best_loss - avg_valid_loss < 0:
                     # loss is degrading
                     print('in loss degrading loop by :')
                     print(last_loss-avg_valid_loss)

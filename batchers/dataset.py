@@ -217,11 +217,21 @@ class Batcher():
         if self.shuffle:
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
-            dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords).shuffle(buffer_size=1000,
-                                                                                 reshuffle_each_iteration=False).interleave(
+            # dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords).shuffle(buffer_size=1000,
+            #                                                                      reshuffle_each_iteration=False).interleave(
+            #     lambda file_path: tf.data.TFRecordDataset(file_path, buffer_size=1024 * 1024 * 128,
+            #                                               compression_type='GZIP', num_parallel_reads=AUTO),
+            #     cycle_length=AUTO, block_length=1)
+
+            dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords)
+            # cache all the dataset into the memory
+            dataset = dataset.cache()
+            # then shuffle the dataset
+            dataset = dataset.shuffle(buffer_size=1000,
+                     reshuffle_each_iteration=False).interleave(
                 lambda file_path: tf.data.TFRecordDataset(file_path, buffer_size=1024 * 1024 * 128,
                                                           compression_type='GZIP', num_parallel_reads=AUTO),
-                cycle_length=AUTO, block_length=1,num_parallel_calls=AUTO )
+                cycle_length=AUTO, block_length=1)
 
         else:
             # convert to individual records
