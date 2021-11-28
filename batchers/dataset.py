@@ -255,9 +255,9 @@ class Batcher():
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
         # dataset = dataset.prefetch(4 * self.batch_size)      #Not sure of this
 
-        if cache:
-            dataset = dataset.cache()
-            print('in cahce')
+       # if cache:
+        #    dataset = dataset.cache()
+        #    print('in cahce')
 
         if self.shuffle:
             dataset = dataset.shuffle(buffer_size=1000, reshuffle_each_iteration=True)
