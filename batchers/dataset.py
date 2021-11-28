@@ -239,7 +239,7 @@ class Batcher(torch.utils.data.IterableDataset):
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 1.0))
         elif self.groupby == 'rural':
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
-        dataset = dataset.prefetch(4 * self.batch_size)      #Not sure of this
+        #dataset = dataset.prefetch(4 * self.batch_size)      #Not sure of this
 
         if cache:
             dataset = dataset.cache()
@@ -247,7 +247,7 @@ class Batcher(torch.utils.data.IterableDataset):
 
         if self.shuffle:
           t=time.time()
-          dataset = dataset.shuffle(buffer_size=1000,reshuffle_each_iteration=False)
+          dataset = dataset.shuffle(buffer_size=1000,reshuffle_each_iteration=True)
           dataset = dataset.prefetch(4 * self.batch_size)
           print('time in shuffle ',time.time()-t)
 
