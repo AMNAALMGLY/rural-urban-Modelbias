@@ -213,7 +213,7 @@ class Batcher():
 
     def get_dataset(self, cache=None):
         start = time.time()
-        # print(self.shuffle)
+
         if self.shuffle:
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
@@ -254,7 +254,7 @@ class Batcher():
             print('in cahce')
 
         if self.shuffle:
-            dataset = dataset.shuffle(buffer_size=1000,)
+            dataset = dataset.shuffle(buffer_size=1000,reshuffle_each_iteration=True)
             #dataset = dataset.prefetch(4 * self.batch_size)
 
         if self.augment:
