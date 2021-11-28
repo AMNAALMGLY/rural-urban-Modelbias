@@ -10,7 +10,7 @@ args = Namespace(
     # Model
 
     model_name='resnet18',
-    hs_weight_init='random',       #[same, samescaled,random]
+    hs_weight_init='samescaled',       #[same, samescaled,random]
     model_init='imagenet',
 
     # Training
@@ -34,8 +34,8 @@ args = Namespace(
     ooc=True,
     dataset='DHS_OOC',
     fold='B',
-    ls_bands=None,
-    nl_band='split',  # [None , merge , split]
+    ls_bands='ms',
+    nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     scaler_features_keys= None    ,#{'urban_rural':tf.float32},
     # keep_frac {keep_frac}
@@ -43,7 +43,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_B_nl_random',
+    experiment_name='DHS_OOC_B_ms_random',
     out_dir=os.path.join(ROOT_DIR, 'outputs'),
     init_ckpt_dir=None,
     group=None,
