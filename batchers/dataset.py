@@ -230,7 +230,7 @@ class Batcher(torch.utils.data.IterableDataset):
                 buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
                 num_parallel_reads=args.num_workers)
 
-        if self.nl_band == 'split':
+        if self.nl_bands == 'split':
             dataset = dataset.map(self.split_nl_band)
 
         dataset = dataset.prefetch(4 * self.batch_size)
@@ -280,7 +280,7 @@ class Batcher(torch.utils.data.IterableDataset):
         Returns: ex, with img updated to have 2 NL bands
         - img: tf.Tensor, shape [H, W, C], type float32, last two bands are [DMSP, VIIRS]
         '''
-        assert self.nl_band == 'split'
+        assert self.nl_bands == 'split'
         all_0 = tf.zeros(shape=[224, 224, 1], dtype=tf.float32, name='all_0')
         img = ex['images']
         year = ex['years']
