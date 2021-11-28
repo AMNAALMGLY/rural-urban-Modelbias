@@ -220,7 +220,7 @@ class Batcher():
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
             dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords).shuffle(buffer_size=100,reshuffle_each_iteration=False).interleave(
-                lambda file_path: tf.data.TFRecordDataset(file_path, buffer_size=1024 * 1024 * 1024 * 20, compression_type='GZIP'),
+                lambda file_path: tf.data.TFRecordDataset(file_path, buffer_size=1024 * 1024 * 1024 * 20, compression_type='GZIP',num_parallel_reads=AUTO),
                 cycle_length=AUTO, block_length=1, )
 
         else:
@@ -229,7 +229,7 @@ class Batcher():
                 filenames=self.tfrecords,
                 compression_type='GZIP',
                 buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
-                num_parallel_reads=args.num_workers)
+                num_parallel_reads=AUTO)
 
 
 
