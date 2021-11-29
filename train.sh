@@ -12,8 +12,8 @@
 #cd /sailhome/amna/anaconda3
 GPUS=1
 echo "Number of GPUs: "${GPUS}
-WRAP="python -m src.train2"
-JOBNAME="NL_D"
+WRAP="python -m models.extract_features"
+JOBNAME="feature_ms"
 LOG_FOLDER="/atlas/u/amna/logs/resnet18_logs/"
 echo ${WRAP}
 echo "Log Folder:"${LOG_FOLDER}
