@@ -20,7 +20,7 @@ args = Namespace(
     gpu=-1,
     max_epochs=200,
 
-    lr=.001,
+    lr=.0001,
     fc_reg=.001,                #fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
     conv_reg=.001,
 
