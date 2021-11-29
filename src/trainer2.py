@@ -131,7 +131,7 @@ class Trainer:
                     if train_step % 20 == 0:
                         running_train=epoch_loss/(train_step)
                         writer.add_scalar("Loss/train", running_train, train_step)
-                        wandb.log({"train_loss": running_train})
+                        wandb.log({"train_loss": running_train,'epoch':epoch})
 
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
@@ -140,7 +140,7 @@ class Trainer:
 
             #Metric calulation and average loss
             r2=self.metric.compute()
-            wandb.log({'r2_train':r2})
+            wandb.log({'r2_train':r2,'epoch':epoch})
             avgloss = epoch_loss / train_steps
             print(f'End of Epoch training average Loss is {avgloss:.2f} and R2 is {r2:.2f}')
             self.metric.reset()
@@ -159,13 +159,13 @@ class Trainer:
                     if valid_step % 20 == 0:
                         running_loss=valid_epoch_loss/(valid_step)
                         writer.add_scalar("Loss/valid", running_loss, valid_step)
-                        wandb.log({"valid_loss": running_loss})
+                        wandb.log({"valid_loss": running_loss,'epoch':epoch})
                     #if valid_step==valid_steps:
                      #   break
                 avg_valid_loss=valid_epoch_loss / valid_steps
                 r2_valid=self.metric.compute()
                 print(f'Validation R2 is {r2_valid:.2f}')
-                wandb.log({'r2_valid': r2_valid})
+                wandb.log({'r2_valid': r2_valid,'epoch':epoch})
 
                 # early stopping with r2:
                 '''
@@ -257,16 +257,17 @@ class Trainer:
             shutil.move(best_path,
                         os.path.join(self.save_dir, 'best.ckpt'))
             shutil.move(better_path,
-                        os.path.join(self.save_dir, 'best.ckpt'))
+                        os.path.join(self.save_dir, 'better.ckpt'))
 
+            best_path=os.path.join(self.save_dir, 'best.ckpt')
+            better_path=os.path.join(self.save_dir, 'better.ckpt')
         else:
             #best path is the last path which is saved at resume_points dir
             best_path=resume_path
-            better_path=resume_path
 
             shutil.move(os.path.join(self.save_dir,best_path.split('/')[-2],best_path.split('/')[-1]),os.path.join(self.save_dir,'best.ckpt'))
-            shutil.move(os.path.join(self.save_dir, better_path.split('/')[-2], better_path.split('/')[-1]),
-                        os.path.join(self.save_dir, 'best.ckpt'))
+            best_path = os.path.join(self.save_dir, 'best.ckpt')
+            better_path=best_path
 
         print("Time Elapsed for all epochs : {:.4f}m".format((time.time() - start)/60))
 
