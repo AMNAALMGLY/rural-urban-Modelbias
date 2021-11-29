@@ -10,7 +10,7 @@ args = Namespace(
     # Model
 
     model_name='resnet18',
-    hs_weight_init='samescaled',       #[same, samescaled,random]
+    hs_weight_init='random',       #[same, samescaled,random]
     model_init='imagenet',
 
     # Training
@@ -21,8 +21,8 @@ args = Namespace(
     max_epochs=200,
 
     lr=.0001,
-    fc_reg=.01,                #fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=.01,
+    fc_reg=1.,                #fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
+    conv_reg=1.,
 
     # data
 
@@ -33,9 +33,9 @@ args = Namespace(
     clipn=True,
     ooc=True,
     dataset='DHS_OOC',
-    fold='E',
-    ls_bands='ms',
-    nl_band=None,  # [None , merge , split]
+    fold='B',
+    ls_bands=None,
+    nl_band='split',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     scaler_features_keys= None    ,#{'urban_rural':tf.float32},
     # keep_frac {keep_frac}
@@ -43,7 +43,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_E_ms_samescaled',
+    experiment_name='DHS_OOC_B_nl_random',
     out_dir=os.path.join(ROOT_DIR, 'outputs'),
     init_ckpt_dir=None,
     group=None,
