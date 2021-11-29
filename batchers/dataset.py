@@ -257,13 +257,15 @@ class Batcher():
             dataset = dataset.shuffle(buffer_size=1000,reshuffle_each_iteration=True)
             #dataset = dataset.prefetch(4 * self.batch_size)
 
+
+
+        dataset = dataset.batch(batch_size=self.batch_size)
+
         if self.augment:
             print('in augment')
             counter = tf.data.experimental.Counter()
             dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
             dataset = dataset.map(self.augment_ex, num_parallel_calls=AUTO)
-
-        dataset = dataset.batch(batch_size=self.batch_size)
         print('in batching')
        # dataset = dataset.prefetch(4)
 
