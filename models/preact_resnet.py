@@ -138,7 +138,7 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
                                  hs_weight_init: str) :
     out_channels, rgb_channels, H, W = rgb_weights.shape
     print('rgb weight shape ',rgb_weights.shape)
-    rgb_weights=torch.clone(rgb_weights)
+    rgb_weights=torch.tensor(rgb_weights)
     ms_channels = in_channels - rgb_channels
     if in_channels == 3:
         final_weights = rgb_weights
