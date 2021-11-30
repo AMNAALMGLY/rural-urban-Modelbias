@@ -98,7 +98,7 @@ def PreActResNet18(in_channels,pretrained):
     model = PreActResNet(PreActBlock, in_channels,[2,2,2,2],)
     if pretrained:
         state_dict = np.load(args.imagenet_weight_path) #TODO put it in urls list as in resnet
-        print(state_dict)
+        print(state_dict.keys())
         state_dict['conv1.weight'] = nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
         model.load_state_dict(state_dict)
