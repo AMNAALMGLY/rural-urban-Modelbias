@@ -95,7 +95,7 @@ class PreActResNet(nn.Module):
 
 
 def PreActResNet18(in_channels,pretrained):
-    model = PreActResNet(PreActBlock, [2,2,2,2],in_channels)
+    model = PreActResNet(PreActBlock, in_channels,[2,2,2,2],)
     if pretrained:
         state_dict = np.load(args.imagenet_weight_path) #TODO put it in urls list as in resnet
         print(state_dict)
@@ -107,7 +107,7 @@ def PreActResNet18(in_channels,pretrained):
 
 
 def PreActResNet34(in_channels,pretrained):
-    model=PreActResNet(PreActBlock, [3,4,6,3])
+    model=PreActResNet(PreActBlock, in_channels,[3,4,6,3])
     if pretrained:
         state_dict = np.load(args.imagenet_weight_path) #TODO put it in urls list as in resnet
         state_dict['conv1.weight'] = nn.Parameter(
@@ -117,7 +117,7 @@ def PreActResNet34(in_channels,pretrained):
 
 
 def PreActResNet50(in_channels,pretrained):
-    model=PreActResNet(PreActBottleneck, [3,4,6,3])
+    model=PreActResNet(PreActBottleneck,in_channels, [3,4,6,3])
     if pretrained:
         state_dict = np.load(args.imagenet_weight_path) #TODO put it in urls list as in resnet
         state_dict['conv1.weight'] = nn.Parameter(
