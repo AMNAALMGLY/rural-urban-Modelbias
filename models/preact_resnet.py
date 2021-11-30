@@ -101,7 +101,7 @@ def PreActResNet18(in_channels,pretrained):
         for i,value in state_dict.items():
             print(i ,value)
         state_dict['conv0/W:0'] = nn.Parameter(
-            init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
+            init_first_layer_weights(in_channels, state_dict['conv0/W:0'], args.hs_weight_init))
         model.load_state_dict(state_dict)
     return model
 
@@ -112,7 +112,7 @@ def PreActResNet34(in_channels,pretrained):
     if pretrained:
         state_dict = np.load(args.imagenet_weight_path) #TODO put it in urls list as in resnet
         state_dict['conv0/W:0'] = nn.Parameter(
-            init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
+            init_first_layer_weights(in_channels, state_dict['conv0/W:0'], args.hs_weight_init))
         model.load_state_dict(state_dict)
     return model
 
@@ -122,7 +122,7 @@ def PreActResNet50(in_channels,pretrained):
     if pretrained:
         state_dict = np.load(args.imagenet_weight_path) #TODO put it in urls list as in resnet
         state_dict['conv1.weight'] = nn.Parameter(
-            init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
+            init_first_layer_weights(in_channels, state_dict['conv0/W:0'], args.hs_weight_init))
         model.load_state_dict(state_dict)
     return model
 
