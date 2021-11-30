@@ -1,13 +1,19 @@
 #adapted from https://github.com/kuangliu/pytorch-cifar/blob/master/models/preact_resnet.py
 import time
+from collections import OrderedDict
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+from models._internally_replaced_utils import load_state_dict_from_url
 from configs import args
+model_urls = {
+    "resnet18": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
+    "resnet34": "https://download.pytorch.org/models/resnet34-b627a593.pth",
+    "resnet50": "https://download.pytorch.org/models/resnet50-0676ba61.pth",
 
+}
 #TODO add downsample attribute
 class PreActBlock(nn.Module):
     '''Pre-activation version of the BasicBlock.'''
@@ -98,8 +104,11 @@ def PreActResNet18(in_channels,pretrained):
     model = PreActResNet(PreActBlock, in_channels,[2,2,2,2],)
     if pretrained:
         state_dict = np.load(args.imagenet_weight_path) #TODO put it in urls list as in resnet
+        new_dict=OrderedDict()
         for i,value in state_dict.items():
             print(i ,value)
+        d= load_state_dict_from_url(model_urls['resnet18'])
+        print(d)
         state_dict['conv0/W:0'] = nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv0/W:0'], args.hs_weight_init))
         model.load_state_dict(state_dict)
