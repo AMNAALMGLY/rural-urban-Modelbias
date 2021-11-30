@@ -2,7 +2,7 @@ from argparse import Namespace
 import torch
 import multiprocessing
 import os
-import  tensorflow as tf
+
 
 ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
 args = Namespace(
@@ -12,6 +12,7 @@ args = Namespace(
     model_name='resnet18',
     hs_weight_init='samescaled',       #[same, samescaled,random]
     model_init='imagenet',
+    imagenet_weight_path= '/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
 
     # Training
 

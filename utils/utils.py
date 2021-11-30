@@ -14,7 +14,7 @@ import numpy as np
 import tensorflow as tf
 import torch
 
-from batchers.dataset_constants import SURVEY_NAMES
+from batchers.dataset_constants import SURVEY_NAMES, SIZES
 import torchmetrics
 from collections import ChainMap
 
@@ -129,13 +129,17 @@ def check_existing(model_dirs: Iterable[str], outputs_root_dir: str,
 
 def get_paths(dataset: str, split: str, fold: str, root) -> np.ndarray:
     if split == 'all':
-        split = ['train', 'val', 'test']
+        splits = ['train', 'val', 'test']
+    else:
+        splits=[split]
     paths = []
     fold = SURVEY_NAMES[f'{dataset}_{fold}']
-    for s in split:
+    for s in splits:
         for country in fold[s]:
             path = os.path.join(root, country + '*', '*.tfrecord.gz')
             paths += glob(path)
+    assert  len(paths)==SIZES[f'{dataset}_{fold}'][split]
+
     return np.sort(paths)
 
 

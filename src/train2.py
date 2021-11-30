@@ -53,7 +53,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
     trainer = Trainer(save_dir=dirpath,**params)
 
 
-    best_loss, path= trainer.fit( train_loader, valid_loader,max_epochs=args.max_epochs,gpus='cuda')
+    best_loss, path,_= trainer.fit( train_loader, valid_loader,max_epochs=args.max_epochs,gpus='cuda')
 
 
     return best_loss, path,
@@ -90,11 +90,11 @@ def main(args):
     wandb.config.update(data_params)
 
     # dataloader
-    paths_train = get_paths(args.dataset, ['train'], args.fold, args.data_path)
+    paths_train = get_paths(args.dataset, 'train', args.fold, args.data_path)
 
-    paths_valid = get_paths(args.dataset, ['val'], args.fold, args.data_path)
+    paths_valid = get_paths(args.dataset, 'val', args.fold, args.data_path)
 
-    paths_test=get_paths(args.dataset, ['test'], args.fold, args.data_path)
+    paths_test=get_paths(args.dataset, 'test', args.fold, args.data_path)
 
     batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label, 'DHS',args.augment, args.clipn, args.batch_size, groupby=args.group,
@@ -113,7 +113,7 @@ def main(args):
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)
 
 
-    best_loss,best_path,_ = setup_experiment(model, batcher_train, batcher_valid, args.resume, args)
+    best_loss,best_path= setup_experiment(model, batcher_train, batcher_valid, args.resume, args)
 
     print(f'Path to best model found during training: \n{best_path}')
 

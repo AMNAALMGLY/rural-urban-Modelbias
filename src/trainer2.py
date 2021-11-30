@@ -310,7 +310,8 @@ class Trainer:
             'lr_scheduler': {
                # 'scheduler': ExponentialLR(opt,
                 #                           gamma=args.lr_decay),
-                'scheduler': torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=200,verbose=True)
+                #'scheduler': torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=200,verbose=True)
+                'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min')
 
             }
         }
