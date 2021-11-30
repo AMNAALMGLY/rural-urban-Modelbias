@@ -245,7 +245,7 @@ class Trainer:
             '''
 
             self.metric.reset()
-            self.scheduler.step()
+            self.scheduler.step(metrics=avg_valid_loss)
             last_loss=avg_valid_loss
             print("Time Elapsed for one epochs : {:.4f}m".format((time.time() - epoch_start) / 60))
         #choose the best model between the saved models in regard to r2 value
