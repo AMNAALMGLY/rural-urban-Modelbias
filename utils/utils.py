@@ -133,9 +133,9 @@ def get_paths(dataset: str, split: str, fold: str, root) -> np.ndarray:
     else:
         splits=[split]
     paths = []
-    fold = SURVEY_NAMES[f'{dataset}_{fold}']
+    fold_name = SURVEY_NAMES[f'{dataset}_{fold}']
     for s in splits:
-        for country in fold[s]:
+        for country in fold_name[s]:
             path = os.path.join(root, country + '*', '*.tfrecord.gz')
             paths += glob(path)
     assert  len(paths)==SIZES[f'{dataset}_{fold}'][split]
