@@ -109,7 +109,7 @@ def PreActResNet18(in_channels,pretrained):
     print(model)
     state_dict = np.load(args.imagenet_weight_path)  # TODO put it in urls list as in resnet
     for i, value in state_dict.items():
-        print(i, value)
+        print(i)
 
     if pretrained:
         state_dict = np.load(args.imagenet_weight_path) #TODO put it in urls list as in resnet
