@@ -97,7 +97,6 @@ class PreActResNet(nn.Module):
         out = self.layer3(out)
         out = self.layer4(out)
         print(out.shape)
-        #out = F.avg_pool2d(out, 4)
         out=self.avgpool(out)
         print(out.shape)
         out = torch.flatten(out,1)
@@ -107,6 +106,11 @@ class PreActResNet(nn.Module):
 
 def PreActResNet18(in_channels,pretrained):
     model = PreActResNet(PreActBlock, in_channels,[2,2,2,2],)
+    print(model)
+    state_dict = np.load(args.imagenet_weight_path)  # TODO put it in urls list as in resnet
+    for i, value in state_dict.items():
+        print(i, value)
+
     if pretrained:
         state_dict = np.load(args.imagenet_weight_path) #TODO put it in urls list as in resnet
         new_dict=OrderedDict()
