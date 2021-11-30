@@ -96,9 +96,11 @@ class PreActResNet(nn.Module):
         out = self.layer2(out)
         out = self.layer3(out)
         out = self.layer4(out)
+        print(out.shape)
         #out = F.avg_pool2d(out, 4)
         out=self.avgpool(out)
-        out = out.view(out.size(0), -1)
+        print(out.shape)
+        out = torch.flatten(out,1)
         out = self.fc(out)
         return out
 
