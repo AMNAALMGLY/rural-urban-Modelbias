@@ -11,7 +11,7 @@ args = Namespace(
 
     model_name='resnet18',
     hs_weight_init='samescaled',       #[same, samescaled,random]
-    model_init='imagenet',
+    model_init=None,
     imagenet_weight_path= '/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
 
     # Training
