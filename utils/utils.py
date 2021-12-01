@@ -96,17 +96,21 @@ def load_npz(path,verbose=True, check=None):
 
 def get_full_experiment_name(experiment_name: str, batch_size: int,
                              fc_reg: float, conv_reg: float, lr: float, ):
-    fc_str = str(fc_reg).replace('.', '')
-    conv_str = str(conv_reg).replace('.', '')
-    lr_str = str(lr).replace('.', '')
-    if fc_reg <1:
-        fc_str=fc_str[1:]
-    if conv_reg <1:
-        conv_str = conv_str[1:]
-    if lr<1:
+    if fc_reg < 1:
+        fc_str = str(fc_reg).replace('.', '')
+        fc_str = fc_str[1:]
+    else:
+        fc_str = str(fc_reg)
+    if conv_reg < 1:
+       conv_str = str(conv_reg).replace('.', '')
+       conv_str = conv_str[1:]
+    else:
+        conv_str = str(conv_reg)
+    if lr < 1:
+        lr_str = str(lr).replace('.', '')
         lr_str = lr_str[1:]
-
-
+    else:
+        lr_str = str(lr)
     return f'{experiment_name}_b{batch_size}_fc{fc_str}_conv{conv_str}_lr{lr_str}'
 
 
