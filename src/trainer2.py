@@ -61,15 +61,6 @@ class Trainer:
 
         self.setup_criterion()
 
-    '''
-    def forward(self, x):
-
-
-
-        output = self.model(x)
-
-        return output
-    '''
     def _shared_step(self, batch, metric_fn):
 
         x = torch.tensor(batch['images'],)
