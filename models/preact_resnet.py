@@ -44,18 +44,20 @@ def load_tensor_pack(model,path,in_channels):
     # load values into models state_dict
     for key in state_dict.keys():
         if 'running' in key:
+            print('in running')
             state_dict[key] = torch.tensor(running[key],requires_grad=True)
         elif 'running'  not in key:
             if 'num_batches' not in key:
-
+                  print('in not ruunning keys')
                   state_dict[key] = torch.tensor(my_dict[key],requires_grad=True)
                   if 'conv' in key :
                       state_dict[key]=state_dict[key].reshape(state_dict[key].shape[-1],state_dict[key].shape[-2],state_dict[key].shape[-3],state_dict[key].shape[-4])
     state_dict['conv1.weight']=nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init),requires_grad=True)
-
-    print(model.state_dict()['conv1.weight'].requires_grad)
-    print(model.state_dict()['layer1.0.conv1.weight'].requires_grad)
+    print(tensor_pack_dict['conv0/W:0'])
+    print(state_dict['conv1.weight'])
+    print(state_dict['conv1.weight'].requires_grad)
+    print(state_dict['layer1.0.conv1.weight'].requires_grad)
 
     return model
 
