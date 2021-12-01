@@ -209,6 +209,7 @@ class PreActResNet(nn.Module):
 
 def PreActResNet18(in_channels,pretrained):
     model = PreActResNet(PreActBlock, in_channels,[2,2,2,2],)
+    print(model)
     if pretrained:
         if pretrained:
             model = load_tensor_pack(model, args.imagenet_weight_path, in_channels)
