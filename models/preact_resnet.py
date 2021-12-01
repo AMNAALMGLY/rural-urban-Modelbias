@@ -56,7 +56,7 @@ def load_tensor_pack(model,path,in_channels):
     print('state_dict ',state_dict)
     state_dict['conv1.weight']=nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
-    model.load_state_dict(state_dict)
+    #model.state_dict()=state_dict
     return model
 
 def conv3x3(in_planes, out_planes, stride=1):
