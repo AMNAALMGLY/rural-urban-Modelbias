@@ -54,6 +54,7 @@ def load_tensor_pack(model,path,in_channels):
                       print(state_dict[key].shape)
                       state_dict[key]=state_dict[key].permute(3,2,1,0)
                   elif 'fc' in key:
+                      print(state_dict[key].shape)
                       state_dict[key] = state_dict[key].permute(1,0)
 
     state_dict['conv1.weight']=nn.Parameter(
