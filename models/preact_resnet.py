@@ -50,7 +50,7 @@ def load_tensor_pack(model,path,in_channels):
 
                   state_dict[key] = torch.tensor(my_dict[key],requires_grad=True)
                   if 'conv' in key :
-                      state_dict[key]=state_dict[key].reshape(state_dict[key].shape[-1],state_dict[key].shape[-2],state_dict[key][-3],state_dict[key][-4])
+                      state_dict[key]=state_dict[key].reshape(state_dict[key].shape[-1],state_dict[key].shape[-2],state_dict[key].shape[-3],state_dict[key].shape[-4])
     state_dict['conv1.weight']=nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
 

@@ -123,7 +123,7 @@ The following LSMS surveys were included (both for creating the "wealthpooled" i
 
 ## Python Pickle (`.pkl`) Files
 
-[**`dhs_incountry_folds.pkl`**](dhs_incountry_folds.pkl): This Python Pickle file contains a Python dictionary representing the "in-country" cross-validation folds for DHS clusters. See [`preprocessing/2_create_incountry_folds.ipynb`](../preprocessing/2_create_incountry_folds.ipynb) for more details.
+[**`dhs_incountry_folds.pkl`**](dhs_incountry_folds.pkl): This Python Pickle file contains a Python dictionary representing the "in-country" cross-validation folds for DHS clusters. See [`preprocessing/2_create_incountry_folds.ipynb`](../../../demo/africa_poverty_clean/preprocessing/preprocessing/2_create_incountry_folds.ipynb) for more details.
 
 
 [**`lsms_incountry_folds.pkl`**](lsms_incountry_folds.pkl): Similar to `dhs_incountry_folds.pkl`, except for LSMS clusters.
