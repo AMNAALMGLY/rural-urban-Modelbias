@@ -16,6 +16,7 @@ def load_tensor_pack(model,path,in_channels):
     my_dict = model.state_dict().copy()  # torch model dict copy
     state_dict = model.state_dict()  # torch model dict reference
     running = dict()  # running mean dict
+    EMA=dict()   #EMA dict from tensorpack
 
     # put keys of running mean into a new dict
     # del keys that are not in the tensor pack(track_num_batches)
@@ -32,11 +33,14 @@ def load_tensor_pack(model,path,in_channels):
     print('my dict ',my_dict)
     # del all keys that are not running mean from tensorpack
     for key in tensor_pack_dict.keys():
-        if 'running' not in key:
-            del tensor_pack_dict[key]
+        if 'EMA' not in key:
+            continue
+        else:
+            EMA[key]=tensor_pack_dict[key]
+
     # assign values of the edited tensorpack to keys of running dict
-    print('tensor_pack_running ',tensor_pack_dict.keys())
-    for key1, value2 in zip(running.keys(), tensor_pack_dict.values()):
+    print('tensor_pack_EMA ',EMA.keys())
+    for key1, value2 in zip(running.keys(), EMA.values()):
         running[key1] = value2
     print('running ',running)
     # load values into models state_dict
