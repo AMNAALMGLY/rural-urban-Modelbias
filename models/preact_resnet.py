@@ -15,7 +15,7 @@ def load_tensor_pack(model,path,in_channels):
     tensor_pack_dict = np.load(path)  # tensor pack dict
     my_dict = model.state_dict().copy()  # torch model dict copy
     state_dict = model.state_dict()  # torch model dict reference
-    running = OrderedDict()  # running mean dict
+    running = dict()  # running mean dict
 
     # put keys of running mean into a new dict
     # del keys that are not in the tensor pack(track_num_batches)
