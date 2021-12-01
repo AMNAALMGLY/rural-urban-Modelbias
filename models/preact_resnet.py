@@ -12,7 +12,6 @@ from models._internally_replaced_utils import load_state_dict_from_url
 from configs import args
 from models.resnet import model_urls
 
-print(load_state_dict_from_url(model_urls['resnet18']))
 
 def load_tensor_pack(model,path,in_channels):
     tensor_pack_dict = np.load(path)  # tensor pack dict
@@ -45,10 +44,12 @@ def load_tensor_pack(model,path,in_channels):
     # load values into models state_dict
     for key in state_dict.keys():
         if 'running' in key:
-            state_dict[key] = running[key]
+            state_dict[key] = torch.tensor(running[key],requires_grad=True)
+            print('bn shapes ',state_dict[key].shape)
         elif 'running'  not in key:
             if 'num_batches' not in key:
-                  state_dict[key] = my_dict[key]
+                  state_dict[key] = torch.tensor(my_dict[key],requires_grad=True)
+                  print('other shapes',state_dict[key].shape)
     state_dict['conv1.weight']=nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
 
