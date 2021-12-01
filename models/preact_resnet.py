@@ -11,7 +11,7 @@ from torchvision.models.alexnet import model_urls
 
 from models._internally_replaced_utils import load_state_dict_from_url
 from configs import args
-print(load_state_dict_from_url(model_urls['resnet18'])
+print(load_state_dict_from_url(model_urls['resnet18']))
 
 def load_tensor_pack(model,path,in_channels):
     tensor_pack_dict = np.load(path)  # tensor pack dict
