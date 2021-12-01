@@ -1,4 +1,5 @@
 #adapted from https://github.com/kuangliu/pytorch-cifar/blob/master/models/preact_resnet.py
+import re
 import time
 from collections import OrderedDict
 
@@ -38,65 +39,6 @@ class PreActBlock(nn.Module):
         out = self.conv2(F.relu(self.bn2(out)))
         out += shortcut
         return out
-
-def get_saved_var_name(model_var, bottleneck=False):
-    '''Gets the saved variable's name (from TensorPack) for the given model variable.
-
-    Args
-    - model_var: tf.Variable
-    - bottleneck: bool
-
-    Returns: str, the saved variable name if the model variable is part of the ResNet,
-        None, otherwise.
-    '''
-    saved_var_name = model_var.name
-
-    # strip the variable name of everything up to and including '*resnet/'
-    s = re.search(r'.*resnet/', saved_var_name)
-    if s is None:  # if 'resnet/' not in variable name, then it isn't part of the resnet
-        return None
-    else:
-        saved_var_name = saved_var_name.replace(s.group(0), '')
-
-    # replace model variable names with the saved variable counterparts
-    conversion = {
-        'batch_normalization': 'bn',
-        'weights:0': 'W:0',
-        'shortcut': 'convshortcut',
-        'scale1': 'conv0'  # 'scale1' is a special case, because it has no blocks or subblocks
-    }
-
-    if bottleneck:
-        conversion['/a/'] = '/conv1/'
-        conversion['/b/'] = '/conv2/'
-        conversion['/c/'] = '/conv3/'
-    else:
-        conversion['/A/'] = '/conv1/'
-        conversion['/B/'] = '/conv2/'
-
-    for model_str, saved_str in conversion.items():
-        saved_var_name = saved_var_name.replace(model_str, saved_str)
-
-    # shift all of the 'block' numbers down by 1
-    # search for 'block###', return the '###' part
-    s = re.search(r'block(\d+)', saved_var_name)  # search for 'scale###'
-    if s is not None:
-        block_str = s.group(0)  # block_str = 'block###'
-        block_num = int(s.group(1))  # extract the '###' part from 'scale###' and convert it to int
-        new_block_str = 'block' + str(block_num - 1)
-        saved_var_name = saved_var_name.replace(block_str, new_block_str)
-
-    # shift all of the 'scale' numbers down by 2, then rename to 'group'
-    # - NOTE: we already dealt with scale1 above since it is a special case (no blocks or subblocks)
-    #   so we don't need to worry about negative numbers here
-    s = re.search(r'scale(\d+)', saved_var_name)  # search for 'scale###'
-    if s is not None:
-        scale_str = s.group(0)  # scale_str = 'scale###'
-        scale_num = int(s.group(1))  # extract the '###' part from 'scale###' and convert it to int
-        new_group_str = 'group' + str(scale_num - 2)
-        saved_var_name = saved_var_name.replace(scale_str, new_group_str)
-
-    return saved_var_name
 
 class PreActBottleneck(nn.Module):
     '''Pre-activation version of the original Bottleneck module.'''
@@ -167,9 +109,7 @@ def PreActResNet18(in_channels,pretrained):
     print(model)
     state_dict = np.load(args.imagenet_weight_path)  # TODO put it in urls list as in resnet
     d = load_state_dict_from_url(model_urls['resnet18'])
-    for i, value in state_dict.items():
-        print(i)
-
+    print(d.keys())
     if pretrained:
         state_dict = np.load(args.imagenet_weight_path) #TODO put it in urls list as in resnet
         new_dict=OrderedDict()
@@ -259,3 +199,62 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
         final_weights = torch.cat([rgb_weights, ms_weights], dim=1)
     print('init__layer_weight shape ', final_weights.shape)
     return final_weights
+
+def get_saved_var_name(model_var, bottleneck=False):
+    '''Gets the saved variable's name (from TensorPack) for the given model variable.
+
+    Args
+    - model_var: tf.Variable
+    - bottleneck: bool
+
+    Returns: str, the saved variable name if the model variable is part of the ResNet,
+        None, otherwise.
+    '''
+    saved_var_name = model_var.name
+
+    # strip the variable name of everything up to and including '*resnet/'
+    s = re.search(r'.*resnet/', saved_var_name)
+    if s is None:  # if 'resnet/' not in variable name, then it isn't part of the resnet
+        return None
+    else:
+        saved_var_name = saved_var_name.replace(s.group(0), '')
+
+    # replace model variable names with the saved variable counterparts
+    conversion = {
+        'batch_normalization': 'bn',
+        'weights:0': 'W:0',
+        'shortcut': 'convshortcut',
+        'scale1': 'conv0'  # 'scale1' is a special case, because it has no blocks or subblocks
+    }
+
+    if bottleneck:
+        conversion['/a/'] = '/conv1/'
+        conversion['/b/'] = '/conv2/'
+        conversion['/c/'] = '/conv3/'
+    else:
+        conversion['/A/'] = '/conv1/'
+        conversion['/B/'] = '/conv2/'
+
+    for model_str, saved_str in conversion.items():
+        saved_var_name = saved_var_name.replace(model_str, saved_str)
+
+    # shift all of the 'block' numbers down by 1
+    # search for 'block###', return the '###' part
+    s = re.search(r'block(\d+)', saved_var_name)  # search for 'scale###'
+    if s is not None:
+        block_str = s.group(0)  # block_str = 'block###'
+        block_num = int(s.group(1))  # extract the '###' part from 'scale###' and convert it to int
+        new_block_str = 'block' + str(block_num - 1)
+        saved_var_name = saved_var_name.replace(block_str, new_block_str)
+
+    # shift all of the 'scale' numbers down by 2, then rename to 'group'
+    # - NOTE: we already dealt with scale1 above since it is a special case (no blocks or subblocks)
+    #   so we don't need to worry about negative numbers here
+    s = re.search(r'scale(\d+)', saved_var_name)  # search for 'scale###'
+    if s is not None:
+        scale_str = s.group(0)  # scale_str = 'scale###'
+        scale_num = int(s.group(1))  # extract the '###' part from 'scale###' and convert it to int
+        new_group_str = 'group' + str(scale_num - 2)
+        saved_var_name = saved_var_name.replace(scale_str, new_group_str)
+
+    return saved_var_name
