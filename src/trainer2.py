@@ -166,6 +166,7 @@ class Trainer:
                 r2_valid=self.metric.compute()
                 print(f'Validation R2 is {r2_valid:.2f}')
                 wandb.log({'r2_valid': r2_valid,'epoch':epoch})
+                wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
 
                 # early stopping with r2:
                 '''
