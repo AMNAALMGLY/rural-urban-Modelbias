@@ -55,7 +55,8 @@ args = Namespace(
 
     #Visualization
     #wandb project:
-    wandb_p='Resnet_bias'
+    wandb_p="test-project",
+    entity="bias_migitation",
 
 )
 args.num_workers = multiprocessing.cpu_count()

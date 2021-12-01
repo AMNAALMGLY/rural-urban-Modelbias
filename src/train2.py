@@ -16,6 +16,7 @@ import wandb
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
 wandp=default_args.wandb_p
+entity=default_args.entity
 
 
 
@@ -124,7 +125,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    wandb.init(project=wandp, config={})
+    wandb.init(project=wandp,entity=entity, config={})
     print('GPUS:', torch.cuda.device_count())
     parser = argparse.ArgumentParser()
     args = parse_arguments(parser, default_args)

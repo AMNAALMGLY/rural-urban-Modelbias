@@ -14,7 +14,7 @@ from utils.utils import Metric
 from configs import args
 import  wandb
 writer = SummaryWriter()
-patience=8
+patience=20
 
 class Trainer:
     def __init__(self, model, lr, weight_decay, loss_type, num_outputs, metric, save_dir, **kwargs):
@@ -59,7 +59,6 @@ class Trainer:
         self.scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
         self.opt=self.configure_optimizers()['optimizer']
 
-        #self.metric=Accuracy(num_classes=10)
         self.setup_criterion()
 
     '''
@@ -96,6 +95,32 @@ class Trainer:
         metric_fn.update(preds, target)
 
         return loss
+
+    def training_step(self, batch,):
+
+
+        train_loss = self._shared_step(batch, self.metric)
+        self.opt.zero_grad()
+
+        train_loss.backward()
+
+        self.opt.step()
+
+        # log the outputs!
+
+        return train_loss
+
+
+    def validation_step(self, batch,):
+        loss = self._shared_step(batch, self.metric)
+
+        return  loss
+
+    def test_step(self, batch, ):
+        loss = self._shared_step(batch, self.metric)
+
+        return loss
+
     def fit(self, trainloader, validloader,max_epochs,gpus,early_stopping=True,save_every=10 ,overfit_batches=None):
 
 
@@ -135,8 +160,7 @@ class Trainer:
 
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
-                    #if train_step==train_steps:
-                     #   break
+
 
             #Metric calulation and average loss
             r2=self.metric.compute()
@@ -160,8 +184,7 @@ class Trainer:
                         running_loss=valid_epoch_loss/(valid_step)
                         writer.add_scalar("Loss/valid", running_loss, valid_step)
                         wandb.log({"valid_loss": running_loss,'epoch':epoch})
-                    #if valid_step==valid_steps:
-                     #   break
+
                 avg_valid_loss=valid_epoch_loss / valid_steps
                 r2_valid=self.metric.compute()
                 print(f'Validation R2 is {r2_valid:.2f}')
@@ -190,7 +213,8 @@ class Trainer:
                 '''
                 # early stopping with loss
                 if best_loss - avg_valid_loss >= 0:
-                    print('in loss improving loop')
+                    print('in loss improving loop by ')
+                    print(best_loss - avg_valid_loss)
                     # loss is improving
                     counter = 0
                     count2 += 1
@@ -200,14 +224,14 @@ class Trainer:
                         print('in best path saving')
                         save_path = os.path.join(self.save_dir, f'best  at loss Epoch{epoch}.ckpt')
                         torch.save(self.model.state_dict(), save_path)
-                        # save r2 values
+                        # save r2 valueslast
                         r2_dict[r2_valid] = save_path
                         print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
                         print(f'Path to best model at loss found during training: \n{save_path}')
                 elif best_loss - avg_valid_loss < 0:
                     # loss is degrading
                     print('in loss degrading loop by :')
-                    print(last_loss-avg_valid_loss)
+                    print(best_loss-avg_valid_loss)
                     counter += 1  # degrading tracker
                     count2 = 0  # improving tracker
                     if counter >= patience and early_stopping and epoch>=60:
@@ -279,30 +303,6 @@ class Trainer:
 
 
 
-    def training_step(self, batch,):
-
-
-        train_loss = self._shared_step(batch, self.metric)
-        self.opt.zero_grad()
-
-        train_loss.backward()
-
-        self.opt.step()
-
-        # log the outputs!
-
-        return train_loss
-
-
-    def validation_step(self, batch,):
-        loss = self._shared_step(batch, self.metric)
-
-        return  loss
-
-    def test_step(self, batch, ):
-        loss = self._shared_step(batch, self.metric)
-
-        return loss
 
     def configure_optimizers(self):
         opt = torch.optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
