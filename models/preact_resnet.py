@@ -7,10 +7,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.models.alexnet import model_urls
 
 from models._internally_replaced_utils import load_state_dict_from_url
 from configs import args
+from models.resnet import model_urls
+
 print(load_state_dict_from_url(model_urls['resnet18']))
 
 def load_tensor_pack(model,path,in_channels):
