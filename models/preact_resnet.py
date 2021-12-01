@@ -44,16 +44,14 @@ def load_tensor_pack(model,path,in_channels):
     # load values into models state_dict
     for key in state_dict.keys():
         if 'running' in key:
-            print('in running')
             state_dict[key] = torch.tensor(running[key],requires_grad=True)
         elif 'running'  not in key:
             if 'num_batches' not in key:
-                  print('in not ruunning keys')
                   state_dict[key] = torch.tensor(my_dict[key],requires_grad=True)
                   if 'conv' in key  or 'downsample' in key:
                       print(state_dict[key].shape)
                       state_dict[key]=state_dict[key].permute(3,2,1,0)
-                  elif 'fc' in key:
+                  elif 'fc'  in key and 'weight' in key:
                       print(state_dict[key].shape)
                       state_dict[key] = state_dict[key].permute(1,0)
 
