@@ -30,10 +30,8 @@ def load_tensor_pack(model,path,in_channels):
         if 'batches' in key:
             del my_dict[key]
     # assign values of tensor packs to model dict orderly
-    print('keys ',my_dict.keys())
     for key1, value2 in zip(my_dict.keys(), tensor_pack_dict.values()):
         my_dict[key1] = value2
-    print('my dict ',my_dict)
     # del all keys that are not running mean from tensorpack
     for key in tensor_pack_dict.keys():
         if 'EMA' not in key:
@@ -42,10 +40,8 @@ def load_tensor_pack(model,path,in_channels):
             EMA[key]=tensor_pack_dict[key]
 
     # assign values of the edited tensorpack to keys of running dict
-    print('tensor_pack_EMA ',EMA.keys())
     for key1, value2 in zip(running.keys(), EMA.values()):
         running[key1] = value2
-    print('running ',running)
     # load values into models state_dict
     for key in state_dict.keys():
         if 'running' in key:
@@ -53,10 +49,9 @@ def load_tensor_pack(model,path,in_channels):
         elif 'running'  not in key:
             if 'num_batches' not in key:
                   state_dict[key] = my_dict[key]
-    print('state_dict ',state_dict)
     state_dict['conv1.weight']=nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
-    #model.state_dict()=state_dict
+
     return model
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -220,6 +215,7 @@ def PreActResNet18(in_channels,pretrained):
     model = PreActResNet(PreActBlock, in_channels,[2,2,2,2],)
     if pretrained:
             model = load_tensor_pack(model, args.imagenet_weight_path, in_channels)
+
     return model
 
 
@@ -228,6 +224,8 @@ def PreActResNet34(in_channels,pretrained):
     #TODO edit load tensor pack function to adapt resnet34 and resnet50
     if pretrained:
        model=load_tensor_pack(model,args.imagenet_weight_path,in_channels)
+    print(model.state_dict()['conv1.weight'])
+
     return model
 
 
