@@ -12,7 +12,7 @@ from configs import args
 
 
 def load_tensor_pack(model,path,in_channels):
-    tensor_pack_dict = np.load(path).copy()  # tensor pack dict
+    tensor_pack_dict = np.load(path)  # tensor pack dict
     my_dict = model.state_dict().copy()  # torch model dict copy
     state_dict = model.state_dict()  # torch model dict reference
     running = OrderedDict()  # running mean dict
@@ -35,6 +35,7 @@ def load_tensor_pack(model,path,in_channels):
         if 'running' not in key:
             del tensor_pack_dict[key]
     # assign values of the edited tensorpack to keys of running dict
+    print('tensor_pack_running ',tensor_pack_dict.keys())
     for key1, value2 in zip(running.keys(), tensor_pack_dict.values()):
         running[key1] = value2
     print('running ',running)
