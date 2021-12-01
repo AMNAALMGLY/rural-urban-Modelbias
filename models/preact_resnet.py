@@ -19,7 +19,7 @@ def load_tensor_pack(model,path,in_channels):
 
     # put keys of running mean into a new dict
     # del keys that are not in the tensor pack(track_num_batches)
-    for key, value in my_dict.items():
+    for key, value in state_dict.items():
         if 'running' in key:
             running[key] = value
             del my_dict[key]
