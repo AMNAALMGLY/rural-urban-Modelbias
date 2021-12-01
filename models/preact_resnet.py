@@ -56,7 +56,7 @@ def load_tensor_pack(model,path,in_channels):
                       state_dict[key] = state_dict[key].permute(1,0)
 
     state_dict['conv1.weight']=nn.Parameter(
-            init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init),requires_grad=True)
+            init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
     print(torch.tensor(tensor_pack_dict['group0/block0/conv1/W:0']).permute(3,2,1,0))
     print(state_dict['layer1.0.conv1.weight'])
 
