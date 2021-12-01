@@ -54,6 +54,9 @@ def load_tensor_pack(model,path,in_channels):
     state_dict['conv1.weight']=nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init),requires_grad=True)
 
+    print(model.state_dict()['conv1.weight'].requires_grad)
+    print(model.state_dict()['layer1.0.conv1.weight'].requires_grad)
+
     return model
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -217,8 +220,8 @@ def PreActResNet18(in_channels,pretrained):
     model = PreActResNet(PreActBlock, in_channels,[2,2,2,2],)
     if pretrained:
             model = load_tensor_pack(model, args.imagenet_weight_path, in_channels)
-    print(model.state_dict()['conv1.weight'].requires_grad)
-    print(model.state_dict()['layer1.0.conv1.weight'].requires_grad)
+
+
 
     return model
 
