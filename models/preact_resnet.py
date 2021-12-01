@@ -217,7 +217,8 @@ def PreActResNet18(in_channels,pretrained):
     model = PreActResNet(PreActBlock, in_channels,[2,2,2,2],)
     if pretrained:
             model = load_tensor_pack(model, args.imagenet_weight_path, in_channels)
-    print(model.state_dict()['conv1.weight'])
+    print(model.state_dict()['conv1.weight'].requires_grad)
+
 
     return model
 
