@@ -47,13 +47,18 @@ def load_tensor_pack(model,path,in_channels):
             state_dict[key] = torch.tensor(running[key],requires_grad=True)
         elif 'running'  not in key:
             if 'num_batches' not in key:
-                  state_dict[key] = torch.tensor(my_dict[key],requires_grad=True)
+                  #state_dict[key] = torch.tensor(my_dict[key],requires_grad=True)
                   if 'conv' in key  or 'downsample' in key:
-                      print(state_dict[key].shape)
-                      state_dict[key]=state_dict[key].permute(3,2,1,0)
+
+                      state_dict[key]=torch.tensor(my_dict[key]).permute(3,2,1,0)
+                      state_dict[key].requires_grad=True
+
                   elif 'fc'  in key and 'weight' in key:
                       print(state_dict[key].shape)
-                      state_dict[key] = state_dict[key].permute(1,0)
+                      state_dict[key] = torch.tensor(my_dict[key]).permute(1,0)
+                      state_dict[key].requires_grad = True
+                  else:
+                       state_dict[key]=torch.tensor(my_dict[key],requires_grad = True)
 
     state_dict['conv1.weight']=nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
