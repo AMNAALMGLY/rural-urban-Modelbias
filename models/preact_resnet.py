@@ -50,9 +50,12 @@ def load_tensor_pack(model,path,in_channels):
             if 'num_batches' not in key:
                   print('in not ruunning keys')
                   state_dict[key] = torch.tensor(my_dict[key],requires_grad=True)
-                  if 'conv' in key  or 'downsample' in key or 'fc' in key:
+                  if 'conv' in key  or 'downsample' in key:
                       print(state_dict[key].shape)
                       state_dict[key]=state_dict[key].permute(3,2,1,0)
+                  elif 'fc' in key:
+                      state_dict[key] = state_dict[key].permute(1,0)
+
     state_dict['conv1.weight']=nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init),requires_grad=True)
     print(tensor_pack_dict['group0/block0/conv1/W:0'].permute(3,2,1,0))
