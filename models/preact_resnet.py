@@ -9,13 +9,46 @@ import torch.nn as nn
 import torch.nn.functional as F
 from models._internally_replaced_utils import load_state_dict_from_url
 from configs import args
-model_urls = {
-    "resnet18": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
-    "resnet34": "https://download.pytorch.org/models/resnet34-b627a593.pth",
-    "resnet50": "https://download.pytorch.org/models/resnet50-0676ba61.pth",
 
-}
 
+def load_tensor_pack(model,path,in_channels):
+    tensor_pack_dict = np.load(path).copy()  # tensor pack dict
+    my_dict = model.state_dict().copy()  # torch model dict copy
+    state_dict = model.state_dict()  # torch model dict reference
+    running = OrderedDict()  # running mean dict
+
+    # put keys of running mean into a new dict
+    # del keys that are not in the tensor pack(track_num_batches)
+    for key, value in my_dict.items():
+        if 'running' in key:
+            running[key] = value
+            del my_dict[key]
+        if 'batches' in key:
+            del my_dict[key]
+    # assign values of tensor packs to model dict orderly
+    print('keys ',my_dict.keys())
+    for key1, value2 in zip(my_dict.keys(), tensor_pack_dict.values()):
+        my_dict[key1] = value2
+    print('my dict ',my_dict)
+    # del all keys that are not running mean from tensorpack
+    for key in tensor_pack_dict.keys():
+        if 'running' not in key:
+            del tensor_pack_dict[key]
+    # assign values of the edited tensorpack to keys of running dict
+    for key1, value2 in zip(running.keys(), tensor_pack_dict.values()):
+        running[key1] = value2
+    print('running ',running)
+    # load values into models state_dict
+    for key in state_dict.keys():
+        if 'running' not in key:
+            state_dict[key] = my_dict[key]
+        else:
+            state_dict[key] = running[key]
+    print('state_dict ',state_dict)
+    state_dict['conv1.weight']=nn.Parameter(
+            init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
+    model.load_state_dict(state_dict)
+    return model
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
@@ -176,44 +209,25 @@ class PreActResNet(nn.Module):
 
 def PreActResNet18(in_channels,pretrained):
     model = PreActResNet(PreActBlock, in_channels,[2,2,2,2],)
-
-    state_dict = np.load(args.imagenet_weight_path)  # TODO put it in urls list as in resnet
-    d = load_state_dict_from_url(model_urls['resnet18'])
-
-    print(model.state_dict().keys())
     if pretrained:
-        state_dict = np.load(args.imagenet_weight_path) #TODO put it in urls list as in resnet
-        new_dict=OrderedDict()
-        for i,value in state_dict.items():
-            print(i ,value)
-
-
-        state_dict['conv0/W:0'] = nn.Parameter(
-            init_first_layer_weights(in_channels, state_dict['conv0/W:0'], args.hs_weight_init))
-        model.load_state_dict(state_dict)
-    return model
-
+        if pretrained:
+            model = load_tensor_pack(model, args.imagenet_weight_path, in_channels)
+        return model
 
 
 def PreActResNet34(in_channels,pretrained):
     model=PreActResNet(PreActBlock, in_channels,[3,4,6,3])
+    #TODO edit load tensor pack function to adapt resnet34 and resnet50
     if pretrained:
-        state_dict = np.load(args.imagenet_weight_path) #TODO put it in urls list as in resnet
-        state_dict['conv0/W:0'] = nn.Parameter(
-            init_first_layer_weights(in_channels, state_dict['conv0/W:0'], args.hs_weight_init))
-        model.load_state_dict(state_dict)
+       model=load_tensor_pack(model,args.imagenet_weight_path,in_channels)
     return model
 
 
 def PreActResNet50(in_channels,pretrained):
     model=PreActResNet(PreActBottleneck,in_channels, [3,4,6,3])
     if pretrained:
-        state_dict = np.load(args.imagenet_weight_path) #TODO put it in urls list as in resnet
-        state_dict['conv1.weight'] = nn.Parameter(
-            init_first_layer_weights(in_channels, state_dict['conv0/W:0'], args.hs_weight_init))
-        model.load_state_dict(state_dict)
+        model = load_tensor_pack(model, args.imagenet_weight_path, in_channels)
     return model
-
 
 '''
 def PreActResNet101():
