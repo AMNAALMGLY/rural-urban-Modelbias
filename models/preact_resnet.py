@@ -45,10 +45,11 @@ def load_tensor_pack(model,path,in_channels):
     print('running ',running)
     # load values into models state_dict
     for key in state_dict.keys():
-        if 'running' not in key:
-            state_dict[key] = my_dict[key]
-        else:
+        if 'running' in key:
             state_dict[key] = running[key]
+        elif 'running'  not in key:
+            if 'num_batches' not in key:
+                  state_dict[key] = my_dict[key]
     print('state_dict ',state_dict)
     state_dict['conv1.weight']=nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
