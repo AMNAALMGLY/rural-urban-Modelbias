@@ -45,11 +45,12 @@ def load_tensor_pack(model,path,in_channels):
     for key in state_dict.keys():
         if 'running' in key:
             state_dict[key] = torch.tensor(running[key],requires_grad=True)
-            print('bn shapes ',state_dict[key].shape)
         elif 'running'  not in key:
             if 'num_batches' not in key:
+
                   state_dict[key] = torch.tensor(my_dict[key],requires_grad=True)
-                  print('other shapes',state_dict[key].shape)
+                  if 'conv' in key :
+                      state_dict[key]=state_dict[key].reshape(state_dict[key].shape[-1],state_dict[key].shape[-2],state_dict[key][-3],state_dict[key][-4])
     state_dict['conv1.weight']=nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
 
@@ -216,6 +217,7 @@ def PreActResNet18(in_channels,pretrained):
     model = PreActResNet(PreActBlock, in_channels,[2,2,2,2],)
     if pretrained:
             model = load_tensor_pack(model, args.imagenet_weight_path, in_channels)
+    print(model.state_dict()['conv1.weight'])
 
     return model
 
@@ -225,7 +227,6 @@ def PreActResNet34(in_channels,pretrained):
     #TODO edit load tensor pack function to adapt resnet34 and resnet50
     if pretrained:
        model=load_tensor_pack(model,args.imagenet_weight_path,in_channels)
-    print(model.state_dict()['conv1.weight'])
 
     return model
 
