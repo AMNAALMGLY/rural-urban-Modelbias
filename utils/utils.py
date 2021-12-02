@@ -308,10 +308,12 @@ def parse_arguments(parser, default_args):
         help='whether to use out-of-country split')
 
     parser.add_argument(
-        '--ls_bands', default=default_args.ls_bands, choices=[None, 'rgb', 'ms'],
+        '--ls_bands', default=default_args.ls_bands,
+        #choices=[None, 'rgb', 'ms'],
         help='Landsat bands to use')
     parser.add_argument(
-        '--nl_band', default=default_args.nl_band, choices=[None, 'merge', 'split'],
+        '--nl_band', default=default_args.nl_band,
+        #choices=[None, 'merge', 'split'],
         help='nightlights band')
 
     # system
