@@ -188,7 +188,6 @@ class Batcher():
                             false_fn=lambda: (ex[band] - means['VIIRS']) / stds['VIIRS']))
                     else:
                         ex[band] = (ex[band] - means[band]) / stds[band]
-            # TODO augmentation
             img = tf.stack([ex[band] for band in ex_bands], axis=2)
             # img=tf.image.resize_with_crop_or_pad(img,32,32)
 

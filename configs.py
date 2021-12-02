@@ -63,5 +63,5 @@ args = Namespace(
 )
 args.num_workers = multiprocessing.cpu_count()
 args.no_of_gpus = torch.cuda.device_count()
-args.bands_channels = {'rgb': 3, 'ms': 7,'split':2, 'merge':1}  # TODO handle none key values
+args.bands_channels = {'rgb': 3, 'ms': 7,'split':2, 'merge':1}
 args.in_channels = args.bands_channels.get(args.ls_bands,0) + args.bands_channels.get(args.nl_band,0)

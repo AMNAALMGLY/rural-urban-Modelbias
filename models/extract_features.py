@@ -25,11 +25,11 @@ OUTPUTS_ROOT_DIR = args.out_dir
 print(OUTPUTS_ROOT_DIR)
 DHS_MODELS = [
     # put paths to DHS models here (relative to OUTPUTS_ROOT_DIR)
-    'dhs_ooc/DHS_OOC_A_ms_samescaled_b32_fc01_conv01_lr0001',
-     'dhs_ooc/DHS_OOC_B_ms_samescaled_b32_fc001_conv001_lr0001',
-     'dhs_ooc/DHS_OOC_C_ms_samescaled_b32_fc001_conv001_lr0001',
-     'dhs_ooc/DHS_OOC_D_ms_samescaled_b32_fc001_conv001_lr0001',
-     'dhs_ooc/DHS_OOC_E_ms_samescaled_b32_fc01_conv01_lr0001',
+   # 'dhs_ooc/DHS_OOC_A_ms_samescaled_b32_fc01_conv01_lr0001',
+    # 'dhs_ooc/DHS_OOC_B_ms_samescaled_b32_fc001_conv001_lr0001',
+    # 'dhs_ooc/DHS_OOC_C_ms_samescaled_b32_fc001_conv001_lr0001',
+    # 'dhs_ooc/DHS_OOC_D_ms_samescaled_b32_fc001_conv001_lr0001',
+     'dhs_ooc/DHS_OOC_E_ms_samescaled_b32_fc01_conv01_lr001',
     # 'dhs_ooc/DHS_OOC_A_ms_samescaled_urban_b64_fc01_conv01_lr0001',
      #'dhs_ooc/DHS_OOC_B_ms_samescaled_urban_b64_fc001_conv001_lr0001',
     #'dhs_ooc/DHS_OOC_C_ms_samescaled_urban_b64_fc001_conv001_lr001',
@@ -135,7 +135,7 @@ def main(args):
         batcher = Batcher(paths, {'urban_rural':tf.float32}, data_params['ls_bands'], data_params['nl_band'], data_params['label_name'],
                           data_params['nl_label'], 'DHS', augment=False, clipn=True,
                           batch_size=data_params['batch_size'], groupby=data_params['groupby'],
-                          cache=False,shuffle=False)  # assumes no scalar features are present
+                          cache=True,shuffle=False)  # assumes no scalar features are present
 
         ## TODO fix in the future
         print('===Current Config ===')
