@@ -163,12 +163,9 @@ class PreActResNet(nn.Module):
         x = self.layer4(x)
 
         x = self.final_bn(x)
-        print('before pooling',x.shape)
         x = self.final_relu(x)
         x = self.avgpool(x)
-        print('after pooling',x.shape)
         x = x.view(x.size(0), -1)
-        print('after flatten',x.shape)
         x = self.fc(x)
 
         return x
