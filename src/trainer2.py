@@ -250,7 +250,7 @@ class Trainer:
                     print(best_loss-avg_valid_loss)
                     counter += 1  # degrading tracker
                     count2 = 0  # improving tracker
-                    if counter >= patience and early_stopping and epoch>=150:
+                    if counter >= patience and early_stopping and epoch>=100:
                         print('.................Early Stopping .....................')
                         break
 
