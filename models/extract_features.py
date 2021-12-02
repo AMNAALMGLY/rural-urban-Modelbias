@@ -14,7 +14,7 @@ from glob import glob
 import numpy as np
 import torch
 from torch import nn
-import  tensorflow as tf
+import tensorflow as tf
 import batchers
 from batchers.dataset import Batcher
 from models.model_generator import get_model
@@ -25,26 +25,26 @@ OUTPUTS_ROOT_DIR = args.out_dir
 print(OUTPUTS_ROOT_DIR)
 DHS_MODELS = [
     # put paths to DHS models here (relative to OUTPUTS_ROOT_DIR)
-   # 'dhs_ooc/DHS_OOC_A_ms_samescaled_b32_fc01_conv01_lr0001',
+    # 'dhs_ooc/DHS_OOC_A_ms_samescaled_b32_fc01_conv01_lr0001',
     # 'dhs_ooc/DHS_OOC_B_ms_samescaled_b32_fc001_conv001_lr0001',
     # 'dhs_ooc/DHS_OOC_C_ms_samescaled_b32_fc001_conv001_lr0001',
     # 'dhs_ooc/DHS_OOC_D_ms_samescaled_b32_fc001_conv001_lr0001',
     # 'dhs_ooc/DHS_OOC_E_ms_samescaled_b32_fc01_conv01_lr001',
     # 'dhs_ooc/DHS_OOC_A_ms_samescaled_urban_b64_fc01_conv01_lr0001',
-     #'dhs_ooc/DHS_OOC_B_ms_samescaled_urban_b64_fc001_conv001_lr0001',
-    #'dhs_ooc/DHS_OOC_C_ms_samescaled_urban_b64_fc001_conv001_lr001',
+    # 'dhs_ooc/DHS_OOC_B_ms_samescaled_urban_b64_fc001_conv001_lr0001',
+    # 'dhs_ooc/DHS_OOC_C_ms_samescaled_urban_b64_fc001_conv001_lr001',
     # 'dhs_ooc/DHS_OOC_D_ms_samescaled_urban_b64_fc001_conv001_lr01',
-    #'dhs_ooc/DHS_OOC_E_ms_samescaled_urban_b64_fc01_conv01_lr001',
-     'dhs_ooc/DHS_OOC_A_nl_random_b32_fc1.0_conv1.0_lr0001',
-     'dhs_ooc/DHS_OOC_B_nl_random_b32_fc1.0_conv1.0_lr0001',
-     'dhs_ooc/DHS_OOC_C_nl_random_b32_fc1.0_conv1.0_lr0001',
-     'dhs_ooc/DHS_OOC_D_nl_random_b32_fc1.0_conv1.0_lr0001',
-     'dhs_ooc/DHS_OOC_E_nl_random_b32_fc1.0_conv1.0_lr0001',
-   # 'dhs_ooc/DHS_OOC_A_rgb_same_b64_fc0001_conv0001_lr001',
+    # 'dhs_ooc/DHS_OOC_E_ms_samescaled_urban_b64_fc01_conv01_lr001',
+    'dhs_ooc/DHS_OOC_A_nl_random_b32_fc1.0_conv1.0_lr0001',
+    'dhs_ooc/DHS_OOC_B_nl_random_b32_fc1.0_conv1.0_lr0001',
+    'dhs_ooc/DHS_OOC_C_nl_random_b32_fc1.0_conv1.0_lr0001',
+    'dhs_ooc/DHS_OOC_D_nl_random_b32_fc1.0_conv1.0_lr0001',
+    'dhs_ooc/DHS_OOC_E_nl_random_b32_fc1.0_conv1.0_lr0001',
+    # 'dhs_ooc/DHS_OOC_A_rgb_same_b64_fc0001_conv0001_lr001',
     # 'dhs_ooc/DHS_OOC_B_rgb_same_b64_fc001_conv001_lr0001',
-   # 'dhs_ooc/DHS_OOC_C_rgb_same_b64_fc001_conv001_lr0001',
-   # 'dhs_ooc/DHS_OOC_D_rgb_same_b64_fc1.0_conv1.0_lr01',
-     #'dhs_ooc/DHS_OOC_E_rgb_same_b64_fc001_conv001_lr0001',
+    # 'dhs_ooc/DHS_OOC_C_rgb_same_b64_fc001_conv001_lr0001',
+    # 'dhs_ooc/DHS_OOC_D_rgb_same_b64_fc1.0_conv1.0_lr01',
+    # 'dhs_ooc/DHS_OOC_E_rgb_same_b64_fc001_conv001_lr0001',
 ]
 
 
@@ -90,24 +90,22 @@ def run_extraction_on_models(model_dir: str,
     with torch.no_grad():
         # initalizating
         np_dict = defaultdict()
-        for i,record in enumerate(batcher):
+        for i, record in enumerate(batcher):
 
-            x=torch.tensor(record['images'], device='cuda')
+            x = torch.tensor(record['images'], device='cuda')
             x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
             output = model(x)
 
             for key in batch_keys:
-                if i==0:
-                    np_dict[key]=record[key]
+                if i == 0:
+                    np_dict[key] = record[key]
                 else:
-                    np_dict[key] = np.append(np_dict[key],record[key],axis=0)
+                    np_dict[key] = np.append(np_dict[key], record[key], axis=0)
             features = output.to('cpu').numpy()
-            if i==0:
-                np_dict['features'] =features
+            if i == 0:
+                np_dict['features'] = features
             else:
-                np_dict['features']=np.append(np_dict['features'],features,axis=0)
-
-
+                np_dict['features'] = np.append(np_dict['features'], features, axis=0)
 
     save_dir = os.path.join(out_root_dir, model_dir)
 
@@ -115,10 +113,11 @@ def run_extraction_on_models(model_dir: str,
 
     save_results(save_dir, np_dict, save_filename)
 
-#best at Epoch 177 loss 0.3836648819908019.ckpt  B
-#best at Epoch 117 loss 0.38881643032354696.ckpt C
-#best at Epoch 160 loss 0.4024718254804611.ckpt D
-#best at Epoch 149 loss 0.4684090583074477.ckpt E
+
+# best at Epoch 177 loss 0.3836648819908019.ckpt  B
+# best at Epoch 117 loss 0.38881643032354696.ckpt C
+# best at Epoch 160 loss 0.4024718254804611.ckpt D
+# best at Epoch 149 loss 0.4684090583074477.ckpt E
 def main(args):
     for model_dir in DHS_MODELS:
         # TODO check existing
@@ -131,11 +130,12 @@ def main(args):
             data_params = json.load(f)
         paths = get_paths(data_params['dataset'], 'all', data_params['fold'], args.data_path)
 
-
-        batcher = Batcher(paths, {'urban_rural':tf.float32}, data_params['ls_bands'], data_params['nl_band'], data_params['label_name'],
+        batcher = Batcher(paths, {'urban_rural': tf.float32}, data_params['ls_bands'], data_params['nl_band'],
+                          data_params['label_name'],
                           data_params['nl_label'], 'DHS', augment=False, clipn=True,
+                          include_buildings=data_params['include_buildings'],
                           batch_size=data_params['batch_size'], groupby=data_params['groupby'],
-                          cache=True,shuffle=False)  # assumes no scalar features are present
+                          cache=True, shuffle=False)  # assumes no scalar features are present
 
         ## TODO fix in the future
         print('===Current Config ===')
@@ -147,7 +147,7 @@ def main(args):
                                  batcher=batcher,
                                  out_root_dir=OUTPUTS_ROOT_DIR,
                                  save_filename='features.npz',
-                                 batch_keys=['labels', 'locs', 'years','urban_rural'],
+                                 batch_keys=['labels', 'locs', 'years', 'urban_rural'],
                                  )
 
 

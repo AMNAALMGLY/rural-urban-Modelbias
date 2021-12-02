@@ -161,14 +161,14 @@ class PreActResNet(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-        print('before pooling',x.shape)
+
         x = self.final_bn(x)
         print('before pooling',x.shape)
         x = self.final_relu(x)
         x = self.avgpool(x)
-        print('after pooling',x)
+        print('after pooling',x.shape)
         x = x.view(x.size(0), -1)
-        print('after flatten',x)
+        print('after flatten',x.shape)
         x = self.fc(x)
 
         return x
@@ -227,8 +227,16 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
     print('rgb weight shape ',rgb_weights.shape)
     rgb_weights=torch.tensor(rgb_weights)
     ms_channels = in_channels - rgb_channels
-    if in_channels == 3:
-        final_weights = rgb_weights
+    if in_channels == 3 :
+        if args.include_buildings:
+            with torch.no_grad():
+                mean = rgb_weights.mean()
+                std = rgb_weights.std()
+                final_weights = torch.empty((out_channels, in_channels, H, W))
+                final_weights = torch.nn.init.trunc_normal_(final_weights, mean, std)
+        else:
+            final_weights=rgb_weights
+
     elif in_channels <3:   #NL
         with torch.no_grad():
             mean = rgb_weights.mean()

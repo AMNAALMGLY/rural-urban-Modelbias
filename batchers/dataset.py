@@ -161,9 +161,8 @@ class Batcher():
             scalar_float_keys.append(self.label)
         if self.include_buildings:
             ex_bands += ['buildings']
-        ex_bands.append( bands.get(self.ls_bands, []) + bands.get(self.nl_bands, []))
-        if self.include_buildings:
-            ex_bands += ['buildings']
+        ex_bands.extend( bands.get(self.ls_bands, []) + bands.get(self.nl_bands, []))
+
 
         print('ex_bands :', ex_bands)
         for band in ex_bands:
