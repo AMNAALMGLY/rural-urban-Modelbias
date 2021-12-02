@@ -161,11 +161,14 @@ class PreActResNet(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-
+        print('before pooling',x.shape)
         x = self.final_bn(x)
+        print('before pooling',x.shape)
         x = self.final_relu(x)
         x = self.avgpool(x)
+        print('after pooling',x)
         x = x.view(x.size(0), -1)
+        print('after flatten',x)
         x = self.fc(x)
 
         return x
@@ -230,14 +233,15 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
         with torch.no_grad():
             mean = rgb_weights.mean()
             std = rgb_weights.std()
-            final_weights = torch.normal(mean, std, size=(out_channels, in_channels, H, W))
+            final_weights = torch.empty((out_channels, in_channels, H, W))
+            final_weights=torch.nn.init.trunc_normal_(final_weights,mean, std)
     elif in_channels > 3:
         # spectral images
 
         if hs_weight_init == 'same':
 
             with torch.no_grad():
-                mean = rgb_weights.mean(axis=1, keepdims=True)  # mean across the in_channel dimension
+                mean = rgb_weights.mean(dim=1, keepdim=True)  # mean across the in_channel dimension
                 mean = torch.tile(mean, (1, ms_channels, 1, 1))
                 ms_weights = mean
 
@@ -246,13 +250,14 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
             with torch.no_grad():
                 mean = rgb_weights.mean()
                 std = rgb_weights.std()
-                ms_weights = torch.normal(mean, std, size=(out_channels, ms_channels, H, W))
+                ms_weights=torch.empty((out_channels, ms_channels, H, W))
+                ms_weights = torch.nn.init.trunc_normal_(ms_weights,mean, std)
             print(f'random: {time.time() - start}')
 
         elif hs_weight_init == 'samescaled':
             start = time.time()
             with torch.no_grad():
-                mean = rgb_weights.mean(axis=1, keepdims=True)  # mean across the in_channel dimension
+                mean = rgb_weights.mean(dim=1, keepdim=True)  # mean across the in_channel dimension
                 mean = torch.tile(mean, (1, ms_channels, 1, 1))
                 ms_weights = (mean * 3) / (3 + ms_channels)
                 # scale both rgb_weights and ms_weights
