@@ -145,10 +145,10 @@ class Trainer:
         # log the gradients
         wandb.watch(self.model, log='all')
         train_steps = len(trainloader)
-        print('train_steps',train_steps)
+        #print('train_steps',train_steps)
 
         valid_steps = len(validloader) # the number of batches
-        print('valid_steps',valid_steps)
+        #print('valid_steps',valid_steps)
         best_loss = float('inf')
         count2=0          #count loss improving times
         r2_dict=defaultdict(lambda x:'')
@@ -206,6 +206,7 @@ class Trainer:
 
                 avg_valid_loss=valid_epoch_loss / valid_steps #maybe valid steps is wrong
 
+                print('check >> ', avg_valid_loss, valid_epoch_loss / valid_step)
                 r2_valid=self.metric.compute()
                 print(f'Validation R2 is {r2_valid:.2f}')
                 wandb.log({'r2_valid': r2_valid,'epoch':epoch})
