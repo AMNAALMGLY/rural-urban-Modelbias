@@ -251,7 +251,7 @@ class Batcher():
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
             dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords)\
-                .shuffle(buffer_size=1000).\
+                .shuffle(buffer_size=1000,reshuffle_each_iteration=True).\
                 interleave(
                  lambda file_path: tf.data.TFRecordDataset(file_path,  compression_type='GZIP',num_parallel_reads=AUTO),
                 cycle_length=5,
@@ -288,7 +288,7 @@ class Batcher():
 
         if self.shuffle:
             dataset = dataset.shuffle(buffer_size=1000,reshuffle_each_iteration=True)
-            #dataset = dataset.prefetch(4 * self.batch_size)
+
 
         if self.augment:
             print('in augment')
@@ -303,7 +303,7 @@ class Batcher():
         dataset = dataset.prefetch(2)
         print(f'Time in getdataset: {time.time() - start}')
         return dataset
-        # return dataset.as_numpy_iterator()
+
 
     def split_nl_band(self, ex: dict[str, tf.Tensor]) -> dict[str, tf.Tensor]:
         '''Splits the NL band into separate DMSP and VIIRS bands.
