@@ -275,8 +275,8 @@ class Trainer:
             print("Time Elapsed for one epochs : {:.4f}m".format((time.time() - epoch_start) / 60))
 
         #choose the best model between the saved models in regard to r2 value
-        if r2_dict:
-            best_path=r2_dict[max(r2_dict)]
+        if r2_dict.keys() is not None:
+            best_path=r2_dict[max(r2_dict.keys())]
             del r2_dict[max(r2_dict)]
             better_path=r2_dict[max(r2_dict)]
 
