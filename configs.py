@@ -20,6 +20,7 @@ args = Namespace(
     batch_size=32,
     gpu=-1,
     max_epochs=200,
+    epoch_thresh=150,
 
     lr=.0001,
     fc_reg=.001,                #fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
