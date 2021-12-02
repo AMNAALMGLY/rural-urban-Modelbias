@@ -55,7 +55,7 @@ class Batcher():
 
     """
 
-    def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label, normalize='DHS',
+    def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label,include_buildings, normalize='DHS',
                  augment=False, clipn=True,
                  batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None):
 
@@ -79,6 +79,7 @@ class Batcher():
             - None: do not include nightlights as a label
             - 'center': nightlight value of center pixel
             - 'mean': mean nightlights value
+        - include_buildings:bool whether or not to include building_layer
         - normalize: str, must be one of the keys of MEANS_DICT
            - if given, subtracts mean and divides by std-dev
         - augment: bool, whether to use data augmentation, should be False when not training
@@ -97,6 +98,7 @@ class Batcher():
         self.nl_bands = nl_bands
         self.label = label
         self.nl_label = nl_label
+        self.include_buildings=include_buildings
         self.normalize = normalize
         self.augment = augment
         self.clipn = clipn
@@ -151,11 +153,18 @@ class Batcher():
 
         bands = {'rgb': ['BLUE', 'GREEN', 'RED'], 'ms': ['BLUE', 'GREEN', 'RED', 'SWIR1', 'SWIR2', 'TEMP1', 'NIR'],
                  'merge': ['NIGHTLIGHTS'], 'split': ['NIGHTLIGHTS'], 'center': ['NIGHTLIGHTS'], 'mean': ['NIGHTLIGHTS']}
+        ex_bands=[]
         keys_to_features = {}
         scalar_float_keys = ['lat', 'lon', 'year']
+
         if self.label is not None:
             scalar_float_keys.append(self.label)
-        ex_bands = bands.get(self.ls_bands, []) + bands.get(self.nl_bands, [])
+        if self.include_buildings:
+            ex_bands += ['buildings']
+        ex_bands.append( bands.get(self.ls_bands, []) + bands.get(self.nl_bands, []))
+        if self.include_buildings:
+            ex_bands += ['buildings']
+
         print('ex_bands :', ex_bands)
         for band in ex_bands:
             keys_to_features[band] = tf.io.FixedLenFeature(shape=[255 ** 2], dtype=tf.float32)
@@ -165,6 +174,8 @@ class Batcher():
         if self.scalar_features_keys is not None:
             for key, dtype in self.scalar_features_keys.items():
                 keys_to_features[key] = tf.io.FixedLenFeature(shape=[], dtype=dtype)
+
+
 
         ex = tf.io.parse_single_example(example, features=keys_to_features)
 
@@ -186,6 +197,9 @@ class Batcher():
                             year < 2012,  # true = DMSP
                             true_fn=lambda: (ex[band] - means['DMSP']) / stds['DMSP'],
                             false_fn=lambda: (ex[band] - means['VIIRS']) / stds['VIIRS']))
+                    elif band =='buildings':
+                        #don't normalize
+                        continue
                     else:
                         ex[band] = (ex[band] - means[band]) / stds[band]
             img = tf.stack([ex[band] for band in ex_bands], axis=2)
@@ -324,7 +338,7 @@ class Batcher():
         ex['images'] = tf.cond(
             year < 2012,
             # if DMSP, then add an all-0 VIIRS band to the end
-            true_fn=lambda: tf.concat([img, all_0], axis=2),
+            true_fn=lambda: tf.concat([ img,all_0,], axis=2),
             # if VIIRS, then insert an all-0 DMSP band before the last band
             false_fn=lambda: tf.concat([img[:, :, 0:-1], all_0, img[:, :, -1:]], axis=2)
         )
