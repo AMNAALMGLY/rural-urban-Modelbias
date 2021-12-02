@@ -13,61 +13,6 @@ from configs import args
 from models.resnet import model_urls
 
 
-def load_tensor_pack(model,path,in_channels):
-    tensor_pack_dict = np.load(path)  # tensor pack dict
-    my_dict = model.state_dict().copy()  # torch model dict copy
-    state_dict = model.state_dict()  # torch model dict reference
-    running = dict()  # running mean dict
-    EMA=dict()   #EMA dict from tensorpack
-
-    # put keys of running mean into a new dict
-    # del keys that are not in the tensor pack(track_num_batches)
-    for key, value in state_dict.items():
-        if 'running' in key:
-            running[key] = value
-            del my_dict[key]
-        if 'batches' in key:
-            del my_dict[key]
-    # assign values of tensor packs to model dict orderly
-    for key1, value2 in zip(my_dict.keys(), tensor_pack_dict.values()):
-        my_dict[key1] = value2
-    # del all keys that are not running mean from tensorpack
-    for key in tensor_pack_dict.keys():
-        if 'EMA' not in key:
-            continue
-        else:
-            EMA[key]=tensor_pack_dict[key]
-
-    # assign values of the edited tensorpack to keys of running dict
-    for key1, value2 in zip(running.keys(), EMA.values()):
-        running[key1] = value2
-    # load values into models state_dict
-    for key in state_dict.keys():
-        if 'running' in key:
-            state_dict[key] = torch.tensor(running[key],requires_grad=True)
-        elif 'running'  not in key:
-            if 'num_batches' not in key:
-                  #state_dict[key] = torch.tensor(my_dict[key],requires_grad=True)
-                  if 'conv' in key  or 'downsample' in key:
-
-                      state_dict[key]=torch.tensor(my_dict[key]).permute(3,2,1,0)
-                      state_dict[key].requires_grad=True
-
-                  elif 'fc'  in key and 'weight' in key:
-                      print(state_dict[key].shape)
-                      state_dict[key] = torch.tensor(my_dict[key]).permute(1,0)
-                      state_dict[key].requires_grad = True
-                  else:
-                       state_dict[key]=torch.tensor(my_dict[key],requires_grad = True)
-
-    state_dict['conv1.weight']=nn.Parameter(
-            init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
-    print(torch.tensor(tensor_pack_dict['group0/block0/conv1/W:0']).permute(3,2,1,0))
-    print(state_dict['layer1.0.conv1.weight'])
-
-    model.load_state_dict(state_dict)
-
-    return model
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
@@ -260,13 +205,28 @@ def PreActResNet152():
 '''
 def init_first_layer_weights(in_channels: int, rgb_weights,
                                  hs_weight_init: str) :
+    '''Initializes the weights for filters in the first conv layer.
+
+      If we are using RGB-only, then just initializes var to rgb_weights. Otherwise, uses
+      hs_weight_init to determine how to initialize the weights for non-RGB bands.
+
+      Args
+      - int: in_channesl, input channels
+          - in_channesl is  either 3 (RGB), 7 (lxv3), or 9 (Landsat7) or 2 (NL)
+      - rgb_weights: ndarray of np.float32, shape [64, 3, F, F]
+      - hs_weight_init: str, one of ['random', 'same', 'samescaled']
+
+      Returs
+      -torch tensor : final_weights
+      '''
+
     out_channels, rgb_channels, H, W = rgb_weights.shape
     print('rgb weight shape ',rgb_weights.shape)
     rgb_weights=torch.tensor(rgb_weights)
     ms_channels = in_channels - rgb_channels
     if in_channels == 3:
         final_weights = rgb_weights
-    elif in_channels <3:
+    elif in_channels <3:   #NL
         with torch.no_grad():
             mean = rgb_weights.mean()
             std = rgb_weights.std()
@@ -307,61 +267,67 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
     print('init__layer_weight shape ', final_weights.shape)
     return final_weights
 
-def get_saved_var_name(model_var, bottleneck=False):
-    '''Gets the saved variable's name (from TensorPack) for the given model variable.
 
-    Args
-    - model_var: tf.Variable
-    - bottleneck: bool
-
-    Returns: str, the saved variable name if the model variable is part of the ResNet,
-        None, otherwise.
+def load_tensor_pack(model,path,in_channels):
     '''
-    saved_var_name = model_var.name
+    TODO adapt for resnet 50 and higher
+    custom function to initialize preact resnet18 model with tensor pack saved weights based on model state dict keys names
+    then it reinitializes the first layer by calling init_first_layers function
+    :param model: PreActResnet  model to load weights into
+    :param path: str path to saved weights
+    :param in_channels: int number of input channels
+    :return: model:PreActResnet
+    '''
+    tensor_pack_dict = np.load(path)  # tensor pack dict
+    my_dict = model.state_dict().copy()  # torch model dict copy
+    state_dict = model.state_dict()  # torch model dict reference
+    running = dict()  # running mean torch model dict
+    EMA=dict()   #EMA dict from tensorpack
 
-    # strip the variable name of everything up to and including '*resnet/'
-    s = re.search(r'.*resnet/', saved_var_name)
-    if s is None:  # if 'resnet/' not in variable name, then it isn't part of the resnet
-        return None
-    else:
-        saved_var_name = saved_var_name.replace(s.group(0), '')
+    # put keys of running mean into a new dict
+    # del keys that are not in the tensor pack such as (track_num_batches)
+    for key, value in state_dict.items():
+        if 'running' in key:
+            running[key] = value
+            del my_dict[key]
+        if 'batches' in key:
+            del my_dict[key]
+    # assign values of tensor packs to model dict orderly
+    for key1, value2 in zip(my_dict.keys(), tensor_pack_dict.values()):
+        my_dict[key1] = value2
+    # del all keys that are not running mean from tensorpack
+    for key in tensor_pack_dict.keys():
+        if 'EMA' not in key:
+            continue
+        else:
+            EMA[key]=tensor_pack_dict[key]
 
-    # replace model variable names with the saved variable counterparts
-    conversion = {
-        'batch_normalization': 'bn',
-        'weights:0': 'W:0',
-        'shortcut': 'convshortcut',
-        'scale1': 'conv0'  # 'scale1' is a special case, because it has no blocks or subblocks
-    }
+    # assign values of the edited tensorpack to keys of running dict
+    for key1, value2 in zip(running.keys(), EMA.values()):
+        running[key1] = value2
+    # load values into models state_dict
+    for key in state_dict.keys():
+        if 'running' in key:
+            state_dict[key] = torch.tensor(running[key],requires_grad=True)
+        elif 'running'  not in key:
+            if 'num_batches' not in key:
+                  #state_dict[key] = torch.tensor(my_dict[key],requires_grad=True)
+                  if 'conv' in key  or 'downsample' in key:
 
-    if bottleneck:
-        conversion['/a/'] = '/conv1/'
-        conversion['/b/'] = '/conv2/'
-        conversion['/c/'] = '/conv3/'
-    else:
-        conversion['/A/'] = '/conv1/'
-        conversion['/B/'] = '/conv2/'
+                      state_dict[key]=torch.tensor(my_dict[key]).permute(3,2,1,0)
+                      state_dict[key].requires_grad=True
 
-    for model_str, saved_str in conversion.items():
-        saved_var_name = saved_var_name.replace(model_str, saved_str)
+                  elif 'fc'  in key and 'weight' in key:
+                      state_dict[key] = torch.tensor(my_dict[key]).permute(1,0)
+                      state_dict[key].requires_grad = True
+                  else:
+                       state_dict[key]=torch.tensor(my_dict[key],requires_grad = True)
 
-    # shift all of the 'block' numbers down by 1
-    # search for 'block###', return the '###' part
-    s = re.search(r'block(\d+)', saved_var_name)  # search for 'scale###'
-    if s is not None:
-        block_str = s.group(0)  # block_str = 'block###'
-        block_num = int(s.group(1))  # extract the '###' part from 'scale###' and convert it to int
-        new_block_str = 'block' + str(block_num - 1)
-        saved_var_name = saved_var_name.replace(block_str, new_block_str)
+    state_dict['conv1.weight']=nn.Parameter(
+            init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
+    #print(torch.tensor(tensor_pack_dict['group0/block0/conv1/W:0']).permute(3,2,1,0))
+    #print(state_dict['layer1.0.conv1.weight'])
 
-    # shift all of the 'scale' numbers down by 2, then rename to 'group'
-    # - NOTE: we already dealt with scale1 above since it is a special case (no blocks or subblocks)
-    #   so we don't need to worry about negative numbers here
-    s = re.search(r'scale(\d+)', saved_var_name)  # search for 'scale###'
-    if s is not None:
-        scale_str = s.group(0)  # scale_str = 'scale###'
-        scale_num = int(s.group(1))  # extract the '###' part from 'scale###' and convert it to int
-        new_group_str = 'group' + str(scale_num - 2)
-        saved_var_name = saved_var_name.replace(scale_str, new_group_str)
+    model.load_state_dict(state_dict)
 
-    return saved_var_name
+    return model

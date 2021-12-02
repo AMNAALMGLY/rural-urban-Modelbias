@@ -17,18 +17,44 @@ writer = SummaryWriter()
 patience=20
 
 class Trainer:
+
+    """A trainer class for model traiing
+     ...
+
+    Attributes
+    ----------
+       - model
+       - lr
+       - weight_decay
+       -loss_type
+       -num_outputs
+       -metric
+       -optimizor
+       -scheduler
+       -criterion
+
+    Methods:
+    --------
+        -init :initalization
+        -shared_step: shared training step between training, validation and testing
+        -training_step: shared step implemented for training data
+        -validation_step: shared step implemented for validation data
+        -fit : do the training loop over the dataloaders
+        -setup criterion: sets loss function
+        -configure optimizor:setup optim and scheduler
+    """
     def __init__(self, model, lr, weight_decay, loss_type, num_outputs, metric, save_dir, **kwargs):
 
         '''Initializes the Trainer.
         Args
 
-        - model:
+        - model:PreAct Model class
         - lr: int learning_rate
         - weight_decay: int
         - loss_type: str, one of ['classification', 'regression']
         - num_outputs:output class  one of [None ,num_classes]
-        - metric:List[str] ['r2','R2' ,'mse', 'rank'] TODO
-        -
+        - metric:List[str]  one of ['r2','R2' ,'mse', 'rank']
+
 
         '''
         super().__init__()
@@ -121,7 +147,7 @@ class Trainer:
         train_steps = len(trainloader)
         valid_steps = len(validloader)
         best_loss = float('inf')
-        count2=0
+        count2=0          #count loss improving times
         r2_dict=defaultdict(lambda x:'')
         resume_path=None
         last_loss=float('inf')
@@ -130,7 +156,6 @@ class Trainer:
 
         for epoch in range(max_epochs):
             epoch_start=time.time()
-            #print(next(trainloader))
             with tqdm(trainloader, unit="batch") as tepoch:
                 train_step = 0
                 epoch_loss = 0
@@ -180,7 +205,7 @@ class Trainer:
                 r2_valid=self.metric.compute()
                 print(f'Validation R2 is {r2_valid:.2f}')
                 wandb.log({'r2_valid': r2_valid,'epoch':epoch})
-                wandb.log({"Epoch_valid_loss": avg_valid_loss,})
+                wandb.log({"Epoch_valid_loss": avg_valid_loss,'epoch':epoch})
 
                 # early stopping with r2:
                 '''
@@ -239,31 +264,11 @@ class Trainer:
                 torch.save(self.model.state_dict(), resume_path)
                 print(f'Saving model to {resume_path}')
 
-                # early stopping with r2:
-            '''
-         
-            if r2_valid - best_valid>=0.05:
-                #best_loss = avg_valid_loss
-                wait=0
-                best_valid=r2_valid
-                if epoch > 100:
-                    save_path = os.path.join(self.save_dir, f'best at metric Epoch{epoch}.ckpt')
-                    torch.save(self.model.state_dict(), save_path)
-                    print(f'best model at metric at Epoch {epoch}  metric {r2_valid} ,')
-                    print(f'Path to best model found during training: \n{save_path}')
-            else:
-                wait+=1
-                if wait >= patience and early_stopping:
-                    print('.................Early Stopping .....................')
-                    break
-                    
-
-            '''
-
             self.metric.reset()
             self.scheduler.step(metrics=avg_valid_loss)
             last_loss=avg_valid_loss
             print("Time Elapsed for one epochs : {:.4f}m".format((time.time() - epoch_start) / 60))
+
         #choose the best model between the saved models in regard to r2 value
         if r2_dict:
             best_path=r2_dict[max(r2_dict)]
@@ -287,7 +292,7 @@ class Trainer:
 
         print("Time Elapsed for all epochs : {:.4f}m".format((time.time() - start)/60))
 
-        return best_loss, best_path,better_path
+        return best_loss, best_path, better_path
         #TODO implement overfit batches
         #TODO savelast
 

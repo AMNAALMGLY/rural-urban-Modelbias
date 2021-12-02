@@ -4,13 +4,10 @@ from __future__ import annotations
 
 from typing import Callable
 
-import tensorflow_datasets as tfds
-
 import tensorflow as tf
 import os
-import torch
 from batchers.dataset_constants import MEANS_DICT, STD_DEVS_DICT
-from configs import args
+
 from utils.utils import save_results
 import time
 
@@ -48,6 +45,13 @@ class Batcher():
     License:
         LandSat/DMSP/VIIRS data is U.S. Public Domain.
     TODO:citation
+    This class is an Iterable dataset throught which you can iterate directly through data
+    Example :
+    b=Batcher(**args)
+    for batch in b:
+      image=b['images']
+      label=b['labels']
+
     """
 
     def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label, normalize='DHS',
@@ -56,6 +60,34 @@ class Batcher():
 
         '''
         initializes the loader as follows :
+         Args
+        - tfrecords: list of str,
+            - path(s) to TFRecord files containing satellite images
+        - label_name: str, name of feature within TFRecords to use as label, or None
+        - scalar_features: dict, maps names (str) of additional features within a TFRecord
+            to their parsed types
+        - ls_bands: one of [None, 'rgb', 'ms'], which Landsat bands to include in batch['images']
+            - None: no Landsat bands
+            - 'rgb': only the RGB bands
+            - 'ms': all 7 Landsat bands
+        - nl_band: one of [None, 'merge', 'split'], which NL bands to include in batch['images']
+            - None: no nightlights band
+            - 'merge': single nightlights band
+            - 'split': separate bands for DMSP and VIIRS (if one is absent, then band is all 0)
+        - nl_label: one of [None, 'center', 'mean']
+            - None: do not include nightlights as a label
+            - 'center': nightlight value of center pixel
+            - 'mean': mean nightlights value
+        - normalize: str, must be one of the keys of MEANS_DICT
+           - if given, subtracts mean and divides by std-dev
+        - augment: bool, whether to use data augmentation, should be False when not training
+        - clipneg: bool, whether to clip negative values to 0
+        - batch_size: int
+        -groupby: str one of ['urban' , 'rural'] to get iterator over one of them
+
+        - cache: bool, whether to cache this dataset in memory
+        - shuffle: bool, whether to shuffle data, should be False when not training
+        - save_dir: str, if data is converted to np
 
         '''
         self.tfrecords = tfrecords
@@ -67,7 +99,7 @@ class Batcher():
         self.normalize = normalize
         self.augment = augment
         self.clipn = clipn
-        self.groupby = groupby  # str representing the name of the feature to be grouped by ['urban_rural',...]
+        self.groupby = groupby
         self.cache = cache
         self.save_dir = save_dir
         self.batch_size = batch_size
@@ -75,23 +107,14 @@ class Batcher():
         self._iterator = None
         self.ds = self.get_dataset()
 
-        # self.ds = get_dataset(tfrecords, batch_size, label, nl_label, ls_bands, nl_bands,seed, scalar_features_keys, clipn,
-        #   normalize, cache, shuffle, groupby, augment,
-        # )
+
 
         # TODO:check values of arguments passed
 
-    '''Not necessary anymore
-    def __getitem__(self, idx):
-      ##TODO
-        path = self.save_dir + f'{idx}'
-        with np.load(path) as data:
-          return data
-    '''
-
     def __len__(self):
         '''
-         length of the iterator
+         length of the iterator(number of batches given the length of tfrecords and batch_size)
+         :return:int length
         '''
         if self.groupby is None:
             nbatches = len(self.tfrecords) // self.batch_size
@@ -102,20 +125,25 @@ class Batcher():
             # TODO: save the length in a static variable (less time)
             return sum(1 for i in self)
 
-    def group(self, example_proto: tf.Tensor) -> tf.Tensor:
-
-        key_to_feature = self.groupby
-        keys_to_features = {
-            key_to_feature: tf.io.FixedLenFeature(shape=[], dtype=tf.float32)}  # I'm assuming that it is float feature.
-        ex = tf.io.parse_single_example(example_proto, features=keys_to_features)
-        do_keep = tf.equal(ex[self.groupby], 0.0)
-        return do_keep
 
     def tfrecords_to_dict(self, example: tf.Tensor) -> dict[str, tf.Tensor]:
 
         '''
         convert the records to dictionaries of {'feature_name' : tf.Tensor}
+        Args
+        - example: a tf.train.Example
 
+        Returns: dict {'images': img, 'labels': label, 'locs': loc, 'years': year, ...}
+        - img: tf.Tensor, shape [224, 224, C], type float32
+          - channel order is [B, G, R, SWIR1, SWIR2, TEMP1, NIR, NIGHTLIGHTS]
+        - label: tf.Tensor, scalar or shape [2], type float32
+          - not returned if both self.label_name and self.nl_label are None
+          - [label, nl_label] (shape [2]) if self.label_name and self.nl_label are both not None
+          - otherwise, is a scalar tf.Tensor containing the single label
+        - loc: tf.Tensor, shape [2], type float32, order is [lat, lon]
+        - year: tf.Tensor, scalar, type int32
+          - default value of -1 if 'year' is not a key in the protobuf
+        - may include other keys if self.scalar_features is not None
         '''
 
         # TODO:NIGHTLIGHT band/label
@@ -211,7 +239,12 @@ class Batcher():
 
     # do the tf_to dict operation to the whole dataset in numpy dtype
 
-    def get_dataset(self, cache=None):
+    def get_dataset(self,):
+        '''
+        performs the all steps of mapping the tfrecords to dictionaries then preprocess , and output the dataset divided by batches
+
+        :return: tensorflow dataset divided into batches
+        '''
         start = time.time()
 
         if self.shuffle:
@@ -249,7 +282,7 @@ class Batcher():
         elif self.groupby == 'rural':
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
 
-        if cache:
+        if self.cache:
             dataset = dataset.cache()
             print('in cahce')
 
@@ -265,7 +298,6 @@ class Batcher():
 
         dataset = dataset.batch(batch_size=self.batch_size)
         print('in batching')
-       # dataset = dataset.prefetch(4)
 
 
         dataset = dataset.prefetch(2)
@@ -378,7 +410,8 @@ class Batcher():
 
     def __iter__(self):
         '''
-        implement iterator of the  loader
+        implement iterator of the  dataset
+        :return:dataset iterator as a numpy iterator
         '''
         start = time.time()
         # self.ds=self.get_dataset()
@@ -391,12 +424,20 @@ class Batcher():
         return self._iterator
 
     def _reset(self):
+        '''
+        resets the iterator every new iteration
+        :return: numpy iterator
+        '''
         self._iterator = iter(self.ds.as_numpy_iterator())
 
-    '''
+
     def __next__(self):
+        '''
+        goes to the next batch
+        :return: batch as a dictionary [str:ndarray]
+        '''
         start = time.time()
         batch = next(self._iterator)
         print(f'time in next: {time.time() - start}')
         return batch
-    '''
+
