@@ -10,7 +10,7 @@ args = Namespace(
     # Model
 
     model_name='resnet18',
-    hs_weight_init='samescaled',       #[same, samescaled,random]
+    hs_weight_init='random',       #[same, samescaled,random]
     model_init='imagenet',
     imagenet_weight_path= '/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
 
@@ -23,9 +23,9 @@ args = Namespace(
     epoch_thresh=150,
     patience=20,
 
-    lr=.0001,
-    fc_reg=.001,                #fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=.001,
+    lr=.0001,                                                                                  #lr0001
+    fc_reg=1.0,                #fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
+    conv_reg=1.0,
 
     # data
 
@@ -36,9 +36,9 @@ args = Namespace(
     clipn=True,
     ooc=True,
     dataset='DHS_OOC',
-    fold='B',
-    ls_bands='ms',
-    nl_band=None,  # [None , merge , split]
+    fold='A',
+    ls_bands=None,
+    nl_band='split',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     scaler_features_keys= None    ,#{'urban_rural':tf.float32},
     # keep_frac {keep_frac}
@@ -46,7 +46,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_B_ms_samescaled',
+    experiment_name='DHS_OOC_A_nl_random',
     out_dir=os.path.join(ROOT_DIR, 'outputs'),
     init_ckpt_dir=None,
     group=None,
