@@ -14,7 +14,7 @@ from utils.utils import Metric
 from configs import args
 import  wandb
 writer = SummaryWriter()
-patience=20
+patience=args.patience
 
 class Trainer:
 

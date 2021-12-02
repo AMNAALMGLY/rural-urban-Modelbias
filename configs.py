@@ -21,6 +21,7 @@ args = Namespace(
     gpu=-1,
     max_epochs=200,
     epoch_thresh=150,
+    patience=20,
 
     lr=.0001,
     fc_reg=.001,                #fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
@@ -36,7 +37,7 @@ args = Namespace(
     ooc=True,
     dataset='DHS_OOC',
     fold='C',
-    ls_bands='ms',
+    ls_bands=None,
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     scaler_features_keys= None    ,#{'urban_rural':tf.float32},
