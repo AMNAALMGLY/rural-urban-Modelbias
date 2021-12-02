@@ -14,9 +14,16 @@ import numpy as np
 import tensorflow as tf
 import torch
 
-from batchers.dataset_constants import SURVEY_NAMES, SIZES
+
 import torchmetrics
 from collections import ChainMap
+
+from configs import args
+
+if args.include_buildings:
+ from batchers.dataset_constants import SURVEY_NAMES
+else:
+ from batchers.dataset_constants_buildings import SURVEY_NAMES
 
 AUTO = tf.data.experimental.AUTOTUNE
 
@@ -142,7 +149,7 @@ def get_paths(dataset: str, split: str, fold: str, root) -> np.ndarray:
         for country in fold_name[s]:
             path = os.path.join(root, country + '*', '*.tfrecord.gz')
             paths += glob(path)
-    assert  len(paths)==SIZES[f'{dataset}_{fold}'][split]
+    #assert  len(paths)==SIZES[f'{dataset}_{fold}'][split]
 
     return np.sort(paths)
 
