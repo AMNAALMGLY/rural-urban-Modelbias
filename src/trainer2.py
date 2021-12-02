@@ -145,14 +145,13 @@ class Trainer:
         # log the gradients
         wandb.watch(self.model, log='all')
         train_steps = len(trainloader)
-        #print('train_steps',train_steps)
 
         valid_steps = len(validloader) # the number of batches
-        #print('valid_steps',valid_steps)
         best_loss = float('inf')
         count2=0          #count loss improving times
         r2_dict=defaultdict(lambda x:'')
         resume_path=None
+        val_list=defaultdict(lambda x:'')
         last_loss=float('inf')
         start=time.time()
 
@@ -206,7 +205,6 @@ class Trainer:
 
                 avg_valid_loss=valid_epoch_loss / valid_steps #maybe valid steps is wrong
 
-                print('check >> ', avg_valid_loss, valid_epoch_loss / valid_step)
                 r2_valid=self.metric.compute()
                 print(f'Validation R2 is {r2_valid:.2f}')
                 wandb.log({'r2_valid': r2_valid,'epoch':epoch})
@@ -241,12 +239,13 @@ class Trainer:
                     count2 += 1
                     best_loss = avg_valid_loss
                     # start saving after a threshold of epochs and a patience of improvement
-                    if epoch >= 100 and count2 >= 2:
+                    if epoch >= 100 and count2 >=1:
                         print('in best path saving')
                         save_path = os.path.join(self.save_dir, f'best  at loss Epoch{epoch}.ckpt')
                         torch.save(self.model.state_dict(), save_path)
-                        # save r2 valueslast
+                        # save r2 values and loss values
                         r2_dict[r2_valid] = save_path
+                        val_list[avg_valid_loss]=save_path
                         print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
                         print(f'Path to best model at loss found during training: \n{save_path}')
                 elif best_loss - avg_valid_loss < 0:
@@ -255,9 +254,9 @@ class Trainer:
                     print(best_loss-avg_valid_loss)
                     counter += 1  # degrading tracker
                     count2 = 0  # improving tracker
-                    if counter >= patience and early_stopping and epoch >=150:
-                        print('.................Early Stopping .....................')
-                        break
+                    if counter >= patience and early_stopping :
+                        print(f'.................Loss is degrading in this Epoch{epoch}.....................')
+
 
 
 
@@ -274,11 +273,24 @@ class Trainer:
             last_loss=avg_valid_loss
             print("Time Elapsed for one epochs : {:.4f}m".format((time.time() - epoch_start) / 60))
 
-        #choose the best model between the saved models in regard to r2 value
-        if r2_dict.keys() is not None:
+        #choose the best model between the saved models in regard to r2 value or minimum loss
+        if val_list.keys() is not None:
+            best_path = val_list[min(val_list.keys())]
+            print(f'loss of best model saved is {min(val_list.keys())}')
+            del val_list[min(val_list.keys())]
+            better_path = val_list[min(val_list.keys())]
+
+            shutil.move(best_path,
+                        os.path.join(self.save_dir, 'best.ckpt'))
+            shutil.move(better_path,
+                        os.path.join(self.save_dir, 'better.ckpt'))
+
+            best_path = os.path.join(self.save_dir, 'best.ckpt')
+            better_path = os.path.join(self.save_dir, 'better.ckpt')
+        elif r2_dict.keys() is not None:
             best_path=r2_dict[max(r2_dict.keys())]
-            del r2_dict[max(r2_dict)]
-            better_path=r2_dict[max(r2_dict)]
+            del r2_dict[max(r2_dict.keys())]
+            better_path=r2_dict[max(r2_dict.keys())]
 
             shutil.move(best_path,
                         os.path.join(self.save_dir, 'best.ckpt'))
@@ -290,7 +302,7 @@ class Trainer:
         else:
             #best path is the last path which is saved at resume_points dir
             best_path=resume_path
-
+            print(f'loss of best model saved from resume_point is {avg_valid_loss}')
             shutil.move(os.path.join(self.save_dir,best_path.split('/')[-2],best_path.split('/')[-1]),os.path.join(self.save_dir,'best.ckpt'))
             best_path = os.path.join(self.save_dir, 'best.ckpt')
             better_path=best_path
@@ -306,7 +318,7 @@ class Trainer:
 
 
     def configure_optimizers(self):
-        opt = torch.optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        opt = torch.optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         return {
             'optimizer': opt,
             'lr_scheduler': {
