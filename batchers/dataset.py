@@ -7,6 +7,7 @@ from typing import Callable
 import tensorflow as tf
 import os
 from batchers.dataset_constants import MEANS_DICT, STD_DEVS_DICT
+from configs import args
 
 from utils.utils import save_results
 import time
@@ -292,8 +293,8 @@ class Batcher():
 
         if self.augment:
             print('in augment')
-           # counter = tf.data.experimental.Counter()
-           # dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
+            counter = tf.data.experimental.Counter()
+            dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
             dataset = dataset.map(self.augment_ex, num_parallel_calls=AUTO)
 
         dataset = dataset.batch(batch_size=self.batch_size)
@@ -329,13 +330,15 @@ class Batcher():
             false_fn=lambda: tf.concat([img[:, :, 0:-1], all_0, img[:, :, -1:]], axis=2)
         )
         return ex
-    '''
+
     def augment_ex(self, ex: dict[str, tf.Tensor], seed) -> dict[str, tf.Tensor]:
  
         print('in augment ex')
         img = ex['images']
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
+        img=tf.image.stateless_random_crop(
+            img, size=[210, 210, args.in_channels], seed=seed)
 
         if self.nl_bands and self.ls_bands:
             if self.nl_label == 'merge':
@@ -357,18 +360,10 @@ class Batcher():
         print(img, ex['images'])
         ex['images'] = img
         return ex
+
     '''
     def augment_ex(self, ex: dict[str, tf.Tensor]) -> dict[str, tf.Tensor]:
-        '''Performs image augmentation (random flips + levels adjustments).
-        Does not perform level adjustments on NL band(s).
-
-        Args
-        - ex: dict {'images': img, ...}
-            - img: tf.Tensor, shape [H, W, C], type float32
-                NL band depends on self.ls_bands and self.nl_band
-
-        Returns: ex, with img replaced with an augmented image
-        '''
+   
         assert self.augment
         img = ex['images']
 
@@ -380,16 +375,7 @@ class Batcher():
         return ex
 
     def augment_levels(self, img: tf.Tensor) -> tf.Tensor:
-        '''Perform random brightness / contrast on the image.
-        Does not perform level adjustments on NL band(s).
-
-        Args
-        - img: tf.Tensor, shape [H, W, C], type float32
-            - self.nl_band = 'merge' => final band is NL band
-            - self.nl_band = 'split' => last 2 bands are NL bands
-
-        Returns: tf.Tensor with data augmentation applied
-        '''
+   
         def rand_levels(image: tf.Tensor) -> tf.Tensor:
             # up to 0.5 std dev brightness change
             image = tf.image.random_brightness(image, max_delta=0.5)
@@ -407,7 +393,7 @@ class Batcher():
                 img_nonl = rand_levels(img[:, :, :-2])
                 img = tf.concat([img_nonl, img[:, :, -2:]], axis=2)
         return img
-
+    '''
     def __iter__(self):
         '''
         implement iterator of the  dataset
