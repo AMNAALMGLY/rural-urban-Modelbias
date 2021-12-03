@@ -145,7 +145,7 @@ class Batcher():
 
         if self.clipn:
             ex[band] = tf.nn.relu(ex[band])
-        return {'buildings':ex[band]}
+        return {'buildings':tf.expand_dims(ex[band],axis=-1)}
 
     def tfrecords_to_dict(self, example: tf.Tensor) -> dict[str, tf.Tensor]:
 
