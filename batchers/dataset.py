@@ -336,7 +336,11 @@ class Batcher():
             print('in augment')
             counter = tf.data.experimental.Counter()
             dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
-            dataset = dataset.map(self.augment_ex, num_parallel_calls=AUTO)
+            if self.include_buildings:
+                dataset = dataset.map(self.b_augment, num_parallel_calls=AUTO)
+
+            else:
+                dataset = dataset.map(self.augment_ex, num_parallel_calls=AUTO)
 
         dataset = dataset.batch(batch_size=self.batch_size)
         print('in batching')
