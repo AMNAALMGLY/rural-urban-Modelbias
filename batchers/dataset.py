@@ -385,6 +385,8 @@ class Batcher():
         img = ex['images']
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
+        print(args.in_channels)
+        print(img.shape)
         img=tf.image.stateless_random_crop(
             img, size=[210, 210, args.in_channels], seed=seed)
 
