@@ -93,14 +93,20 @@ def main(args):
 
     paths_valid = get_paths(args.dataset, 'val', args.fold, args.data_path)
 
-    paths_test = get_paths(args.dataset, 'test', args.fold, args.data_path)
+    paths_train_b=None
+    paths_valid_b=None
+    if args.include_buildings:
+        paths_train_b = get_paths(args.dataset, 'train', args.fold, args.buildings_records)
+        paths_valid_b = get_paths(args.dataset, 'val', args.fold, args.buildings_records)
+
+    #paths_test = get_paths(args.dataset, 'test', args.fold, args.data_path)
 
     batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                            args.nl_label,args.include_buildings,args.buildings_records,'DHS', args.augment ,args.clipn, args.batch_size, groupby=args.group,
+                            args.nl_label,args.include_buildings,paths_train_b,'DHS', args.augment ,args.clipn, args.batch_size, groupby=args.group,
                             cache=True, shuffle=True)
 
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                            args.nl_label,args.include_buildings, args.buildings_records,'DHS',False, args.clipn, args.batch_size, groupby=args.group,
+                            args.nl_label,args.include_buildings, paths_valid_b,'DHS',False, args.clipn, args.batch_size, groupby=args.group,
                             cache=True, shuffle=False)
 
     #batcher_test = Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,

@@ -55,7 +55,7 @@ class Batcher():
 
     """
 
-    def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label,include_buildings=False, building_records=None,
+    def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label,include_buildings=False, buildings_records=None,
                  normalize='DHS',
                  augment=False, clipn=True,
                  batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None):
@@ -100,7 +100,7 @@ class Batcher():
         self.label = label
         self.nl_label = nl_label
         self.include_buildings=include_buildings
-        self.building_records=building_records
+        self.buildings_records=buildings_records
         self.normalize = normalize
         self.augment = augment
         self.clipn = clipn
@@ -145,6 +145,7 @@ class Batcher():
 
         if self.clipn:
             ex[band] = tf.nn.relu(ex[band])
+            print('building_band',ex[band])
         return {'buildings':tf.expand_dims(ex[band],axis=-1)}
 
     def tfrecords_to_dict(self, example: tf.Tensor) -> dict[str, tf.Tensor]:
@@ -274,7 +275,7 @@ class Batcher():
         '''
         start = time.time()
 
-        if self.shuffle and self.building_records is  None:
+        if self.shuffle  and args.buildings_records is  None: #shuffle only if you don't want to include building dataset
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
             dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords)\
@@ -313,7 +314,7 @@ class Batcher():
 
         if self.include_buildings:
             b_dataset = tf.data.TFRecordDataset(
-                filenames=self.building_records,
+                filenames=self.buildings_records,
                 compression_type='GZIP',
                 buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
                 num_parallel_reads=AUTO)
@@ -329,7 +330,8 @@ class Batcher():
             print('in cahce')
 
         if self.shuffle:
-            dataset = dataset.shuffle(buffer_size=10000,reshuffle_each_iteration=True)
+            buffer_size=10000 if self.include_buildings else 1000
+            dataset = dataset.shuffle(buffer_size=buffer_size,reshuffle_each_iteration=True)
 
 
         if self.augment:
@@ -409,21 +411,22 @@ class Batcher():
         return ex
     def b_augment(self,ex,seed):
 
-        print('in b_augment ex')
         img=ex[0]['images']
         b=ex[1]['buildings']
+        print(img.shape,b.shape)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img=tf.image.stateless_random_crop(
-            img, size=[210, 210, args.in_channels], seed=seed)
+            img, size=[210, 210, args.in_channels-1], seed=seed)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
         b = tf.image.stateless_random_crop(
-            b, size=[210, 210, args.in_channels], seed=seed)
+            b, size=[210, 210, 1], seed=seed)
         print('images augment')
 
         ex[0]['images'] =img
         ex[1]['buildings']=b
+        print('afterAug',ex[1]['buildings'])
         return ex
 
     '''
