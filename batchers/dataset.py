@@ -329,7 +329,7 @@ class Batcher():
             print('in cahce')
 
         if self.shuffle:
-            buffer_size=10000 if self.include_buildings else 1000
+            buffer_size=1000 if self.include_buildings else 1000
             dataset = dataset.shuffle(buffer_size=buffer_size,reshuffle_each_iteration=True)
 
 
