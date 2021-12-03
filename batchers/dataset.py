@@ -301,7 +301,7 @@ class Batcher():
             print('in cahce')
 
         if self.shuffle:
-            dataset = dataset.shuffle(buffer_size=1000,reshuffle_each_iteration=True)
+            dataset = dataset.shuffle(buffer_size=10000,reshuffle_each_iteration=True)
 
 
         if self.augment:
