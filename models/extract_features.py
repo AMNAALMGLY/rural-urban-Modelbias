@@ -63,6 +63,7 @@ DHS_MODELS = [
 
 def run_extraction_on_models(model_dir: str,
                              model_params: Mapping,
+                             data_params,
                              batcher,
                              out_root_dir: str,
                              save_filename: str,
@@ -104,9 +105,18 @@ def run_extraction_on_models(model_dir: str,
         # initalizating
         np_dict = defaultdict()
         for i, record in enumerate(batcher):
+            if data_params['include_buildings']:
+                x = torch.tensor(record[0]['images'], )
+                b = torch.tensor(record[1]['buildings'], )
+                x = torch.cat((x, b), dim=-1)
 
-            x = torch.tensor(record['images'], device='cuda')
+
+            else:
+                x = torch.tensor(record['images'])
+
+            x = x.type_as(model.model.conv1.weight)
             x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
+
             output = model(x)
 
             for key in batch_keys:
@@ -158,6 +168,7 @@ def main(args):
         print(model_dir)
         run_extraction_on_models(model_dir,
                                  model_params,
+                                 data_params,
                                  batcher=batcher,
                                  out_root_dir=OUTPUTS_ROOT_DIR,
                                  save_filename='features.npz',
