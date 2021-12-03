@@ -20,7 +20,7 @@ from collections import ChainMap
 
 from configs import args
 
-if args.include_buildings:
+if not args.include_buildings:
  from batchers.dataset_constants import SURVEY_NAMES
 else:
  from batchers.dataset_constants_buildings import SURVEY_NAMES

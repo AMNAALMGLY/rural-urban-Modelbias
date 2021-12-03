@@ -164,6 +164,7 @@ class Trainer:
 
         for epoch in range(max_epochs):
             epoch_start=time.time()
+            print(next(iter(trainloader)))
             with tqdm(trainloader, unit="batch") as tepoch:
                 train_step = 0
                 epoch_loss = 0
@@ -171,6 +172,7 @@ class Trainer:
                 print('-----------------------Training--------------------------------')
                 self.model.train()
                 for record in tepoch:
+                    print(record)
                     tepoch.set_description(f"Epoch {epoch}")
 
                     train_loss=self.training_step(record,)
