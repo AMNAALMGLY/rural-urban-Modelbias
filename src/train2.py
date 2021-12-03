@@ -67,7 +67,7 @@ def main(args):
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
                                           args.fc_reg, args.conv_reg, args.lr)
 
-    dirpath = os.path.join(args.out_dir, 'dhs_ooc', experiment)
+    dirpath = os.path.join(args.out_dir, experiment)
 
     os.makedirs(dirpath, exist_ok=True)
 
