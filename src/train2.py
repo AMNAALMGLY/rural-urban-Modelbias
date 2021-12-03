@@ -92,13 +92,16 @@ def main(args):
     paths_train = get_paths(args.dataset, 'train', args.fold, args.data_path)
 
     paths_valid = get_paths(args.dataset, 'val', args.fold, args.data_path)
-    print(len(paths))
+    print('num_train',len(paths_train))
+    print('num_valid',len(paths_valid))
+
     paths_train_b=None
     paths_valid_b=None
     if args.include_buildings:
         paths_train_b = get_paths(args.dataset, 'train', args.fold, args.buildings_records)
         paths_valid_b = get_paths(args.dataset, 'val', args.fold, args.buildings_records)
-
+        print('b_train',len(paths_train_b))
+        print('b_valid',len(paths_valid_b))
     #paths_test = get_paths(args.dataset, 'test', args.fold, args.data_path)
 
     batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
