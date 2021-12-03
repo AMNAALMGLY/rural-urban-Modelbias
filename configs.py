@@ -23,9 +23,9 @@ args = Namespace(
     epoch_thresh=150,
     patience=20,
 
-    lr=.001,                                                                                  #lr0001         #0.0001 nl,ms
-    fc_reg=0.001,                #fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=0.001,
+    lr=.0001,                                                                                  #lr0001         #0.0001 nl,ms
+    fc_reg=0.01,                #fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
+    conv_reg=0.01,
 
     # data
 
@@ -37,7 +37,7 @@ args = Namespace(
     clipn=True,
     ooc=True,
     dataset='DHS_OOC',
-        fold='C',
+        fold='B',
     ls_bands='ms',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
@@ -49,7 +49,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_C_ms_samescaled_b',
+    experiment_name='DHS_OOC_B_ms_samescaled_b',
     out_dir=os.path.join(ROOT_DIR, 'outputs','dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
