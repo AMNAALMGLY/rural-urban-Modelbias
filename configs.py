@@ -38,10 +38,10 @@ args = Namespace(
     ooc=True,
     dataset='DHS_OOC',
         fold='A',
-    ls_bands='ms',
-    nl_band=None,  # [None , merge , split]
+    ls_bands=None,
+    nl_band='split',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-   include_buildings=True,
+   include_buildings=False,
     scaler_features_keys= None    ,#{'urban_rural':tf.float32},
 
     # keep_frac {keep_frac}
