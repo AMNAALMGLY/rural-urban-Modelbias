@@ -142,10 +142,12 @@ def main(args):
         with open(json_data_path, 'r') as f:
             data_params = json.load(f)
         paths = get_paths(data_params['dataset'], 'all', data_params['fold'], args.data_path)
+        paths_b = get_paths(data_params['dataset'], 'all', data_params['fold'], args.buildings_records)
 
+        #TODO save path of building_reocrds or make it doesn't imply any thing in the dataset class
         batcher = Batcher(paths, {'urban_rural': tf.float32}, data_params['ls_bands'], data_params['nl_band'],
                           data_params['label_name'],
-                          data_params['nl_label'],data_params['include_buildings'],args.buildings_records,normalize='DHS', augment=False, clipn=True,
+                          data_params['nl_label'],data_params['include_buildings'],paths_b,normalize='DHS', augment=False, clipn=True,
                           batch_size=data_params['batch_size'], groupby=data_params['groupby'],
                           cache=True, shuffle=False)  # assumes no scalar features are present
 
