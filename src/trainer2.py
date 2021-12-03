@@ -279,12 +279,12 @@ class Trainer:
                 print(f'Saving model to {resume_path}')
 
             self.metric.reset()
-            self.scheduler.step(metrics=avg_valid_loss)
+            self.scheduler.step()
             last_loss=avg_valid_loss
             print("Time Elapsed for one epochs : {:.4f}m".format((time.time() - epoch_start) / 60))
 
         #choose the best model between the saved models in regard to r2 value or minimum loss
-        if val_list.keys() is not None:
+        if len(val_list.keys() ) > 0:
             best_path = val_list[min(val_list.keys())]
             print(f'loss of best model saved is {min(val_list.keys())}')
             del val_list[min(val_list.keys())]
@@ -297,7 +297,7 @@ class Trainer:
 
             best_path = os.path.join(self.save_dir, 'best.ckpt')
             better_path = os.path.join(self.save_dir, 'better.ckpt')
-        elif r2_dict.keys() is not None:
+        elif len(r2_dict.keys()) >0:
             best_path=r2_dict[max(r2_dict.keys())]
             del r2_dict[max(r2_dict.keys())]
             better_path=r2_dict[max(r2_dict.keys())]
@@ -334,8 +334,8 @@ class Trainer:
             'lr_scheduler': {
                # 'scheduler': ExponentialLR(opt,
                 #                           gamma=args.lr_decay),
-                #'scheduler': torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=200,verbose=True)
-                'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min')
+                'scheduler': torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=200)
+                #'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min')
 
             }
         }
