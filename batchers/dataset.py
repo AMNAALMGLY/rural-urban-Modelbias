@@ -100,7 +100,7 @@ class Batcher():
         self.label = label
         self.nl_label = nl_label
         self.include_buildings=include_buildings
-        building_records=building_records
+        self.building_records=building_records
         self.normalize = normalize
         self.augment = augment
         self.clipn = clipn
@@ -262,7 +262,7 @@ class Batcher():
         '''
         start = time.time()
 
-        if self.shuffle:
+        if self.shuffle and self.building_records is not None:
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
             dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords)\
@@ -288,7 +288,6 @@ class Batcher():
 
         if self.nl_bands == 'split':
             dataset = dataset.map(self.split_nl_band)
-
 
 
         if self.groupby == 'urban':
@@ -344,6 +343,8 @@ class Batcher():
             false_fn=lambda: tf.concat([img[:, :, 0:-1], all_0, img[:, :, -1:]], axis=2)
         )
         return ex
+
+
 
     def augment_ex(self, ex: dict[str, tf.Tensor], seed) -> dict[str, tf.Tensor]:
  
