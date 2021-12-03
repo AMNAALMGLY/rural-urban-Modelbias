@@ -124,7 +124,7 @@ def run_extraction_on_models(model_dir: str,
                     if data_params['include_buildings']:
                             np_dict[key] = record[0][key]
                     else:
-                        dict[key] = record[key]
+                        np_dict[key] = record[key]
                 else:
                     if data_params['include_buildings']:
                         np_dict[key] = np.append(np_dict[key], record[0][key], axis=0)
