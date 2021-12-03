@@ -110,7 +110,10 @@ def main(args):
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
 
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)
-
+    d = batcher_train.get_dataset()
+    for i in  d.as_numpy_iterator():
+        print(i)
+        break
     best_loss, best_path = setup_experiment(model, batcher_train, batcher_valid, args.resume, args)
 
     print(f'Path to best model found during training: \n{best_path}')
