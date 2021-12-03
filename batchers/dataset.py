@@ -262,7 +262,7 @@ class Batcher():
         '''
         start = time.time()
 
-        if self.shuffle and self.building_records is not None:
+        if self.shuffle and self.building_records is  None:
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
             dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords)\
