@@ -91,9 +91,9 @@ class Trainer:
         if args.include_buildings:
             x = torch.tensor(batch[0]['images'],)
             b=torch.tensor(batch[1]['buildings'],)
-            x = torch.stack((x, b), dim=2)
+            x = torch.cat((x, b), dim=-1)
             target = torch.tensor(batch[0]['labels'], )
-            print(x.shape, x)
+
         else:
             x=torch.tensor(batch['images'])
             target = torch.tensor(batch['labels'], )
@@ -173,7 +173,7 @@ class Trainer:
                 print('-----------------------Training--------------------------------')
                 self.model.train()
                 for record in tepoch:
-                    print(record)
+
                     tepoch.set_description(f"Epoch {epoch}")
 
                     train_loss=self.training_step(record,)

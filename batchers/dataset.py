@@ -145,7 +145,6 @@ class Batcher():
 
         if self.clipn:
             ex[band] = tf.nn.relu(ex[band])
-            print('building_band',ex[band].shape)
         return {'buildings':tf.expand_dims(ex[band],axis=-1)}
 
     def tfrecords_to_dict(self, example: tf.Tensor) -> dict[str, tf.Tensor]:
@@ -413,7 +412,7 @@ class Batcher():
 
         img=ex[0]['images']
         b=ex[1]['buildings']
-        print(img.shape,b.shape)
+        #print(img.shape,b.shape)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img=tf.image.stateless_random_crop(
@@ -426,7 +425,7 @@ class Batcher():
 
         ex[0]['images'] =img
         ex[1]['buildings']=b
-        print('afterAug',ex[1]['buildings'])
+        #print('afterAug',ex[1]['buildings'])
         return ex
 
     '''
