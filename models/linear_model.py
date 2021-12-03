@@ -46,17 +46,14 @@ def train_ridge_logo(features: np.ndarray,
     y = labels[cv_indices]
     groups = group_labels[cv_indices]
     w = None if weights is None else weights[cv_indices]
-
     alphas = 2**np.arange(-5, 35, 3.0)
     preds = np.zeros([len(alphas), len(cv_indices)], dtype=np.float64)
     group_mses = np.zeros([len(alphas), len(cv_groups)], dtype=np.float64)
     leftout_group_labels = np.zeros(len(cv_groups), dtype=np.int32)
     logo = sklearn.model_selection.LeaveOneGroupOut()
-
     for i, alpha in enumerate(alphas):
         if verbose:
             print(f'\rAlpha: {alpha} ({i+1}/{len(alphas)})', end='')
-
         # set random_state for deterministic data shuffling
         model = sklearn.linear_model.Ridge(alpha=alpha, random_state=123)
 
@@ -70,11 +67,9 @@ def train_ridge_logo(features: np.ndarray,
             preds[i, val_indices] = val_preds
             group_mses[i, g] = np.average((val_preds - val_y) ** 2, weights=val_w)
             leftout_group_labels[g] = groups[val_indices[0]]
-
     if verbose:
         print()
     mses = np.average((preds - y) ** 2, axis=1, weights=w)  # shape [num_alphas]
-
     if plot:
         assert group_names is not None
         h = max(3, len(group_names) * 0.2)
@@ -89,18 +84,15 @@ def train_ridge_logo(features: np.ndarray,
         ax.set_xscale('log')
         ax.grid(True)
         plt.show()
-
     best_alpha = alphas[np.argmin(mses)]
     best_model = sklearn.linear_model.Ridge(alpha=best_alpha)
     best_model.fit(X=X, y=y, sample_weight=w)
     test_X, test_y, = features[test_indices], labels[test_indices]
     test_preds = best_model.predict(test_X)
-
     best_val_mse = np.min(mses)
     test_w = None if weights is None else weights[test_indices]
     test_mse = np.average((test_preds - test_y) ** 2, weights=test_w)
     print(f'best val mse: {best_val_mse:.3f}, best alpha: {best_alpha}, test mse: {test_mse:.3f}')
-
     return test_preds, best_model
 
 
@@ -154,13 +146,11 @@ def ridge_cv(features: np.ndarray | Mapping[str, np.ndarray],
         features = {f: features for f in group_names}
     for f in group_names:
         assert len(features[f]) == N
-
     if save_dict is None:
         save_dict = {}
     else:
         assert savedir is not None
         save_dict = dict(save_dict)  # make a copy
-
     if subset_indices is None:
         assert subset_name is None
         filename = 'test_preds.npz'
@@ -173,7 +163,6 @@ def ridge_cv(features: np.ndarray | Mapping[str, np.ndarray],
         filename = f'test_preds_{subset_name}.npz'
         for key in save_dict:
             save_dict[key] = save_dict[key][subset_indices]
-
     if savedir is None:
         assert not save_weights
     else:
@@ -202,14 +191,12 @@ def ridge_cv(features: np.ndarray | Mapping[str, np.ndarray],
         test_preds[test_indices] = preds
         ridge_weights[f + '_w'] = model.coef_
         ridge_weights[f + '_b'] = np.asarray([model.intercept_])
-
         # only plot the curve for the first group
         do_plot = False
 
     # save preds on the test set
     if savedir is not None:
         os.makedirs(savedir, exist_ok=True)
-
         # build up save_dict
         if 'labels' in save_dict:
             assert np.array_equal(labels, save_dict['labels'])
@@ -217,10 +204,8 @@ def ridge_cv(features: np.ndarray | Mapping[str, np.ndarray],
         if weights is not None:
             save_dict['weights'] = weights
         save_dict['test_preds'] = test_preds
-
         print('saving test preds to:', npz_path)
         np.savez_compressed(npz_path, **save_dict)
-
         # save model weights
         if save_weights:
             print('saving ridge_weights to:', weights_npz_path)
