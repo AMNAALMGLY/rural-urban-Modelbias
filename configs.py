@@ -49,7 +49,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_E_nl_random_b',
+    experiment_name='DHS_OOC_E_nl_random',
     out_dir=os.path.join(ROOT_DIR, 'outputs','dhs_buildings'),
     init_ckpt_dir=None,
     group=None,
