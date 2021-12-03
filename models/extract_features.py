@@ -114,7 +114,7 @@ def run_extraction_on_models(model_dir: str,
             else:
                 x = torch.tensor(record['images'])
 
-            x = x.type_as(model.model.conv1.weight)
+            x = x.type_as(model.conv1.weight)
             x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
 
             output = model(x)
