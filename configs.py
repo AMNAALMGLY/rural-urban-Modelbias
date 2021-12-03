@@ -41,7 +41,7 @@ args = Namespace(
     ls_bands=None,
     nl_band='split',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-   include_buildings=False,
+   include_buildings=True,
     scaler_features_keys= None    ,#{'urban_rural':tf.float32},
 
     # keep_frac {keep_frac}
