@@ -50,7 +50,7 @@ args = Namespace(
 
     seed=123,
     experiment_name='DHS_OOC_A_ms_samescaled_b',
-    out_dir=os.path.join(ROOT_DIR, 'outputs','dhs_ooc'),
+    out_dir=os.path.join(ROOT_DIR, 'outputs','dhs_buildings'),
     init_ckpt_dir=None,
     group=None,
 
