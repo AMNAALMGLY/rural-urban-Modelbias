@@ -121,9 +121,15 @@ def run_extraction_on_models(model_dir: str,
 
             for key in batch_keys:
                 if i == 0:
-                    np_dict[key] = record[0][key]
+                    if data_params['include_buildings']:
+                            np_dict[key] = record[0][key]
+                    else:
+                        dict[key] = record[key]
                 else:
-                    np_dict[key] = np.append(np_dict[key], record[0][key], axis=0)
+                    if data_params['include_buildings']:
+                        np_dict[key] = np.append(np_dict[key], record[0][key], axis=0)
+                    else:
+                        np_dict[key] = np.append(np_dict[key], record[key], axis=0)
             features = output.to('cpu').numpy()
             if i == 0:
                 np_dict['features'] = features
