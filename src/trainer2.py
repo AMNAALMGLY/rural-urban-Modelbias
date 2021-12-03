@@ -88,11 +88,16 @@ class Trainer:
         self.setup_criterion()
 
     def _shared_step(self, batch, metric_fn):
-
-        x = torch.tensor(batch['images'],)
-
+        if args.include_buildings:
+            x = torch.tensor(batch[0]['images'],)
+            b=torch.tensor(batch[1]['buildings'],)
+            x = torch.stack((x, b), dim=2)
+            target = torch.tensor(batch[0]['labels'], )
+        else:
+            x=torch.tensor(batch['images'])
+            target = torch.tensor(batch['labels'], )
         x=x.type_as(self.model.conv1.weight)
-        target = torch.tensor(batch['labels'],)
+
         target=target.type_as(self.model.conv1.weight)
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
 
@@ -166,6 +171,7 @@ class Trainer:
                 self.model.train()
                 for record in tepoch:
                     tepoch.set_description(f"Epoch {epoch}")
+
                     train_loss=self.training_step(record,)
                     epoch_loss += train_loss.item()
                     train_step += 1

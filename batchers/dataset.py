@@ -2,7 +2,7 @@
 # https://www.kaggle.com/hidehisaarai1213/g2net-read-from-tfrecord-train-with-pytorch
 from __future__ import annotations
 
-from typing import Callable
+from typing import Callable, Tuple
 
 import tensorflow as tf
 import os
@@ -130,6 +130,22 @@ class Batcher():
             # TODO: save the length in a static variable (less time)
             return sum(1 for i in self)
 
+    def b_tfrecords_to_dict(self, example: tf.Tensor) -> dict[str, tf.Tensor]:
+        '''
+        custom function that converts building tfrecord into dict
+        :param example: tf dataset example
+        :return: dict
+        '''
+        band='buildings'
+        keys_to_features = {}
+        keys_to_features[band] = tf.io.FixedLenFeature(shape=[255 ** 2], dtype=tf.float32)
+        ex = tf.io.parse_single_example(example, features=keys_to_features)
+        ex[band].set_shape([255 * 255])
+        ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]  # crop to 224x224
+
+        if self.clipn:
+            ex[band] = tf.nn.relu(ex[band])
+        return {'buildings':ex[band]}
 
     def tfrecords_to_dict(self, example: tf.Tensor) -> dict[str, tf.Tensor]:
 
@@ -155,15 +171,14 @@ class Batcher():
 
         bands = {'rgb': ['BLUE', 'GREEN', 'RED'], 'ms': ['BLUE', 'GREEN', 'RED', 'SWIR1', 'SWIR2', 'TEMP1', 'NIR'],
                  'merge': ['NIGHTLIGHTS'], 'split': ['NIGHTLIGHTS'], 'center': ['NIGHTLIGHTS'], 'mean': ['NIGHTLIGHTS']}
-        ex_bands=[]
+
         keys_to_features = {}
         scalar_float_keys = ['lat', 'lon', 'year']
 
         if self.label is not None:
             scalar_float_keys.append(self.label)
-        if self.include_buildings:
-            ex_bands += ['buildings']
-        ex_bands.extend( bands.get(self.ls_bands, []) + bands.get(self.nl_bands, []))
+
+        ex_bands= bands.get(self.ls_bands, []) + bands.get(self.nl_bands, [])
 
 
         print('ex_bands :', ex_bands)
@@ -198,13 +213,10 @@ class Batcher():
                             year < 2012,  # true = DMSP
                             true_fn=lambda: (ex[band] - means['DMSP']) / stds['DMSP'],
                             false_fn=lambda: (ex[band] - means['VIIRS']) / stds['VIIRS']))
-                    elif band =='buildings':
-                        #don't normalize
-                        continue
+
                     else:
                         ex[band] = (ex[band] - means[band]) / stds[band]
             img = tf.stack([ex[band] for band in ex_bands], axis=2)
-            # img=tf.image.resize_with_crop_or_pad(img,32,32)
 
 
         else:
@@ -283,9 +295,12 @@ class Batcher():
                 buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
                 num_parallel_reads=AUTO)
 
-        dataset = dataset.prefetch(2 * self.batch_size)
-        dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex), num_parallel_calls=AUTO)
 
+
+
+        dataset = dataset.prefetch(2 * self.batch_size)
+
+        dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex), num_parallel_calls=AUTO)
         if self.nl_bands == 'split':
             dataset = dataset.map(self.split_nl_band)
 
@@ -295,6 +310,19 @@ class Batcher():
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 1.0))
         elif self.groupby == 'rural':
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
+
+        if self.include_buildings:
+            b_dataset = tf.data.TFRecordDataset(
+                filenames=self.building_records,
+                compression_type='GZIP',
+                buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
+                num_parallel_reads=AUTO)
+            b_dataset = b_dataset.perfetch(2 * self.batch_size)
+            b_dataset = b_dataset.map(lambda ex: self.b_tfrecords_to_dict(ex), num_parallel_calls=AUTO)
+
+            dataset = tf.data.Dataset.zip((dataset, b_dataset))
+
+
 
         if self.cache:
             dataset = dataset.cache()
@@ -374,6 +402,24 @@ class Batcher():
         print('images augment')
 
         ex['images'] = img
+        return ex
+    def b_augment(self,ex,seed):
+
+        print('in b_augment ex')
+        img=ex[0]['images']
+        b=ex[1]['buildings']
+        img = tf.image.stateless_random_flip_left_right(img, seed=seed)
+        img = tf.image.stateless_random_flip_left_right(img, seed=seed)
+        img=tf.image.stateless_random_crop(
+            img, size=[210, 210, args.in_channels], seed=seed)
+        b = tf.image.stateless_random_flip_left_right(b, seed=seed)
+        b = tf.image.stateless_random_flip_left_right(b, seed=seed)
+        b = tf.image.stateless_random_crop(
+            b, size=[210, 210, args.in_channels], seed=seed)
+        print('images augment')
+
+        ex[0]['images'] =img
+        ex[1]['buildings']=b
         return ex
 
     '''
