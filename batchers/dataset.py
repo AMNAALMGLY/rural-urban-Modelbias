@@ -55,7 +55,8 @@ class Batcher():
 
     """
 
-    def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label,include_buildings=False, building_records=None,normalize='DHS',
+    def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label,include_buildings=False, building_records=None,
+                 normalize='DHS',
                  augment=False, clipn=True,
                  batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None):
 
