@@ -55,7 +55,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
     trainer = Trainer(save_dir=dirpath, **params)
 
     # Fitting...
-    best_loss, path, _ = trainer.fit(train_loader, valid_loader, max_epochs=args.max_epochs, gpus='cuda')
+    best_loss, path,= trainer.fit(train_loader, valid_loader, max_epochs=args.max_epochs, gpus='cuda')
 
     return best_loss, path,
 

@@ -288,12 +288,12 @@ class Trainer:
             best_path = val_list[min(val_list.keys())]
             print(f'loss of best model saved is {min(val_list.keys())}')
             del val_list[min(val_list.keys())]
-            better_path = val_list[min(val_list.keys())]
+            #better_path = val_list[min(val_list.keys())]
 
             shutil.move(best_path,
                         os.path.join(self.save_dir, 'best.ckpt'))
-            shutil.move(better_path,
-                        os.path.join(self.save_dir, 'better.ckpt'))
+            #shutil.move(better_path,
+               #         os.path.join(self.save_dir, 'better.ckpt'))
 
             best_path = os.path.join(self.save_dir, 'best.ckpt')
             better_path = os.path.join(self.save_dir, 'better.ckpt')
@@ -308,18 +308,18 @@ class Trainer:
                         os.path.join(self.save_dir, 'better.ckpt'))
 
             best_path=os.path.join(self.save_dir, 'best.ckpt')
-            better_path=os.path.join(self.save_dir, 'better.ckpt')
+            #better_path=os.path.join(self.save_dir, 'better.ckpt')
         else:
             #best path is the last path which is saved at resume_points dir
             best_path=resume_path
             print(f'loss of best model saved from resume_point is {avg_valid_loss}')
             shutil.move(os.path.join(self.save_dir,best_path.split('/')[-2],best_path.split('/')[-1]),os.path.join(self.save_dir,'best.ckpt'))
             best_path = os.path.join(self.save_dir, 'best.ckpt')
-            better_path=best_path
+            #better_path=best_path
 
         print("Time Elapsed for all epochs : {:.4f}m".format((time.time() - start)/60))
 
-        return best_loss, best_path, better_path
+        return best_loss, best_path,
         #TODO implement overfit batches
         #TODO savelast
 

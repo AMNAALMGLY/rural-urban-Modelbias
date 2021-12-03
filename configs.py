@@ -41,7 +41,7 @@ args = Namespace(
     ls_bands=None,
     nl_band='split',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-   include_buildings=True,
+   include_buildings=False,
     scaler_features_keys= None    ,#{'urban_rural':tf.float32},
 
     # keep_frac {keep_frac}
@@ -50,7 +50,7 @@ args = Namespace(
 
     seed=123,
     experiment_name='DHS_OOC_A_ms_samescaled_b',
-    out_dir=os.path.join(ROOT_DIR, 'outputs','dhs_buildings'),
+    out_dir=os.path.join(ROOT_DIR, 'outputs','dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
 
