@@ -93,6 +93,7 @@ class Trainer:
             b=torch.tensor(batch[1]['buildings'],)
             x = torch.stack((x, b), dim=2)
             target = torch.tensor(batch[0]['labels'], )
+            print(x.shape, x)
         else:
             x=torch.tensor(batch['images'])
             target = torch.tensor(batch['labels'], )

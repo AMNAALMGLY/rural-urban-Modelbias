@@ -317,7 +317,7 @@ class Batcher():
                 compression_type='GZIP',
                 buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
                 num_parallel_reads=AUTO)
-            b_dataset = b_dataset.perfetch(2 * self.batch_size)
+            b_dataset = b_dataset.prefetch(2 * self.batch_size)
             b_dataset = b_dataset.map(lambda ex: self.b_tfrecords_to_dict(ex), num_parallel_calls=AUTO)
 
             dataset = tf.data.Dataset.zip((dataset, b_dataset))
