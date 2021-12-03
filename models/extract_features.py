@@ -41,11 +41,16 @@ DHS_MODELS = [
     # 'dhs_ooc/DHS_OOC_C_ms_samescaled_urban_b64_fc001_conv001_lr001',
     # 'dhs_ooc/DHS_OOC_D_ms_samescaled_urban_b64_fc001_conv001_lr01',
     # 'dhs_ooc/DHS_OOC_E_ms_samescaled_urban_b64_fc01_conv01_lr001',
-    'DHS_OOC_A_nl_random_b32_fc1.0_conv1.0_lr0001',
-    'DHS_OOC_B_nl_random_b32_fc1.0_conv1.0_lr0001',
-    'DHS_OOC_c_nl_random_b32_fc1.0_conv1.0_lr0001',
-    'DHS_OOC_D_nl_random_b32_fc1.0_conv1.0_lr0001',
-   '/DHS_OOC_E_nl_random_b32_fc1.0_conv1.0_lr0001',
+   # 'DHS_OOC_A_nl_random_b32_fc1.0_conv1.0_lr0001',
+   # 'DHS_OOC_B_nl_random_b32_fc1.0_conv1.0_lr0001',
+  #  'DHS_OOC_c_nl_random_b32_fc1.0_conv1.0_lr0001',
+   # 'DHS_OOC_D_nl_random_b32_fc1.0_conv1.0_lr0001',
+ #  '/DHS_OOC_E_nl_random_b32_fc1.0_conv1.0_lr0001',
+'DHS_OOC_A_nl_random_b_b32_fc1.0_conv1.0_lr0001',
+'DHS_OOC_B_nl_random_b_b32_fc1.0_conv1.0_lr0001',
+'DHS_OOC_C_nl_random_b_b32_fc1.0_conv1.0_lr0001',
+'DHS_OOC_D_nl_random_b_b32_fc1.0_conv1.0_lr0001',
+'DHS_OOC_E_nl_random_b_b32_fc1.0_conv1.0_lr0001',
     # 'dhs_ooc/DHS_OOC_A_rgb_same_b64_fc0001_conv0001_lr001',
     # 'dhs_ooc/DHS_OOC_B_rgb_same_b64_fc001_conv001_lr0001',
     # 'dhs_ooc/DHS_OOC_C_rgb_same_b64_fc001_conv001_lr0001',
@@ -135,7 +140,7 @@ def main(args):
         with open(json_data_path, 'r') as f:
             data_params = json.load(f)
         paths = get_paths(data_params['dataset'], 'all', data_params['fold'], args.data_path)
-        print(data_params.keys())
+
         batcher = Batcher(paths, {'urban_rural': tf.float32}, data_params['ls_bands'], data_params['nl_band'],
                           data_params['label_name'],
                           data_params['nl_label'],data_params['include_buildings'],None,normalize='DHS', augment=False, clipn=True,
