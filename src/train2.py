@@ -92,7 +92,7 @@ def main(args):
     paths_train = get_paths(args.dataset, 'train', args.fold, args.data_path)
 
     paths_valid = get_paths(args.dataset, 'val', args.fold, args.data_path)
-
+    print(len(paths))
     paths_train_b=None
     paths_valid_b=None
     if args.include_buildings:

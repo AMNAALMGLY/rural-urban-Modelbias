@@ -20,10 +20,9 @@ from collections import ChainMap
 
 from configs import args
 
-if not args.include_buildings:
- from batchers.dataset_constants import SURVEY_NAMES
-else:
- from batchers.dataset_constants_buildings import SURVEY_NAMES
+ #from batchers.dataset_constants import SURVEY_NAMES
+
+from batchers.dataset_constants_buildings import SURVEY_NAMES
 
 AUTO = tf.data.experimental.AUTOTUNE
 
