@@ -121,9 +121,9 @@ def run_extraction_on_models(model_dir: str,
 
             for key in batch_keys:
                 if i == 0:
-                    np_dict[key] = record[key]
+                    np_dict[key] = record[0][key]
                 else:
-                    np_dict[key] = np.append(np_dict[key], record[key], axis=0)
+                    np_dict[key] = np.append(np_dict[key], record[0][key], axis=0)
             features = output.to('cpu').numpy()
             if i == 0:
                 np_dict['features'] = features
@@ -159,7 +159,7 @@ def main(args):
                           data_params['label_name'],
                           data_params['nl_label'],data_params['include_buildings'],paths_b,normalize='DHS', augment=False, clipn=True,
                           batch_size=data_params['batch_size'], groupby=data_params['groupby'],
-                          cache=True, shuffle=False)  # assumes no scalar features are present
+                          cache=False, shuffle=False)  # assumes no scalar features are present
 
         ## TODO fix in the future
         print('===Current Config ===')
