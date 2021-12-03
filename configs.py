@@ -67,5 +67,8 @@ args = Namespace(
 args.num_workers = multiprocessing.cpu_count()
 args.no_of_gpus = torch.cuda.device_count()
 args.bands_channels = {'rgb': 3, 'ms': 7,'split':2, 'merge':1}
-args.in_channels = args.bands_channels.get(args.ls_bands,0) + args.bands_channels.get(args.nl_band,0)
-args.in_channels+=1 if args.include_buildings else args.in_channels
+if not args.include_buildings:
+    args.in_channels = args.bands_channels.get(args.ls_bands,0) + args.bands_channels.get(args.nl_band,0)
+else:
+    args.in_channels =args.bands_channels.get(args.ls_bands,0) + args.bands_channels.get(args.nl_band,0)+1
+
