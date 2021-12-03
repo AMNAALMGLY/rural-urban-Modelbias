@@ -114,7 +114,7 @@ def main(args):
      #                      cache=True, shuffle=False)
 
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
-
+    print(args.in_channels)
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)
     d = batcher_train.get_dataset()
     for i in  d.as_numpy_iterator():
