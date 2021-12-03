@@ -18,10 +18,9 @@ def train_ridge_logo(features: np.ndarray,
                      weights: Optional[np.ndarray] = None,
                      plot: bool = True,
                      group_names: Optional[Sequence[str]] = None,
-                     verbose: bool = True
+                     verbose: bool = False
                      ) -> tuple[np.ndarray, sklearn.linear_model.Ridge]:
     '''Leave-one-group-out cross-validated training of a linear model.
-
     Args
     - features: np.array, shape [N, D]
         each feature dim should be normalized to 0 mean, unit variance
@@ -34,15 +33,15 @@ def train_ridge_logo(features: np.ndarray,
     - plot: bool, whether to plot MSE as a function of alpha
     - group_names: list of str, names of the groups, only used when plotting
     - verbose: bool
-
     Returns
     - test_preds: np.array, predictions on indices from test_groups
     - best_model: sklearn.linear_model.Ridge, fitted model with lowest MSE
     '''
     cv_indices = np.isin(group_labels, cv_groups).nonzero()[0]
-    cv_indices=np.clip(cv_indices,0,19476)
     test_indices = np.isin(group_labels, test_groups).nonzero()[0]
-    test_indices=np.clip(test_indices,0,19476)
+    print(cv_indices)
+    print(cv_groups)
+    print(group_labels)
     X = features[cv_indices]
     y = labels[cv_indices]
     groups = group_labels[cv_indices]
@@ -124,13 +123,11 @@ def ridge_cv(features: np.ndarray | Mapping[str, np.ndarray],
          to tune ridge model alpha parameter
       2. using best alpha, trains ridge model on all folds except F
       3. runs trained ridge model on F
-
     Saves predictions for each fold on test.
         savedir/test_preds_{subset_name}.npz if subset_name is given
         savedir/test_preds.npz otherwise
     Saves ridge regression weights to savedir/ridge_weights.npz
         if save_weight=True
-
     Args
     - features: either a dict or np.array
         - if dict: group_name => np.array, shape [N, D]
@@ -149,15 +146,14 @@ def ridge_cv(features: np.ndarray | Mapping[str, np.ndarray],
     - subset_name: str, name of the subset
     - save_dict: dict, str => np.array, data saved with test preds npz file
     - verbose: bool
-
     Returns
     - test_preds: np.array, shape [N]
     '''
     N = len(labels)
     if isinstance(features, np.ndarray):
         features = {f: features for f in group_names}
-    #for f in group_names:
-        #assert len(features[f]) == N
+    for f in group_names:
+        assert len(features[f]) == N
 
     if save_dict is None:
         save_dict = {}
@@ -181,9 +177,8 @@ def ridge_cv(features: np.ndarray | Mapping[str, np.ndarray],
     if savedir is None:
         assert not save_weights
     else:
-        print(filename)
         npz_path = os.path.join(savedir, filename)
-        print(npz_path)
+        assert not os.path.exists(npz_path)
         if save_weights:
             weights_npz_path = os.path.join(savedir, 'ridge_weights.npz')
             assert not os.path.exists(weights_npz_path)
