@@ -249,7 +249,7 @@ class Batcher():
             for key in self.scalar_features_keys:
                 result[key] = ex[key]
         print('finished converting to dict')
-        print(img.shape)
+
         return result
 
     def tfDatase_to_np(self):
@@ -390,7 +390,7 @@ class Batcher():
         print(img.shape)
         img=tf.image.stateless_random_crop(
             img, size=[210, 210, args.in_channels], seed=seed)
-
+        print(img.shape)
         if self.nl_bands and self.ls_bands:
             if self.nl_label == 'merge':
 
