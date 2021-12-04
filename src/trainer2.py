@@ -12,12 +12,13 @@ from tqdm import tqdm
 
 from utils.utils import Metric
 from configs import args
-import  wandb
+import wandb
+
 writer = SummaryWriter()
-patience=args.patience
+patience = args.patience
+
 
 class Trainer:
-
     """A trainer class for model traiing
      ...
 
@@ -43,6 +44,7 @@ class Trainer:
         -setup criterion: sets loss function
         -configure optimizor:setup optim and scheduler
     """
+
     def __init__(self, model, lr, weight_decay, loss_type, num_outputs, metric, save_dir, **kwargs):
 
         '''Initializes the Trainer.
@@ -63,14 +65,13 @@ class Trainer:
         self.lr = lr
         self.weight_decay = weight_decay
         self.loss_type = loss_type
-        self.save_dir=save_dir
+        self.save_dir = save_dir
         if num_outputs is not None:
 
             fc = nn.Linear(model.fc.in_features, num_outputs)
-            #initialization
-            torch.nn.init.trunc_normal_(fc.weight.data,std=0.01)
-            torch.nn.init.constant_(fc.bias.data,0)
-
+            # initialization
+            torch.nn.init.trunc_normal_(fc.weight.data, std=0.01)
+            torch.nn.init.constant_(fc.bias.data, 0)
 
             model.fc = fc
 
@@ -83,44 +84,42 @@ class Trainer:
         self.metric = Metric().get_metric(metric)  # TODO if it is a list
 
         self.scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
-        self.opt=self.configure_optimizers()['optimizer']
+        self.opt = self.configure_optimizers()['optimizer']
 
         self.setup_criterion()
 
     def _shared_step(self, batch, metric_fn):
         if args.include_buildings:
-            x = torch.tensor(batch[0]['images'],)
-            b=torch.tensor(batch[1]['buildings'],)
+            x = torch.tensor(batch[0]['images'], )
+            b = torch.tensor(batch[1]['buildings'], )
             x = torch.cat((x, b), dim=-1)
             target = torch.tensor(batch[0]['labels'], )
 
         else:
-            x=torch.tensor(batch['images'])
+            x = torch.tensor(batch['images'])
             target = torch.tensor(batch['labels'], )
-        x=x.type_as(self.model.conv1.weight)
+        x = x.type_as(self.model.conv1.weight)
 
-        target=target.type_as(self.model.conv1.weight)
+        target = target.type_as(self.model.conv1.weight)
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
 
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
 
-
         loss = self.criterion(outputs, target)
 
         if self.loss_type == 'classification':
 
-            preds = nn.functional.softmax(outputs, dim=1,device='cuda')
+            preds = nn.functional.softmax(outputs, dim=1, device='cuda')
         else:
-            preds = torch.tensor(outputs,device='cuda')
+            preds = torch.tensor(outputs, device='cuda')
 
         metric_fn.to('cuda')
         metric_fn.update(preds, target)
 
         return loss
 
-    def training_step(self, batch,):
-
+    def training_step(self, batch, ):
 
         train_loss = self._shared_step(batch, self.metric)
         self.opt.zero_grad()
@@ -133,38 +132,33 @@ class Trainer:
 
         return train_loss
 
-
-    def validation_step(self, batch,):
+    def validation_step(self, batch, ):
         loss = self._shared_step(batch, self.metric)
 
-        return  loss
+        return loss
 
     def test_step(self, batch, ):
         loss = self._shared_step(batch, self.metric)
 
         return loss
 
-    def fit(self, trainloader, validloader,max_epochs,gpus,early_stopping=True,save_every=10 ,overfit_batches=None):
-
+    def fit(self, trainloader, validloader, max_epochs, gpus, early_stopping=True, save_every=10, overfit_batches=None):
 
         self.model.to(gpus)
         # log the gradients
         wandb.watch(self.model, log='all')
         train_steps = len(trainloader)
 
-        valid_steps = len(validloader) # the number of batches
+        valid_steps = len(validloader)  # the number of batches
         best_loss = float('inf')
-        count2=0          #count loss improving times
-        r2_dict=defaultdict(lambda x:'')
-        resume_path=None
-        val_list=defaultdict(lambda x:'')
-        last_loss=float('inf')
-        start=time.time()
-
+        count2 = 0  # count loss improving times
+        r2_dict = defaultdict(lambda x: '')
+        resume_path = None
+        val_list = defaultdict(lambda x: '')
+        start = time.time()
 
         for epoch in range(max_epochs):
-            epoch_start=time.time()
-
+            epoch_start = time.time()
 
             with tqdm(trainloader, unit="batch") as tepoch:
                 train_step = 0
@@ -172,27 +166,32 @@ class Trainer:
 
                 print('-----------------------Training--------------------------------')
                 self.model.train()
+                self.opt.zero_grad()
                 for record in tepoch:
-
                     tepoch.set_description(f"Epoch {epoch}")
 
-                    train_loss=self.training_step(record,)
-                    epoch_loss += train_loss.item()
+                    train_loss = self._shared_step(record, self.metric)
+                    train_loss.backward()
+                    # Implementing gradient accumlation
+                    if (train_step+1) % args.accumlation_steps == 0:
+                        self.opt.step()
+                        self.opt.zero_grad()
+
+                    epoch_loss += train_loss.item() / (args.accumlation_steps)
                     train_step += 1
                     # print statistics
                     print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item():.2f}')
                     if train_step % 20 == 0:
-                        running_train=epoch_loss/(train_step)
+                        running_train = epoch_loss / (train_step)
                         writer.add_scalar("Loss/train", running_train, train_step)
-                        wandb.log({"train_loss": running_train,'epoch':epoch})
+                        wandb.log({"train_loss": running_train, 'epoch': epoch})
 
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
 
-
-            #Metric calulation and average loss
-            r2=self.metric.compute()
-            wandb.log({'r2_train':r2,'epoch':epoch})
+            # Metric calulation and average loss
+            r2 = self.metric.compute()
+            wandb.log({'r2_train': r2, 'epoch': epoch})
             avgloss = epoch_loss / train_steps
             print(f'End of Epoch training average Loss is {avgloss:.2f} and R2 is {r2:.2f}')
             self.metric.reset()
@@ -209,16 +208,16 @@ class Trainer:
                     print(
                         f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item():.2f}')
                     if valid_step % 20 == 0:
-                        running_loss=valid_epoch_loss/(valid_step)
+                        running_loss = valid_epoch_loss / (valid_step)
                         writer.add_scalar("Loss/valid", running_loss, valid_step)
-                        wandb.log({"valid_loss": running_loss,'epoch':epoch})
+                        wandb.log({"valid_loss": running_loss, 'epoch': epoch})
 
-                avg_valid_loss=valid_epoch_loss / valid_steps #maybe valid steps is wrong
+                avg_valid_loss = valid_epoch_loss / valid_steps  # maybe valid steps is wrong
 
-                r2_valid=self.metric.compute()
+                r2_valid = self.metric.compute()
                 print(f'Validation R2 is {r2_valid:.2f}')
-                wandb.log({'r2_valid': r2_valid,'epoch':epoch})
-                wandb.log({"Epoch_valid_loss": avg_valid_loss,'epoch':epoch})
+                wandb.log({'r2_valid': r2_valid, 'epoch': epoch})
+                wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
 
                 # early stopping with r2:
                 '''
@@ -249,30 +248,27 @@ class Trainer:
                     count2 += 1
                     best_loss = avg_valid_loss
                     # start saving after a threshold of epochs and a patience of improvement
-                    if epoch >= 100 and count2 >=1:
+                    if epoch >= 100 and count2 >= 1:
                         print('in best path saving')
                         save_path = os.path.join(self.save_dir, f'best  at loss Epoch{epoch}.ckpt')
                         torch.save(self.model.state_dict(), save_path)
                         # save r2 values and loss values
                         r2_dict[r2_valid] = save_path
-                        val_list[avg_valid_loss]=save_path
+                        val_list[avg_valid_loss] = save_path
                         print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
                         print(f'Path to best model at loss found during training: \n{save_path}')
                 elif best_loss - avg_valid_loss < 0:
                     # loss is degrading
                     print('in loss degrading loop by :')
-                    print(best_loss-avg_valid_loss)
+                    print(best_loss - avg_valid_loss)
                     counter += 1  # degrading tracker
                     count2 = 0  # improving tracker
-                    if counter >= patience and early_stopping :
+                    if counter >= patience and early_stopping:
                         print(f'.................Loss is degrading in this Epoch{epoch}.....................')
 
-
-
-
-            #Saving the model for later use every 10 epochs:
-            if epoch%save_every==0:
-                resume_dir=os.path.join(self.save_dir,'resume_points')
+            # Saving the model for later use every 10 epochs:
+            if epoch % save_every == 0:
+                resume_dir = os.path.join(self.save_dir, 'resume_points')
                 os.makedirs(resume_dir, exist_ok=True)
                 resume_path = os.path.join(resume_dir, f'Epoch{epoch}.ckpt')
                 torch.save(self.model.state_dict(), resume_path)
@@ -280,62 +276,59 @@ class Trainer:
 
             self.metric.reset()
             self.scheduler.step()
-            last_loss=avg_valid_loss
+            last_loss = avg_valid_loss
             print("Time Elapsed for one epochs : {:.4f}m".format((time.time() - epoch_start) / 60))
 
-        #choose the best model between the saved models in regard to r2 value or minimum loss
-        if len(val_list.keys() ) > 0:
+        # choose the best model between the saved models in regard to r2 value or minimum loss
+        if len(val_list.keys()) > 0:
             best_path = val_list[min(val_list.keys())]
             print(f'loss of best model saved is {min(val_list.keys())}')
             del val_list[min(val_list.keys())]
-            #better_path = val_list[min(val_list.keys())]
+            # better_path = val_list[min(val_list.keys())]
 
             shutil.move(best_path,
                         os.path.join(self.save_dir, 'best.ckpt'))
-            #shutil.move(better_path,
-               #         os.path.join(self.save_dir, 'better.ckpt'))
+            # shutil.move(better_path,
+            #         os.path.join(self.save_dir, 'better.ckpt'))
 
             best_path = os.path.join(self.save_dir, 'best.ckpt')
             better_path = os.path.join(self.save_dir, 'better.ckpt')
-        elif len(r2_dict.keys()) >0:
-            best_path=r2_dict[max(r2_dict.keys())]
+        elif len(r2_dict.keys()) > 0:
+            best_path = r2_dict[max(r2_dict.keys())]
             del r2_dict[max(r2_dict.keys())]
-            better_path=r2_dict[max(r2_dict.keys())]
+            better_path = r2_dict[max(r2_dict.keys())]
 
             shutil.move(best_path,
                         os.path.join(self.save_dir, 'best.ckpt'))
             shutil.move(better_path,
                         os.path.join(self.save_dir, 'better.ckpt'))
 
-            best_path=os.path.join(self.save_dir, 'best.ckpt')
-            #better_path=os.path.join(self.save_dir, 'better.ckpt')
-        else:
-            #best path is the last path which is saved at resume_points dir
-            best_path=resume_path
-            print(f'loss of best model saved from resume_point is {avg_valid_loss}')
-            shutil.move(os.path.join(self.save_dir,best_path.split('/')[-2],best_path.split('/')[-1]),os.path.join(self.save_dir,'best.ckpt'))
             best_path = os.path.join(self.save_dir, 'best.ckpt')
-            #better_path=best_path
+            # better_path=os.path.join(self.save_dir, 'better.ckpt')
+        else:
+            # best path is the last path which is saved at resume_points dir
+            best_path = resume_path
+            print(f'loss of best model saved from resume_point is {avg_valid_loss}')
+            shutil.move(os.path.join(self.save_dir, best_path.split('/')[-2], best_path.split('/')[-1]),
+                        os.path.join(self.save_dir, 'best.ckpt'))
+            best_path = os.path.join(self.save_dir, 'best.ckpt')
+            # better_path=best_path
 
-        print("Time Elapsed for all epochs : {:.4f}m".format((time.time() - start)/60))
+        print("Time Elapsed for all epochs : {:.4f}m".format((time.time() - start) / 60))
 
         return best_loss, best_path,
-        #TODO implement overfit batches
-        #TODO savelast
-
-
-
-
+        # TODO implement overfit batches
+        # TODO savelast
 
     def configure_optimizers(self):
         opt = torch.optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         return {
             'optimizer': opt,
             'lr_scheduler': {
-               # 'scheduler': ExponentialLR(opt,
+                # 'scheduler': ExponentialLR(opt,
                 #                           gamma=args.lr_decay),
                 'scheduler': torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=200)
-                #'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min')
+                # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min')
 
             }
         }
@@ -347,4 +340,3 @@ class Trainer:
 
         elif self.loss_type == 'regression':
             self.criterion = nn.MSELoss()
-
