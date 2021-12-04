@@ -249,6 +249,7 @@ class Batcher():
             for key in self.scalar_features_keys:
                 result[key] = ex[key]
         print('finished converting to dict')
+        print(img.shape)
         return result
 
     def tfDatase_to_np(self):
