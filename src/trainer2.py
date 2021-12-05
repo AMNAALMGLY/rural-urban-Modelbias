@@ -264,8 +264,8 @@ class Trainer:
                     counter += 1  # degrading tracker
                     count2 = 0  # improving tracker
                     if counter >= patience and early_stopping:
-                        print(f'.................Loss is degrading in this Epoch{epoch}.....................')
-                        break
+                        print(f'.................Early stopping can be in this Epoch{epoch}.....................')
+                        #break
 
             # Saving the model for later use every 10 epochs:
             if epoch % save_every == 0:
@@ -288,9 +288,6 @@ class Trainer:
             shutil.move(best_path,
                         os.path.join(self.save_dir, 'best.ckpt'))
 
-
-            best_path = os.path.join(self.save_dir, 'best.ckpt')
-
         elif len(r2_dict.keys()) > 0:
             best_path = r2_dict[max(r2_dict.keys())]
 
@@ -298,7 +295,6 @@ class Trainer:
             shutil.move(best_path,
                         os.path.join(self.save_dir, 'best.ckpt'))
 
-            best_path = os.path.join(self.save_dir, 'best.ckpt')
 
         else:
             # best path is the last path which is saved at resume_points dir
@@ -306,11 +302,11 @@ class Trainer:
             print(f'loss of best model saved from resume_point is {avg_valid_loss}')
             shutil.move(os.path.join(self.save_dir, best_path.split('/')[-2], best_path.split('/')[-1]),
                         os.path.join(self.save_dir, 'best.ckpt'))
-            best_path = os.path.join(self.save_dir, 'best.ckpt')
+
             # better_path=best_path
 
         print("Time Elapsed for all epochs : {:.4f}m".format((time.time() - start) / 60))
-
+        best_path = os.path.join(self.save_dir, 'best.ckpt')
         return best_loss, best_path,
         # TODO implement overfit batches
         # TODO savelast
