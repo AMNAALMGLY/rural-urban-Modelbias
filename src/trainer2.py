@@ -177,14 +177,14 @@ class Trainer:
                         self.opt.step()
                         self.opt.zero_grad()
 
-                    epoch_loss += train_loss.item() / (args.accumlation_steps)
+                    epoch_loss += train_loss.item()
                     train_step += 1
                     # print statistics
                     print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item():.2f}')
-                    if train_step % 20 == 0:
+                    if (train_step+1) % 20 == 0:
                         running_train = epoch_loss / (train_step)
-                        writer.add_scalar("Loss/train", running_train, train_step)
                         wandb.log({"train_loss": running_train, 'epoch': epoch})
+
 
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
@@ -193,6 +193,7 @@ class Trainer:
             r2 = self.metric.compute()
             wandb.log({'r2_train': r2, 'epoch': epoch})
             avgloss = epoch_loss / train_steps
+            wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
             print(f'End of Epoch training average Loss is {avgloss:.2f} and R2 is {r2:.2f}')
             self.metric.reset()
             with torch.no_grad():
@@ -207,15 +208,14 @@ class Trainer:
                     valid_step += 1
                     print(
                         f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item():.2f}')
-                    if valid_step % 20 == 0:
+                    if (valid_step+1) % 20 == 0:
                         running_loss = valid_epoch_loss / (valid_step)
-                        writer.add_scalar("Loss/valid", running_loss, valid_step)
                         wandb.log({"valid_loss": running_loss, 'epoch': epoch})
 
                 avg_valid_loss = valid_epoch_loss / valid_steps  # maybe valid steps is wrong
 
                 r2_valid = self.metric.compute()
-                print(f'Validation R2 is {r2_valid:.2f}')
+                print(f'Validation R2 is {r2_valid:.2f} and loss {avg_valid_loss}')
                 wandb.log({'r2_valid': r2_valid, 'epoch': epoch})
                 wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
 
@@ -250,7 +250,7 @@ class Trainer:
                     # start saving after a threshold of epochs and a patience of improvement
                     if epoch >= 100 and count2 >= 1:
                         print('in best path saving')
-                        save_path = os.path.join(self.save_dir, f'best  at loss Epoch{epoch}.ckpt')
+                        save_path = os.path.join(self.save_dir, f'best_Epoch{epoch}.ckpt')
                         torch.save(self.model.state_dict(), save_path)
                         # save r2 values and loss values
                         r2_dict[r2_valid] = save_path
@@ -276,7 +276,7 @@ class Trainer:
 
             self.metric.reset()
             self.scheduler.step()
-            last_loss = avg_valid_loss
+
             print("Time Elapsed for one epochs : {:.4f}m".format((time.time() - epoch_start) / 60))
 
         # choose the best model between the saved models in regard to r2 value or minimum loss
@@ -298,7 +298,7 @@ class Trainer:
                         os.path.join(self.save_dir, 'best.ckpt'))
 
             best_path = os.path.join(self.save_dir, 'best.ckpt')
-            # better_path=os.path.join(self.save_dir, 'better.ckpt')
+
         else:
             # best path is the last path which is saved at resume_points dir
             best_path = resume_path
