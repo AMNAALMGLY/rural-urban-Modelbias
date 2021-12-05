@@ -66,6 +66,7 @@ class Trainer:
         self.weight_decay = weight_decay
         self.loss_type = loss_type
         self.save_dir = save_dir
+        self.num_outputs=num_outputs
         if num_outputs is not None:
 
             fc = nn.Linear(model.fc.in_features, num_outputs)
@@ -326,8 +327,18 @@ class Trainer:
 
     def setup_criterion(self):
 
-        if self.loss_type == 'classification':
+        if self.loss_type == 'classification' and self.num_outputs >1:
             self.criterion = nn.CrossEntropyLoss()
-
+        elif self.loss_type=='classification' and self.num_outputs==1:
+            self.criterion=nn.BCELoss()
         elif self.loss_type == 'regression':
             self.criterion = nn.MSELoss()
+
+    def weight_ex(self,x,class_model):
+        '''
+        use binary classification for finiding weights for data
+        :return: data weighted by exp(h(x))
+        '''
+        hx=class_model(x)
+        x=torch.exp(hx) * x
+        return x
