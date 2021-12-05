@@ -265,6 +265,7 @@ class Trainer:
                     count2 = 0  # improving tracker
                     if counter >= patience and early_stopping:
                         print(f'.................Loss is degrading in this Epoch{epoch}.....................')
+                        break
 
             # Saving the model for later use every 10 epochs:
             if epoch % save_every == 0:
