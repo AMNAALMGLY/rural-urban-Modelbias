@@ -57,7 +57,7 @@ args = Namespace(
     loss_type='regression',
     num_outputs=1,
     resume=None,
-    accumlation_steps=4,
+    accumlation_steps=8,
 
     # Visualization
     # wandb project:
