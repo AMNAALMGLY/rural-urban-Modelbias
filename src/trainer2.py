@@ -283,25 +283,19 @@ class Trainer:
         if len(val_list.keys()) > 0:
             best_path = val_list[min(val_list.keys())]
             print(f'loss of best model saved is {min(val_list.keys())}')
-            del val_list[min(val_list.keys())]
-            # better_path = val_list[min(val_list.keys())]
 
             shutil.move(best_path,
                         os.path.join(self.save_dir, 'best.ckpt'))
-            # shutil.move(better_path,
-            #         os.path.join(self.save_dir, 'better.ckpt'))
+
 
             best_path = os.path.join(self.save_dir, 'best.ckpt')
-            better_path = os.path.join(self.save_dir, 'better.ckpt')
+
         elif len(r2_dict.keys()) > 0:
             best_path = r2_dict[max(r2_dict.keys())]
-            del r2_dict[max(r2_dict.keys())]
-            better_path = r2_dict[max(r2_dict.keys())]
+
 
             shutil.move(best_path,
                         os.path.join(self.save_dir, 'best.ckpt'))
-            shutil.move(better_path,
-                        os.path.join(self.save_dir, 'better.ckpt'))
 
             best_path = os.path.join(self.save_dir, 'best.ckpt')
             # better_path=os.path.join(self.save_dir, 'better.ckpt')
