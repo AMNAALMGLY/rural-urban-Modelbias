@@ -26,7 +26,7 @@ print(OUTPUTS_ROOT_DIR)
 DHS_MODELS = [
     # put paths to DHS models here (relative to OUTPUTS_ROOT_DIR)
     'DHS_OOC_A_ms_samescaled_b32_fc01_conv01_lr0001',
-    'DHS_OOC_B_ms_samescaled_b32_fc01_conv01_lr0001',
+    'DHS_OOC_B_ms_samescaled_b32_fc001_conv001_lr0001',
    'DHS_OOC_C_ms_samescaled_b32_fc001_conv001_lr001',
     'DHS_OOC_D_ms_samescaled_b32_fc001_conv001_lr01',
     'DHS_OOC_E_ms_samescaled_b32_fc01_conv01_lr001',
