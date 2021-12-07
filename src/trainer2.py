@@ -313,13 +313,13 @@ class Trainer:
         # TODO savelast
 
     def configure_optimizers(self):
-        opt = torch.optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        opt = torch.optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         return {
             'optimizer': opt,
             'lr_scheduler': {
-                # 'scheduler': ExponentialLR(opt,
-                #                           gamma=args.lr_decay),
-                'scheduler': torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=200)
+                 'scheduler': ExponentialLR(opt,
+                              gamma=args.lr_decay),
+                #'scheduler': torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=200)
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min')
 
             }
