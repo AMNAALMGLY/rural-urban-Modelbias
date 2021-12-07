@@ -37,7 +37,7 @@ args = Namespace(
     clipn=True,
     ooc=True,
     dataset='DHS_OOC',
-    fold='E',
+    fold='C',
     ls_bands='ms',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
@@ -49,7 +49,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_E_ms_samescaled',
+    experiment_name='DHS_OOC_C_ms_samescaled',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
@@ -57,7 +57,7 @@ args = Namespace(
     loss_type='regression',
     num_outputs=1,
     resume=None,
-    accumlation_steps=2,
+    accumlation_steps=4,
 
     # Visualization
     # wandb project:
