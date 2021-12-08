@@ -338,6 +338,7 @@ class Trainer:
             self.binarizer=MultiLabelBinarizer()
         elif self.loss_type=='classification' and self.num_outputs==2:
             self.criterion=nn.BCELoss()
+            self.binarizer = MultiLabelBinarizer()
         elif self.loss_type == 'regression':
             self.criterion = nn.MSELoss()
         print(self.criterion)
