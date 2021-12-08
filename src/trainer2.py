@@ -327,12 +327,13 @@ class Trainer:
 
     def setup_criterion(self):
 
-        if self.loss_type == 'classification' and self.num_outputs >1:
+        if self.loss_type == 'classification' and self.num_outputs >2:
             self.criterion = nn.CrossEntropyLoss()
-        elif self.loss_type=='classification' and self.num_outputs==1:
+        elif self.loss_type=='classification' and self.num_outputs==2:
             self.criterion=nn.BCELoss()
         elif self.loss_type == 'regression':
             self.criterion = nn.MSELoss()
+        print(self.criterion)
 
     def weight_ex(self,x,class_model):
         '''
