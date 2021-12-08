@@ -107,6 +107,8 @@ class Trainer:
         target = target.type_as(self.model.conv1.weight)
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
         if self.loss_type == 'classification':
+            target=target.reshape(-1,1)
+            print(target[:10])
             target = self.binarizer.fit_transform(target)
             print(target.shape)
 
