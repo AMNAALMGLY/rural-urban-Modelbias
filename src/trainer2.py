@@ -13,7 +13,6 @@ from tqdm import tqdm
 from utils.utils import Metric
 from configs import args
 import wandb
-from sklearn.preprocessing import MultiLabelBinarizer
 writer = SummaryWriter()
 patience = args.patience
 
@@ -108,8 +107,8 @@ class Trainer:
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
         if self.loss_type == 'classification':
             target=target.reshape(-1,1)
-            print(target[:10])
-            target = self.binarizer.fit_transform(target)
+
+            target =torch.nn.functional.one_hot(target)
             print(target.shape)
 
         outputs = self.model(x)
@@ -337,10 +336,9 @@ class Trainer:
 
         if self.loss_type == 'classification' and self.num_outputs >2:
             self.criterion = nn.CrossEntropyLoss()
-            self.binarizer=MultiLabelBinarizer()
         elif self.loss_type=='classification' and self.num_outputs==2:
             self.criterion=nn.BCELoss()
-            self.binarizer = MultiLabelBinarizer()
+
         elif self.loss_type == 'regression':
             self.criterion = nn.MSELoss()
         print(self.criterion)
