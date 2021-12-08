@@ -108,7 +108,7 @@ class Trainer:
         if self.loss_type == 'classification':
             target=target.reshape(-1,1)
 
-            target =torch.nn.functional.one_hot(target)
+            target =torch.nn.functional.one_hot(target.long())
             print(target.shape)
 
         outputs = self.model(x)
