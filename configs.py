@@ -9,7 +9,7 @@ args = Namespace(
     # Model
 
     model_name='resnet18',
-    hs_weight_init='random',  # [same, samescaled,random]
+    hs_weight_init='samescaled',  # [same, samescaled,random]
     model_init='imagenet',
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
 
@@ -31,15 +31,15 @@ args = Namespace(
 
     data_path='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     buildings_records='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
-    label_name='urban_rural', #urban_rural
+    label_name='wealthpooled', #urban_rural
     cache=['train', 'train_eval', 'val'],
     augment=True,
     clipn=True,
     ooc=True,
     dataset='DHS_OOC',
     fold='D',
-    ls_bands=None,
-    nl_band='split',  # [None , merge , split]
+    ls_bands='ms',
+    nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     include_buildings=False,
     scaler_features_keys=None,  # {'urban_rural':tf.float32},
@@ -49,12 +49,12 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_D_nl_random',
+    experiment_name='DHS_OOC_D_ms_samescaled',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
 
-    loss_type='classification',
+    loss_type='regression',
     num_outputs=1,
     resume=None,
     accumlation_steps=4,
