@@ -108,31 +108,12 @@ def main(args):
     batcher_train = Batcher(paths_train,args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label,args.include_buildings,paths_train_b,'DHS', args.augment ,args.clipn, args.batch_size, groupby=args.group,
                             cache=True, shuffle=True)
-    print('training')
-    j=0
-    for i in batcher_train:
-        if j <1:
-            print('images ',i['images'])
-            print('labels ',i['labels'])
-
-        else:
-            break
-        j+=1
 
 
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label,args.include_buildings, paths_valid_b,'DHS',False, args.clipn, args.batch_size, groupby=args.group,
                             cache=True, shuffle=False)
-    print('validation')
-    j = 0
-    for i in batcher_valid:
-        if j < 1:
-            print('images ',i['images'])
-            print('labels ',i['labels'])
-        else:
-            break
 
-        j += 1
 
     #batcher_test = Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
     #                       args.nl_label, 'DHS', False, args.clipn, args.batch_size, groupby=args.group,
@@ -140,7 +121,7 @@ def main(args):
 
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)
-    class_model= get_model(in_channels=2,pretrained=True)
+    class_model= get_model(args.model_name,in_channels=2,pretrained=True)
     # redefine the model according to num_outputs
     fc = nn.Linear(class_model.fc.in_features, args.num_outputs)
     class_model.fc = fc
