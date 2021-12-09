@@ -130,7 +130,7 @@ class Trainer:
         else:
             preds = torch.tensor(outputs, device='cuda')
 
-        metric_fn.to('cuda')
+        #metric_fn.to('cuda')
         metric_fn.update(preds, target)
 
         return loss
