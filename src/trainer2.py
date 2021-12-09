@@ -108,22 +108,20 @@ class Trainer:
         if self.loss_type == 'classification':
             #target=target.reshape(-1,1)
 
-            target =torch.nn.functional.one_hot(target.long(),num_classes=2)
-            print(target)
+            target =torch.nn.functional.one_hot(target.long())
+
 
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
-        print(target[:10])
-        print(outputs[:10])
-        print(torch.sigmoid(outputs[:10]))
+
 
         loss = self.criterion(outputs, target.float())
         print(loss)
-        if self.loss_type == 'classification' and self.num_outputs >2:
+        if self.loss_type == 'classification' and self.num_outputs >1:
 
             preds = nn.functional.softmax(outputs, dim=1)
 
-        elif self.loss_type=='classification' and self.num_outputs==2:
+        elif self.loss_type=='classification' and self.num_outputs==1:
             print('in sigmoid')
             preds=torch.sigmoid(outputs,)
             print(preds.shape)
@@ -343,10 +341,10 @@ class Trainer:
 
     def setup_criterion(self):
 
-        if self.loss_type == 'classification' and self.num_outputs >2:
+        if self.loss_type == 'classification' and self.num_outputs >1:
             self.criterion = nn.CrossEntropyLoss()
-        elif self.loss_type=='classification' and self.num_outputs==2:
-            self.criterion=nn.BCELoss()
+        elif self.loss_type=='classification' and self.num_outputs==1:
+            self.criterion=nn.BCEWithLogitsLoss()
 
         elif self.loss_type == 'regression':
             self.criterion = nn.MSELoss()

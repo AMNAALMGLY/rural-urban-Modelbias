@@ -128,6 +128,7 @@ def main(args):
 
 
 if __name__ == "__main__":
+    CUDA_LAUNCH_BLOCKING = 1
     wandb.init(project=wandp, entity=entity, config={})
     print('GPUS:', torch.cuda.device_count())
     parser = argparse.ArgumentParser()

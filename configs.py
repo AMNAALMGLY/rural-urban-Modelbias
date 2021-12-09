@@ -55,7 +55,7 @@ args = Namespace(
     group=None,
 
     loss_type='classification',
-    num_outputs=2,
+    num_outputs=1,
     resume=None,
     accumlation_steps=4,
 
