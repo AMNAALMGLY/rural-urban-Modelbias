@@ -114,7 +114,7 @@ class Trainer:
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
 
-        loss = self.criterion(outputs, target)
+        loss = self.criterion(outputs, target.float())
 
         if self.loss_type == 'classification':
 
