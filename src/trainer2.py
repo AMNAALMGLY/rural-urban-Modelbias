@@ -106,7 +106,10 @@ class Trainer:
 
         target = target.type_as(self.model.conv1.weight)
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
-
+        #Re-weighting data
+        if self.class_model:
+           x= self.weight_ex(x,self.class_model)
+           print(x.shape,x[:10])
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
 
@@ -150,9 +153,11 @@ class Trainer:
 
         return loss
 
-    def fit(self, trainloader, validloader, max_epochs, gpus, early_stopping=True, save_every=10, overfit_batches=None):
+    def fit(self, trainloader, validloader, max_epochs, gpus, class_model,early_stopping=True, save_every=10, overfit_batches=None):
 
         self.model.to(gpus)
+        if class_model:
+                self.class_model=class_model.to(gpus)
         # log the gradients
         wandb.watch(self.model, log='all')
         train_steps = len(trainloader)

@@ -20,7 +20,7 @@ wandp = default_args.wandb_p
 entity = default_args.entity
 
 
-def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args):
+def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args,class_model=None):
     '''
    setup the experiment paramaters
    :param model: model class :PreActResnet
@@ -40,7 +40,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
 
     # setup Trainer params
     params = dict(model=model, lr=args.lr, weight_decay=args.conv_reg, loss_type=args.loss_type,
-                  num_outputs=args.num_outputs, metric='acc')
+                  num_outputs=args.num_outputs, metric='r2')
     # logging
     wandb.config.update(params)
     # setting experiment_path
@@ -55,7 +55,8 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
     trainer = Trainer(save_dir=dirpath, **params)
 
     # Fitting...
-    best_loss, path,= trainer.fit(train_loader, valid_loader, max_epochs=args.max_epochs, gpus='cuda')
+
+    best_loss, path,= trainer.fit(train_loader, valid_loader, max_epochs=args.max_epochs, gpus='cuda',class_model=class_model)
 
     return best_loss, path,
 
@@ -139,8 +140,16 @@ def main(args):
 
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)
+    class_model= get_model(in_channels=2,pretrained=True)
+    # redefine the model according to num_outputs
+    fc = nn.Linear(class_model.fc.in_features, args.num_outputs)
+    class_model.fc = fc
+    class_model = load_from_checkpoint(path=args.resume, model=class_model)
+    # freeze the last layer for feature extraction
+    class_model.fc = nn.Sequential()
+    #class_model.to('cuda')
 
-    best_loss, best_path = setup_experiment(model, batcher_train, batcher_valid, args.resume, args)
+    best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args,class_model)
 
     print(f'Path to best model found during training: \n{best_path}')
 
