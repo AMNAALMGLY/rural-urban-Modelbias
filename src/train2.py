@@ -110,9 +110,9 @@ def main(args):
     print('training')
     j=0
     for i in batcher_train:
-        if j <20:
-            print(i['images'])
-            print(i['labels'])
+        if j <1:
+            print('images ',i['images'])
+            print('labels ',i['labels'])
 
         else:
             break
@@ -125,9 +125,9 @@ def main(args):
     print('validation')
     j = 0
     for i in batcher_valid:
-        if j < 20:
-            print(i['images'])
-            print(i['labels'])
+        if j < 1:
+            print('images ',i['images'])
+            print('labels ',i['labels'])
         else:
             break
 
