@@ -113,6 +113,7 @@ class Trainer:
 
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
+        print(target[:10])
         print(outputs[:10])
 
         loss = self.criterion(outputs, target.float())
