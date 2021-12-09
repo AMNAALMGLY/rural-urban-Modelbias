@@ -106,14 +106,15 @@ class Trainer:
 
         target = target.type_as(self.model.conv1.weight)
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
-        #Re-weighting data
-        if self.class_model:
-           x= self.weight_ex(x,self.class_model)
 
-           print(x.shape,x[:10])
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
-
+        #Re-weighting data
+        if self.class_model:
+           Beta= self.weight_ex(x,self.class_model)
+           print(Beta[:10])
+           outputs=outputs*Beta
+           print(outputs.shape,outputs[:10])
 
         loss = self.criterion(outputs, target)
         if self.loss_type == 'classification' and self.num_outputs >1:
@@ -338,6 +339,6 @@ class Trainer:
         '''
 
         hx=torch.sigmoid(class_model(x))
-        print(hx.shape)
-        x=torch.exp(hx.squeeze(-1)) * x
-        return x
+
+        Beta=torch.exp(hx.squeeze(-1))
+        return Beta
