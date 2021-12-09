@@ -118,7 +118,7 @@ class Trainer:
         print(torch.sigmoid(outputs[:10]))
 
         loss = self.criterion(outputs, target.float())
-        print(loss.shape)
+        print(loss)
         if self.loss_type == 'classification' and self.num_outputs >2:
 
             preds = nn.functional.softmax(outputs, dim=1)
@@ -132,7 +132,7 @@ class Trainer:
             preds = torch.tensor(outputs, device='cuda')
 
         #metric_fn.to('cuda')
-        metric_fn.update(preds, target)
+        #metric_fn.update(preds, target)
 
         return loss
 
