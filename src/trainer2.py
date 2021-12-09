@@ -113,6 +113,7 @@ class Trainer:
 
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
+        print(outputs.shape)
 
         loss = self.criterion(outputs, target.float())
 
@@ -121,7 +122,7 @@ class Trainer:
             preds = nn.functional.softmax(outputs, dim=1)
         elif self.loss_type=='classification' and self.num_outputs==2:
             preds=torch.sigmoid(outputs,)
-            print(preds.device)
+            print(preds[:10],preds.shape)
 
         else:
             preds = torch.tensor(outputs, device='cuda')
