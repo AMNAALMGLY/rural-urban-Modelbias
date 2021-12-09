@@ -122,6 +122,7 @@ class Trainer:
             preds = nn.functional.softmax(outputs, dim=1)
         elif self.loss_type=='classification' and self.num_outputs==2:
             print('in sigmoid')
+            print(outputs[:10])
             preds=torch.sigmoid(outputs,)
             print(preds[:10],preds.shape)
 
