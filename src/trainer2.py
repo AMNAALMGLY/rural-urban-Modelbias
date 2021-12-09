@@ -109,6 +109,7 @@ class Trainer:
         #Re-weighting data
         if self.class_model:
            x= self.weight_ex(x,self.class_model)
+
            print(x.shape,x[:10])
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
@@ -335,8 +336,8 @@ class Trainer:
         use binary classification for finiding weights for data
         :return: data weighted by exp(h(x))
         '''
-        print(x.shape)
-        hx=torch.sigmoid(class_model(x.permute(0,3,2,1)))
+
+        hx=torch.sigmoid(class_model(x))
         print(hx.shape)
         x=torch.exp(hx) * x
         return x
