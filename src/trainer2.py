@@ -335,6 +335,8 @@ class Trainer:
         use binary classification for finiding weights for data
         :return: data weighted by exp(h(x))
         '''
-        hx=class_model(x)
+        print(x.shape)
+        hx=torch.sigmoid(class_model(x))
+        print(hx.shape)
         x=torch.exp(hx) * x
         return x
