@@ -40,7 +40,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
 
     # setup Trainer params
     params = dict(model=model, lr=args.lr, weight_decay=args.conv_reg, loss_type=args.loss_type,
-                  num_outputs=args.num_outputs, metric='r2')
+                  num_outputs=args.num_outputs, metric='accuracy')
     # logging
     wandb.config.update(params)
     # setting experiment_path

@@ -81,7 +81,7 @@ class Trainer:
             raise ValueError('please specify a value for your number of outputs for the loss function to evaluate '
                              'against')
 
-        self.metric = Metric().get_metric(metric)  # TODO if it is a list
+        self.metric = Metric(self.num_outputs).get_metric(metric)  # TODO if it is a list
 
         self.scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
         self.opt = self.configure_optimizers()['optimizer']
