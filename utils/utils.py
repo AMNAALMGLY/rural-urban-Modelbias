@@ -55,8 +55,6 @@ class Metric:
 
     def rank(self):
         return torchmetrics.SpearmanCorrcoef()
-    def accuracy(self):
-        return torchmetrics.Accuracy(self.num_classes)
 
 
 def save_results(dir_path: str, np_dict: dict, filename: str

@@ -82,7 +82,7 @@ class Trainer:
                              'against')
 
         self.metric = Metric(self.num_outputs).get_metric(metric)  # TODO if it is a list
-
+        print(self.metric)
         self.scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
         self.opt = self.configure_optimizers()['optimizer']
 
