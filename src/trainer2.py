@@ -105,17 +105,17 @@ class Trainer:
 
         target = target.type_as(self.model.conv1.weight)
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
-        if self.loss_type == 'classification':
+        #if self.loss_type == 'classification':
             #target=target.reshape(-1,1)
 
-            target =torch.nn.functional.one_hot(target.long())
+            #target =torch.nn.functional.one_hot(target.long())
 
 
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
 
 
-        loss = self.criterion(outputs, target.float())
+        loss = self.criterion(outputs, target)
         print(loss)
         if self.loss_type == 'classification' and self.num_outputs >1:
 
