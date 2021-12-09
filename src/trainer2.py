@@ -339,5 +339,5 @@ class Trainer:
 
         hx=torch.sigmoid(class_model(x))
         print(hx.shape)
-        x=torch.exp(hx) * x
+        x=torch.exp(hx.squeeze(-1)) * x
         return x
