@@ -336,7 +336,7 @@ class Trainer:
         :return: data weighted by exp(h(x))
         '''
         print(x.shape)
-        hx=torch.sigmoid(class_model(x))
+        hx=torch.sigmoid(class_model(x.permute(0,3,2,1)))
         print(hx.shape)
         x=torch.exp(hx) * x
         return x
