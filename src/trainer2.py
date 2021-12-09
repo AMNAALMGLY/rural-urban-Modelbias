@@ -108,8 +108,8 @@ class Trainer:
         if self.loss_type == 'classification':
             #target=target.reshape(-1,1)
 
-            target =torch.nn.functional.one_hot(target.long())
-            print(target.shape)
+            target =torch.nn.functional.one_hot(target.long(),num_classes=2)
+            print(target)
 
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
@@ -131,8 +131,8 @@ class Trainer:
         else:
             preds = torch.tensor(outputs, device='cuda')
 
-        #metric_fn.to('cuda')
-        #metric_fn.update(preds, target)
+        metric_fn.to('cuda')
+        metric_fn.update(preds, target)
 
         return loss
 
