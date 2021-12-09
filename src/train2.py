@@ -127,7 +127,7 @@ def main(args):
     class_model.fc = fc
     class_model = load_from_checkpoint(path=args.resume, model=class_model)
     # freeze the last layer for feature extraction
-    class_model.fc = nn.Sequential()
+
     #class_model.to('cuda')
 
     best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args,class_model)
