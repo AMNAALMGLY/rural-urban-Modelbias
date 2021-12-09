@@ -107,10 +107,31 @@ def main(args):
     batcher_train = Batcher(paths_train,args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label,args.include_buildings,paths_train_b,'DHS', args.augment ,args.clipn, args.batch_size, groupby=args.group,
                             cache=True, shuffle=True)
+    print('training')
+    j=0
+    for i in batcher_train:
+        if j <20:
+            print(i['images'])
+            print(i['labels'])
+
+        else:
+            break
+        j+=1
+
 
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label,args.include_buildings, paths_valid_b,'DHS',False, args.clipn, args.batch_size, groupby=args.group,
                             cache=True, shuffle=False)
+    print('validation')
+    j = 0
+    for i in batcher_valid:
+        if j < 20:
+            print(i['images'])
+            print(i['labels'])
+        else:
+            break
+
+        j += 1
 
     #batcher_test = Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
     #                       args.nl_label, 'DHS', False, args.clipn, args.batch_size, groupby=args.group,

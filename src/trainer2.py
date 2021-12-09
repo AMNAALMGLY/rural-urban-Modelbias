@@ -81,8 +81,9 @@ class Trainer:
             raise ValueError('please specify a value for your number of outputs for the loss function to evaluate '
                              'against')
 
+        self.metric_str=metric
         self.metric = Metric(self.num_outputs).get_metric(metric)  # TODO if it is a list
-        print(self.metric)
+
         self.scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
         self.opt = self.configure_optimizers()['optimizer']
 
@@ -105,26 +106,18 @@ class Trainer:
 
         target = target.type_as(self.model.conv1.weight)
         x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
-        #if self.loss_type == 'classification':
-            #target=target.reshape(-1,1)
-
-            #target =torch.nn.functional.one_hot(target.long())
-
 
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
 
 
         loss = self.criterion(outputs, target)
-        print(loss)
         if self.loss_type == 'classification' and self.num_outputs >1:
 
             preds = nn.functional.softmax(outputs, dim=1)
 
         elif self.loss_type=='classification' and self.num_outputs==1:
-            print('in sigmoid')
             preds=torch.sigmoid(outputs,)
-            print(preds.shape)
 
         else:
             preds = torch.tensor(outputs, device='cuda')
@@ -206,10 +199,10 @@ class Trainer:
 
             # Metric calulation and average loss
             r2 = self.metric.compute()
-            wandb.log({'r2_train': r2, 'epoch': epoch})
+            wandb.log({f'{self.metric_str} train': r2, 'epoch': epoch})
             avgloss = epoch_loss / train_steps
             wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
-            print(f'End of Epoch training average Loss is {avgloss:.2f} and R2 is {r2:.2f}')
+            print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str} is {r2:.2f}')
             self.metric.reset()
             with torch.no_grad():
                 valid_step = 0
@@ -227,33 +220,14 @@ class Trainer:
                         running_loss = valid_epoch_loss / (valid_step)
                         wandb.log({"valid_loss": running_loss, 'epoch': epoch})
 
-                avg_valid_loss = valid_epoch_loss / valid_steps  # maybe valid steps is wrong
+                avg_valid_loss = valid_epoch_loss / valid_steps
 
                 r2_valid = self.metric.compute()
-                print(f'Validation R2 is {r2_valid:.2f} and loss {avg_valid_loss}')
-                wandb.log({'r2_valid': r2_valid, 'epoch': epoch})
+                print(f'Validation {self.metric_str}is {r2_valid:.2f} and loss {avg_valid_loss}')
+                wandb.log({f'{self.metric_str} valid': r2_valid, 'epoch': epoch})
                 wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
 
-                # early stopping with r2:
-                '''
-             
-                if r2_valid - best_valid>=0.05:
-                    #best_loss = avg_valid_loss
-                    wait=0
-                    best_valid=r2_valid
-                    if epoch > 100:
-                        save_path = os.path.join(self.save_dir, f'best at metric Epoch{epoch}.ckpt')
-                        torch.save(self.model.state_dict(), save_path)
-                        print(f'best model at metric at Epoch {epoch}  metric {r2_valid} ,')
-                        print(f'Path to best model found during training: \n{save_path}')
-                else:
-                    wait+=1
-                    if wait >= patience and early_stopping:
-                        print('.................Early Stopping .....................')
-                        break
-                        
-    
-                '''
+
                 # early stopping with loss
                 if best_loss - avg_valid_loss >= 0:
                     print('in loss improving loop by ')
@@ -263,7 +237,7 @@ class Trainer:
                     count2 += 1
                     best_loss = avg_valid_loss
                     # start saving after a threshold of epochs and a patience of improvement
-                    if epoch >= 100 and count2 >= 1:
+                    if  count2 >= 1:
                         print('in best path saving')
                         save_path = os.path.join(self.save_dir, f'best_Epoch{epoch}.ckpt')
                         torch.save(self.model.state_dict(), save_path)
@@ -298,13 +272,14 @@ class Trainer:
         # choose the best model between the saved models in regard to r2 value or minimum loss
         if len(val_list.keys()) > 0:
             best_path = val_list[min(val_list.keys())]
-            print(f'loss of best model saved is {min(val_list.keys())}')
+            print(f'loss of best model saved is {min(val_list.keys())} , path {best_path}')
 
             shutil.move(best_path,
                         os.path.join(self.save_dir, 'best.ckpt'))
 
         elif len(r2_dict.keys()) > 0:
             best_path = r2_dict[max(r2_dict.keys())]
+            print(f'{self.metric_str} of best model saved is {max(r2_dict.keys())} , path {best_path}')
 
 
             shutil.move(best_path,
