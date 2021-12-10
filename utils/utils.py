@@ -11,7 +11,6 @@ import random
 from typing import Optional
 
 import numpy as np
-import tensorflow as tf
 import torch
 
 
@@ -24,7 +23,6 @@ from batchers.dataset_constants import SURVEY_NAMES
 
 #from batchers.dataset_constants_buildings import SURVEY_NAMES
 
-AUTO = tf.data.experimental.AUTOTUNE
 
 
 class Metric:

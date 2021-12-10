@@ -154,7 +154,7 @@ class Trainer:
 
         return loss
 
-    def fit(self, trainloader, validloader, max_epochs, gpus, class_model,early_stopping=True, save_every=10, overfit_batches=None):
+    def fit(self, trainloader, validloader, max_epochs, gpus, class_model=None,early_stopping=True, save_every=10):
 
         self.model.to(gpus)
         if class_model:

@@ -20,7 +20,7 @@ wandp = default_args.wandb_p
 entity = default_args.entity
 
 
-def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args,class_model=None):
+def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args):
     '''
    setup the experiment paramaters
    :param model: model class :PreActResnet
@@ -38,6 +38,9 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
         model.fc = fc
         model = load_from_checkpoint(resume_checkpoints, model)
 
+
+
+
     # setup Trainer params
     params = dict(model=model, lr=args.lr, weight_decay=args.conv_reg, loss_type=args.loss_type,
                   num_outputs=args.num_outputs, metric='r2')
@@ -46,10 +49,22 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
     # setting experiment_path
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
                                           args.fc_reg, args.conv_reg, args.lr)
+    # if doing distribution shift extperiments:
+    if args.weight_model:
+        class_model = get_model(args.model_name, in_channels=args.in_channels, pretrained=True)
+        # redefine the model according to num_outputs
+        fc = nn.Linear(class_model.fc.in_features, args.num_outputs)
+        class_model.fc = fc
+        class_model = load_from_checkpoint(path=args.weight_model, model=class_model)
+        experiment=experiment+'_weighted'
+    else:
+        class_model=None
     # output directory
     dirpath = os.path.join(args.out_dir, experiment)
     print(f'checkpoints directory: {dirpath}')
     os.makedirs(dirpath, exist_ok=True)
+
+
 
     # Trainer
     trainer = Trainer(save_dir=dirpath, **params)
@@ -67,6 +82,8 @@ def main(args):
     # setting experiment_path
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
                                           args.fc_reg, args.conv_reg, args.lr)
+    if args.weight_model:
+        experiment = experiment + '_weighted'
 
     dirpath = os.path.join(args.out_dir, experiment)
 
@@ -121,16 +138,9 @@ def main(args):
 
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)
-    class_model= get_model(args.model_name,in_channels=2,pretrained=True)
-    # redefine the model according to num_outputs
-    fc = nn.Linear(class_model.fc.in_features, args.num_outputs)
-    class_model.fc = fc
-    class_model = load_from_checkpoint(path=args.resume, model=class_model)
-    # freeze the last layer for feature extraction
 
-    #class_model.to('cuda')
 
-    best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args,class_model)
+    best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args)
 
     print(f'Path to best model found during training: \n{best_path}')
 
@@ -139,7 +149,6 @@ def main(args):
 
 
 if __name__ == "__main__":
-    CUDA_LAUNCH_BLOCKING = 1
     wandb.init(project=wandp, entity=entity, config={})
     print('GPUS:', torch.cuda.device_count())
     parser = argparse.ArgumentParser()

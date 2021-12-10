@@ -56,7 +56,8 @@ args = Namespace(
 
     loss_type='regression',
     num_outputs=1,
-    resume='/atlas/u/amna/rural-urban-Modelbias/outputs/dhs_ooc/DHS_OOC_A_nl_random_b32_fc01_conv01_lr0001/best.ckpt',
+    resume=None,
+    weihgt_model='/atlas/u/amna/rural-urban-Modelbias/outputs/dhs_ooc/DHS_OOC_A_nl_random_b32_fc01_conv01_lr0001/best.ckpt',
     accumlation_steps=4,
 
     # Visualization
