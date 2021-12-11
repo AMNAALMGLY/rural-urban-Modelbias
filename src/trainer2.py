@@ -158,6 +158,8 @@ class Trainer:
         self.model.to(gpus)
         if class_model:
                 self.class_model=class_model.to(gpus)
+        else:
+            self.class_model=None
         # log the gradients
         wandb.watch(self.model, log='all')
         train_steps = len(trainloader)
