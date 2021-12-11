@@ -156,6 +156,7 @@ class Trainer:
     def fit(self, trainloader, validloader, max_epochs, gpus, class_model=None,early_stopping=True, save_every=10):
 
         self.model.to(gpus)
+        #Weighting model
         if class_model:
                 self.class_model=class_model.to(gpus)
         else:
@@ -261,7 +262,7 @@ class Trainer:
                     count2 = 0  # improving tracker
                     if counter >= patience and early_stopping:
                         print(f'.................Early stopping can be in this Epoch{epoch}.....................')
-                        break
+                        #break
 
             # Saving the model for later use every 10 epochs:
             if epoch % save_every == 0:
