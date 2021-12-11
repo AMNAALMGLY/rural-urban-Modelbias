@@ -23,9 +23,9 @@ args = Namespace(
     patience=20,
 
     lr=.0001,  # lr0001         #0.0001 nl,ms
-    fc_reg=1.0,
+    fc_reg=0.01,
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=1.0,
+    conv_reg=0.01,
 
     # data
 
@@ -38,8 +38,8 @@ args = Namespace(
     ooc=True,
     dataset='DHS_OOC',
     fold='A',
-    ls_bands=None,
-    nl_band='split',  # [None , merge , split]
+    ls_bands='ms',
+    nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     include_buildings=False,
     scaler_features_keys=None,  # {'urban_rural':tf.float32},
@@ -49,7 +49,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_A_nl_random_weighted',
+    experiment_name='DHS_OOC_B_ms_random_weighted',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,

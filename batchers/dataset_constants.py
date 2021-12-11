@@ -62,7 +62,7 @@ SURVEY_NAMES_LSMS = ['ethiopia_2011', 'ethiopia_2015', 'malawi_2010', 'malawi_20
                       'uganda_2005', 'uganda_2009', 'uganda_2013']
 
 SIZES = {
-    'DHS': {'train': 12127+192, 'val': 3257, 'test': 4093, 'all': 19477+192},  # TODO: is this needed? original is + 192 for train and all
+    'DHS': {'train': 12319, 'val': 3257, 'test': 4093, 'all': 19669},  # TODO: is this needed? original is + 192 for train and all
     'DHSNL': {'all': 260415},
     'DHS_OOC_A': {'train': 11797, 'val': 3909, 'test': 3963, 'all': 19669},
     'DHS_OOC_B': {'train': 11820, 'val': 3940, 'test': 3909, 'all': 19669},

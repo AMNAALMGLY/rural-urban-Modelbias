@@ -386,10 +386,9 @@ class Batcher():
         img = ex['images']
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
-        print(args.in_channels)
         print(img.shape)
-        img=tf.image.stateless_random_crop(
-            img, size=[210, 210, args.in_channels], seed=seed)
+       # img=tf.image.stateless_random_crop(
+         #   img, size=[210, 210, args.in_channels], seed=seed)
 
         if self.nl_bands and self.ls_bands:
             if self.nl_label == 'merge':
@@ -412,18 +411,18 @@ class Batcher():
         ex['images'] = img
         return ex
     def b_augment(self,ex,seed):
-
+              #TODO validate this
         img=ex[0]['images']
         b=ex[1]['buildings']
         #print(img.shape,b.shape)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
-        img=tf.image.stateless_random_crop(
-            img, size=[210, 210, args.in_channels-1], seed=seed)
+       # img=tf.image.stateless_random_crop(
+        #    img, size=[210, 210, args.in_channels-1], seed=seed)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
-        b = tf.image.stateless_random_crop(
-            b, size=[210, 210, 1], seed=seed)
+      #  b = tf.image.stateless_random_crop(
+      #      b, size=[210, 210, 1], seed=seed)
         print('images augment')
 
         ex[0]['images'] =img
