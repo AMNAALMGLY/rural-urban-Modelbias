@@ -18,7 +18,7 @@ patience = args.patience
 
 
 class Trainer:
-    """A trainer class for model traiing
+    """A trainer class for model training
      ...
 
     Attributes
@@ -113,8 +113,7 @@ class Trainer:
         if self.class_model:
            Beta= self.weight_ex(x,self.class_model)
 
-           outputs=outputs*Beta
-
+           outputs=outputs*(Beta**0.5)
         loss = self.criterion(outputs, target)
         if self.loss_type == 'classification' and self.num_outputs >1:
 
@@ -260,7 +259,7 @@ class Trainer:
                     count2 = 0  # improving tracker
                     if counter >= patience and early_stopping:
                         print(f'.................Early stopping can be in this Epoch{epoch}.....................')
-                        #break
+                        break
 
             # Saving the model for later use every 10 epochs:
             if epoch % save_every == 0:
@@ -273,7 +272,7 @@ class Trainer:
             self.metric.reset()
             self.scheduler.step()
 
-            print("Time Elapsed for one epochs : {:.4f}m".format((time.time() - epoch_start) / 60))
+            print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
 
         # choose the best model between the saved models in regard to r2 value or minimum loss
         if len(val_list.keys()) > 0:
@@ -301,7 +300,7 @@ class Trainer:
 
             # better_path=best_path
 
-        print("Time Elapsed for all epochs : {:.4f}m".format((time.time() - start) / 60))
+            print("Time Elapsed for all epochs : {:.2} H".format((time.time() - start) /120))
         best_path = os.path.join(self.save_dir, 'best.ckpt')
         return best_loss, best_path,
         # TODO implement overfit batches
@@ -329,12 +328,12 @@ class Trainer:
 
         elif self.loss_type == 'regression':
             self.criterion = nn.MSELoss()
-        print(self.criterion)
+
 
     def weight_ex(self,x,class_model):
         '''
         use binary classification for finiding weights for data
-        :return: data weighted by exp(h(x))
+        :return: weghing factor Beta that can be added to loss function
         '''
 
         hx=torch.sigmoid(class_model(x))

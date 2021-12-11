@@ -26,10 +26,10 @@ class PreActBlock(nn.Module):
         super(PreActBlock, self).__init__()
         self.pre_bn = self.pre_relu = None
         if preactivate:
-            self.pre_bn = nn.BatchNorm2d(inplanes)
+            self.pre_bn = nn.BatchNorm2d(inplanes,momentum=0.01)
             self.pre_relu = nn.ReLU(inplace=True)
         self.conv1 = conv3x3(inplanes, planes, stride)
-        self.bn1_2 = nn.BatchNorm2d(planes)
+        self.bn1_2 = nn.BatchNorm2d(planes,momentum=0.01)
         self.relu1_2 = nn.ReLU(inplace=True)
         self.conv2 = conv3x3(planes, planes)
         self.downsample = downsample
@@ -65,14 +65,14 @@ class PreActBottleneck(nn.Module):
         super(PreActBottleneck, self).__init__()
         self.pre_bn = self.pre_relu = None
         if preactivate:
-            self.pre_bn = nn.BatchNorm2d(inplanes)
+            self.pre_bn = nn.BatchNorm2d(inplanes,momentum=0.01)
             self.pre_relu = nn.ReLU(inplace=True)
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
-        self.bn1_2 = nn.BatchNorm2d(planes)
+        self.bn1_2 = nn.BatchNorm2d(planes,momentum=0.01)
         self.relu1_2 = nn.ReLU(inplace=True)
         self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
                                padding=1, bias=False)
-        self.bn2_3 = nn.BatchNorm2d(planes)
+        self.bn2_3 = nn.BatchNorm2d(planes,momentum=0.01)
         self.relu2_3 = nn.ReLU(inplace=True)
         self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
         self.downsample = downsample
@@ -111,15 +111,14 @@ class PreActResNet(nn.Module):
         super(PreActResNet, self).__init__()
         self.conv1 = nn.Conv2d(in_channels, 64, kernel_size=7, stride=2, padding=3,
                                bias=False)
-        self.bn1 = nn.BatchNorm2d(64)
+        self.bn1 = nn.BatchNorm2d(64,momentum=0.01)
         self.relu1 = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self._make_layer(block, 64, layers[0])
-        self.dropout=nn.Dropout(p=0.2)
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
-        self.final_bn = nn.BatchNorm2d(512 * block.expansion)
+        self.final_bn = nn.BatchNorm2d(512 * block.expansion,momentum=0.01)
         self.final_relu = nn.ReLU(inplace=True)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
@@ -305,8 +304,10 @@ def load_tensor_pack(model,path,in_channels):
         if 'batches' in key:
             del my_dict[key]
     # assign values of tensor packs to model dict orderly
-    for key1, value2 in zip(my_dict.keys(), tensor_pack_dict.values()):
-        my_dict[key1] = value2
+    for key1, key2 in zip(my_dict.keys(), tensor_pack_dict.keys()):
+        my_dict[key1] = tensor_pack_dict[key2]
+        print('TensorPack : ')
+        print(key1,key2)
     # del all keys that are not running mean from tensorpack
     for key in tensor_pack_dict.keys():
         if 'EMA' not in key:
@@ -323,7 +324,6 @@ def load_tensor_pack(model,path,in_channels):
             state_dict[key] = torch.tensor(running[key],requires_grad=True)
         elif 'running'  not in key:
             if 'num_batches' not in key:
-                  #state_dict[key] = torch.tensor(my_dict[key],requires_grad=True)
                   if 'conv' in key  or 'downsample' in key:
 
                       state_dict[key]=torch.tensor(my_dict[key]).permute(3,2,1,0)
@@ -337,8 +337,6 @@ def load_tensor_pack(model,path,in_channels):
 
     state_dict['conv1.weight']=nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
-    #print(torch.tensor(tensor_pack_dict['group0/block0/conv1/W:0']).permute(3,2,1,0))
-    #print(state_dict['layer1.0.conv1.weight'])
 
     model.load_state_dict(state_dict)
 
