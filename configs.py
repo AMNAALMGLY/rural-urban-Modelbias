@@ -9,7 +9,7 @@ args = Namespace(
     # Model
 
     model_name='resnet18',
-    hs_weight_init='random',  # [same, samescaled,random]
+    hs_weight_init='samescaled',  # [same, samescaled,random]
     model_init='imagenet',
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
 
@@ -49,7 +49,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_B_ms_random_weighted',
+    experiment_name='DHS_OOC_A_ms_samescaled_sgd',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,

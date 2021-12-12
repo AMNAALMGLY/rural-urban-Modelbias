@@ -118,9 +118,11 @@ class Trainer:
         if self.loss_type == 'classification' and self.num_outputs >1:
 
             preds = nn.functional.softmax(outputs, dim=1)
+            target = target.long
 
         elif self.loss_type=='classification' and self.num_outputs==1:
             preds=torch.sigmoid(outputs,)
+            target=target.long()
 
         else:
             preds = torch.tensor(outputs, device='cuda')
@@ -310,7 +312,7 @@ class Trainer:
         # TODO savelast
 
     def configure_optimizers(self):
-        opt = torch.optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        opt = torch.optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.99,weight_decay=self.weight_decay)
         return {
             'optimizer': opt,
             'lr_scheduler': {
