@@ -434,10 +434,10 @@ class Batcher():
         #print('afterAug',ex[1]['buildings'])
         return ex
     def build_augment(self,ex,seed):
-        b=ex['buildings']
+        b=ex[1]['buildings']
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
-        ex['buildings']=b
+        ex[1]['buildings']=b
         return ex
 
 
