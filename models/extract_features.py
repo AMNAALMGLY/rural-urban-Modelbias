@@ -25,11 +25,17 @@ OUTPUTS_ROOT_DIR = args.out_dir
 print(OUTPUTS_ROOT_DIR)
 DHS_MODELS = [
     # put paths to DHS models here (relative to OUTPUTS_ROOT_DIR)
-    'DHS_OOC_A_nl_random_weighted_b32_fc01_conv01_lr0001',
-    'DHS_OOC_B_nl_random_weighted_b32_fc01_conv01_lr0001',
-   'DHS_OOC_C_nl_random_weighted_b32_fc01_conv01_lr0001',
-   'DHS_OOC_D_nl_random_weighted_b32_fc01_conv01_lr0001',
-    'DHS_OOC_E_nl_random_weighted_b32_fc01_conv01_lr0001',
+    #'DHS_OOC_A_nl_random_weighted_b32_fc01_conv01_lr0001',
+   # 'DHS_OOC_B_nl_random_weighted_b32_fc01_conv01_lr0001',
+  # 'DHS_OOC_C_nl_random_weighted_b32_fc01_conv01_lr0001',
+  # 'DHS_OOC_D_nl_random_weighted_b32_fc01_conv01_lr0001',
+  #  'DHS_OOC_E_nl_random_weighted_b32_fc01_conv01_lr0001',
+'DHS_OOC_A_building_random_b32_fc01_conv01_lr0001',
+'DHS_OOC_B_building_random_b32_fc01_conv01_lr0001',
+'DHS_OOC_C_building_random_b32_fc01_conv01_lr0001',
+'DHS_OOC_D_building_random_b32_fc01_conv01_lr0001',
+'DHS_OOC_E_building_random_b32_fc01_conv01_lr0001',
+
     #'DHS_OOC_A_ms_samescaled_b32_fc1_conv1_lr0001',
     #  'DHS_OOC_B_ms_samescaled_b32_fc1_conv1_lr0001',
     #  'DHS_OOC_C_ms_samescaled_b32_fc1_conv1_lr0001',
@@ -106,9 +112,12 @@ def run_extraction_on_models(model_dir: str,
         np_dict = defaultdict()
         for i, record in enumerate(batcher):
             if data_params['include_buildings']:
-                x = torch.tensor(record[0]['images'], )
-                b = torch.tensor(record[1]['buildings'], )
-                x = torch.cat((x, b), dim=-1)
+                if data_params['ls_bands'] or data_params['nl_band']:
+                    x = torch.tensor(record[0]['images'], )
+                    b = torch.tensor(record[1]['buildings'], )
+                    x = torch.cat((x, b), dim=-1)
+                else:
+                    x=torch.tensor(record[1]['buildings'], )
 
 
             else:
