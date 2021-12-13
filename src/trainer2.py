@@ -318,7 +318,7 @@ class Trainer:
         # TODO savelast
 
     def configure_optimizers(self):
-        opt = torch.optim.Adam(self.model.parameters(), lr=self.lr,
+        opt = torch.optim.SGD(self.model.parameters(), lr=0.001,
                                weight_decay=self.weight_decay)
         return {
             'optimizer': opt,
