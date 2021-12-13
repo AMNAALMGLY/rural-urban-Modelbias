@@ -188,7 +188,7 @@ class Trainer:
                 for record in tepoch:
                     tepoch.set_description(f"Epoch {epoch}")
 
-                    train_loss = self._shared_step(record, self.metric)
+                    train_loss = (self._shared_step(record, self.metric))/(args.batch_size)
                     train_loss.backward()
                     # Implementing gradient accumlation
                     if (train_step+1) % args.accumlation_steps == 0:
