@@ -90,11 +90,15 @@ class Trainer:
         self.setup_criterion()
 
     def _shared_step(self, batch, metric_fn):
-        if args.include_buildings:
-            x = torch.tensor(batch[0]['images'], )
-            b = torch.tensor(batch[1]['buildings'], )
-            x = torch.cat((x, b), dim=-1)
-            target = torch.tensor(batch[0]['labels'], )
+        if args.include_buildings :
+            if args.ls_bands or args.nl_band:
+                x = torch.tensor(batch[0]['images'], )
+                b = torch.tensor(batch[1]['buildings'], )
+                x = torch.cat((x, b), dim=-1)
+                target = torch.tensor(batch[0]['labels'], )
+            else:
+                x=torch.tensor(batch[1]['buildings'])
+                target=torch.tensor(batch[0]['labels'])
 
 
         else:
@@ -114,7 +118,9 @@ class Trainer:
            Beta= self.weight_ex(x,self.class_model)
 
            outputs=outputs*(Beta**0.5)
+        #Loss
         loss = self.criterion(outputs, target)
+        #Metric calculation
         if self.loss_type == 'classification' and self.num_outputs >1:
 
             preds = nn.functional.softmax(outputs, dim=1)

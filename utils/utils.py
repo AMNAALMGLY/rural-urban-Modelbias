@@ -19,9 +19,9 @@ from collections import ChainMap
 
 from configs import args
 
-from batchers.dataset_constants import SURVEY_NAMES
+#from batchers.dataset_constants import SURVEY_NAMES
 
-#from batchers.dataset_constants_buildings import SURVEY_NAMES
+from batchers.dataset_constants_buildings import SURVEY_NAMES
 
 
 

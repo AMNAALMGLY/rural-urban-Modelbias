@@ -9,7 +9,7 @@ args = Namespace(
     # Model
 
     model_name='resnet18',
-    hs_weight_init='samescaled',  # [same, samescaled,random]
+    hs_weight_init='random',  # [same, samescaled,random]
     model_init='imagenet',
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
 
@@ -38,10 +38,10 @@ args = Namespace(
     ooc=True,
     dataset='DHS_OOC',
     fold='A',
-    ls_bands='ms',
+    ls_bands=None,
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    include_buildings=False,
+    include_buildings=True,
     scaler_features_keys=None,  # {'urban_rural':tf.float32},
 
     # keep_frac {keep_frac}
@@ -49,7 +49,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_A_ms_samescaled_sgd',
+    experiment_name='DHS_OOC_A_building_random',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,

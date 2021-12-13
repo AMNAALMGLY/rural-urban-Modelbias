@@ -220,7 +220,7 @@ class Batcher():
 
 
         else:
-            raise ValueError
+            img=img
 
         label_ms = ex.get(self.label, float('nan'))
 
@@ -312,7 +312,8 @@ class Batcher():
         elif self.groupby == 'rural':
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
 
-        if self.include_buildings:
+        if self.include_buildings :
+            #even if there is no ls or nl bands , we want labels from the other dataset
             b_dataset = tf.data.TFRecordDataset(
                 filenames=self.buildings_records,
                 compression_type='GZIP',
@@ -330,7 +331,7 @@ class Batcher():
             print('in cahce')
 
         if self.shuffle:
-            buffer_size=1000 if self.include_buildings else 1000
+            buffer_size=1000
             dataset = dataset.shuffle(buffer_size=buffer_size,reshuffle_each_iteration=True)
 
 
@@ -338,8 +339,11 @@ class Batcher():
             print('in augment')
             counter = tf.data.experimental.Counter()
             dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
-            if self.include_buildings:
-                dataset = dataset.map(self.b_augment, num_parallel_calls=AUTO)
+            if self.include_buildings  :
+                if self.nl_bands or self.ls_bands:         #TODO modify for brightness for ms augmentation
+                    dataset = dataset.map(self.b_augment, num_parallel_calls=AUTO)
+                else:
+                    dataset=dataset.map(self.build_augment,num_parallel_calls=AUTO)
 
             else:
                 dataset = dataset.map(self.augment_ex, num_parallel_calls=AUTO)
@@ -429,6 +433,13 @@ class Batcher():
         ex[1]['buildings']=b
         #print('afterAug',ex[1]['buildings'])
         return ex
+    def build_augment(self,ex,seed):
+        b=ex['buildings']
+        b = tf.image.stateless_random_flip_left_right(b, seed=seed)
+        b = tf.image.stateless_random_flip_left_right(b, seed=seed)
+        ex['buildings']=b
+        return ex
+
 
     '''
     def augment_ex(self, ex: dict[str, tf.Tensor]) -> dict[str, tf.Tensor]:

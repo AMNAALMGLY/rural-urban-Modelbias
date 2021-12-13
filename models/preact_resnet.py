@@ -306,8 +306,8 @@ def load_tensor_pack(model,path,in_channels):
     # assign values of tensor packs to model dict orderly
     for key1, key2 in zip(my_dict.keys(), tensor_pack_dict.keys()):
         my_dict[key1] = tensor_pack_dict[key2]
-        print('TensorPack : ')
-        print(key1,key2)
+
+
     # del all keys that are not running mean from tensorpack
     for key in tensor_pack_dict.keys():
         if 'EMA' not in key:
