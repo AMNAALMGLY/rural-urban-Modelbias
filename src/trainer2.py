@@ -123,6 +123,7 @@ class Trainer:
         loss = self.criterion(outputs, target)
         if self.loss_type=='custom':
                custom_loss=self.custom_loss(x,target)
+               print(loss,custom_loss)
                loss=loss+5*custom_loss
         #Metric calculation
         if self.loss_type == 'classification' and self.num_outputs >1:
