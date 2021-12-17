@@ -16,7 +16,7 @@ args = Namespace(
     # Training
 
     lr_decay=0.96,
-    batch_size=32,
+    batch_size=64,
     gpu=-1,
     max_epochs=200,
     epoch_thresh=150,
@@ -38,8 +38,8 @@ args = Namespace(
     ooc=True,
     dataset='DHS_OOC',
     fold='A',
-    ls_bands='ms',
-    nl_band=None,  # [None , merge , split]
+    ls_bands=None,
+    nl_band='split',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     include_buildings=True,
     scaler_features_keys=None,  # {'urban_rural':tf.float32},
@@ -49,17 +49,17 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_A_sgd_random',
+    experiment_name='DHS_OOC_A_nl_custom',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
 
-    loss_type='regression',
+    loss_type='custom',
     num_outputs=1,
     resume=None,
     weight_model=None,
     #'/atlas/u/amna/rural-urban-Modelbias/outputs/dhs_ooc/DHS_OOC_A_nl_random_b32_fc01_conv01_lr0001/best.ckpt',
-    accumlation_steps=2,
+    accumlation_steps=1,
 
     # Visualization
     # wandb project:

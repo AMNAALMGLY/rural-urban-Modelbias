@@ -119,7 +119,11 @@ class Trainer:
 
            outputs=outputs*(Beta**0.5)
         #Loss
+
         loss = self.criterion(outputs, target)
+        if self.loss_type=='custom':
+               custom_loss=self.custom_loss(x,target)
+               loss=loss+5*custom_loss
         #Metric calculation
         if self.loss_type == 'classification' and self.num_outputs >1:
 
@@ -318,7 +322,7 @@ class Trainer:
         # TODO savelast
 
     def configure_optimizers(self):
-        opt = torch.optim.SGD(self.model.parameters(), lr=0.001,
+        opt = torch.optim.Adam(self.model.parameters(), lr=self.lr,
                                weight_decay=self.weight_decay)
         return {
             'optimizer': opt,
@@ -341,7 +345,15 @@ class Trainer:
         elif self.loss_type == 'regression':
             self.criterion = nn.MSELoss()
 
-
+    def custom_loss(self, batch, target):
+        losses=[]
+        _, indices = torch.sort(target,descending=False)
+        batch = batch[indices]
+        quantiles_x=torch.split(batch,5)
+        quantiles_y=torch.split(target,5)
+        for i in range(5):
+            losses.append(torch.nn.functional.mse_loss(self.model(quantiles_x[i]).squeeze(-1),quantiles_y[i]))
+        return max(losses)
     def weight_ex(self,x,class_model):
         '''
         use binary classification for finiding weights for data
