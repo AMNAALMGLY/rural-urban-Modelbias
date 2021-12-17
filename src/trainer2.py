@@ -350,13 +350,15 @@ class Trainer:
     def custom_loss(self, batch, target):
         losses=[]
 
-        _, indices = torch.sort(target,descending=False)
+        sorted, indices = torch.sort(target,descending=False)
         batch = batch[indices]
         target=target[indices]
+        print(sorted==target)
         quantiles_x=torch.split(batch,5)
         quantiles_y=torch.split(target,5)
         for i in range(5):
             losses.append(torch.nn.functional.mse_loss(self.model(quantiles_x[i]).squeeze(-1),quantiles_y[i]))
+        print('losses_list',losses)
         return max(losses)
     def weight_ex(self,x,class_model):
         '''
