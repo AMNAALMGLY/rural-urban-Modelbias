@@ -342,7 +342,7 @@ class Trainer:
         elif self.loss_type=='classification' and self.num_outputs==1:
             self.criterion=nn.BCEWithLogitsLoss()
 
-        elif self.loss_type == 'regression':
+        else:
             self.criterion = nn.MSELoss()
 
     def custom_loss(self, batch, target):
