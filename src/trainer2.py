@@ -349,8 +349,10 @@ class Trainer:
 
     def custom_loss(self, batch, target):
         losses=[]
+
         _, indices = torch.sort(target,descending=False)
         batch = batch[indices]
+        target=target[indices]
         quantiles_x=torch.split(batch,5)
         quantiles_y=torch.split(target,5)
         for i in range(5):
