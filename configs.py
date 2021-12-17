@@ -30,7 +30,8 @@ args = Namespace(
     # data
 
     data_path='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    buildings_records='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
+    buildings_records=None,
+    #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
     label_name='wealthpooled', #urban_rural
     cache=['train', 'train_eval', 'val'],
     augment=True,
