@@ -54,7 +54,7 @@ args = Namespace(
     init_ckpt_dir=None,
     group=None,
 
-    loss_type='regression',
+    loss_type='custom',
     num_outputs=1,
     resume=None,
     weight_model=None,
