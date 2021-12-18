@@ -172,8 +172,10 @@ def main(args):
         with open(json_data_path, 'r') as f:
             data_params = json.load(f)
         paths = get_paths(data_params['dataset'], 'all', data_params['fold'], args.data_path)
-        paths_b = get_paths(data_params['dataset'], 'all', data_params['fold'], args.buildings_records)
-
+        if data_params['include_buildings']:
+           paths_b = get_paths(data_params['dataset'], 'all', data_params['fold'], args.buildings_records)
+        else:
+            paths_b=None
         #TODO save path of building_reocrds or make it doesn't imply any thing in the dataset class
         batcher = Batcher(paths, {'urban_rural': tf.float32}, data_params['ls_bands'], data_params['nl_band'],
                           data_params['label_name'],
