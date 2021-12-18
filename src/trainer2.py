@@ -124,7 +124,7 @@ class Trainer:
         if self.loss_type=='custom':
                custom_loss=self.custom_loss(x,target)
                #print(loss,custom_loss)
-               loss=loss+0*custom_loss
+               loss=loss+5*custom_loss
                #print('total_loss',loss)
         #Metric calculation
         if self.loss_type == 'classification' and self.num_outputs >1:
@@ -353,7 +353,7 @@ class Trainer:
         sorted, indices = torch.sort(target,descending=False,dim=0)
         batch = batch[indices]
         target=target[indices]
-        print(target[0:10])
+
         #print(sorted==target)
         quantiles_x=torch.split(batch,5)
         quantiles_y=torch.split(target,5)
