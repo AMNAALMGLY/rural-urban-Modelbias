@@ -56,6 +56,7 @@ args = Namespace(
     group=None,
 
     loss_type='custom',
+    lamda=4,
     num_outputs=1,
     resume=None,
     weight_model=None,

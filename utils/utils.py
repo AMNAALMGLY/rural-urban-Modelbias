@@ -340,6 +340,10 @@ def parse_arguments(parser, default_args):
         '--seed', type=int, default=default_args.seed,
         help='seed for random initialization and shuffling')
 
+    parser.add_argument(
+        '--lamda', type=int, default=default_args.lamda,
+        help='weight of the bias loss')
+
     args = parser.parse_args()
     args_col = ChainMap(vars(args), vars(default_args))
     return args_col
