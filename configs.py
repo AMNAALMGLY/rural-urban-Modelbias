@@ -23,9 +23,9 @@ args = Namespace(
     patience=20,
 
     lr=.0001,  # lr0001         #0.0001 nl,ms
-    fc_reg=0.001,
+    fc_reg=0.0001,
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=0.001,
+    conv_reg=0.0001,
 
     # data
 
@@ -56,7 +56,7 @@ args = Namespace(
     group=None,
 
     loss_type='custom',
-    lamda=4,
+    lamda=0.5,
     num_outputs=1,
     resume=None,
     weight_model=None,
