@@ -16,16 +16,16 @@ args = Namespace(
     # Training
 
     lr_decay=0.96,
-    batch_size=90,
+    batch_size=64,
     gpu=-1,
     max_epochs=200,
     epoch_thresh=150,
     patience=20,
 
     lr=.0001,  # lr0001         #0.0001 nl,ms
-    fc_reg=0.0001,
+    fc_reg=1.0,
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=0.0001,
+    conv_reg=1.0,
 
     # data
 
@@ -50,12 +50,12 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_A_nl_custom',
+    experiment_name='DHS_OOC_A_nl_urban',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
-    group=None,
+    group='urban',
 
-    loss_type='custom',
+    loss_type='regression',
     lamda=0.5,
     num_outputs=1,
     resume=None,
