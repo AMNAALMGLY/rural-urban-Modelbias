@@ -56,7 +56,7 @@ DHS_MODELS = [
    # 'DHS_OOC_B_nl_random_b32_fc1.0_conv1.0_lr0001',
   #  'DHS_OOC_c_nl_random_b32_fc1.0_conv1.0_lr0001',
    # 'DHS_OOC_D_nl_random_b32_fc1.0_conv1.0_lr0001',
- #  '/DHS_OOC_E_nl_random_b32_fc1.0_conv1.0_lr0001',
+ #  '/DHS_OOC_E_nl_random_b32_fc1.0_conv1.0_lr0001',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
 #'DHS_OOC_A_nl_random_b_b32_fc1.0_conv1.0_lr0001',
 #'DHS_OOC_B_nl_random_b_b32_fc1.0_conv1.0_lr0001',
 #'DHS_OOC_C_nl_random_b_b32_fc1.0_conv1.0_lr0001',
@@ -105,7 +105,7 @@ def run_extraction_on_models(model_dir: str,
     checkpoint_pattern = os.path.join(out_root_dir, model_dir, 'best.ckpt')
     checkpoint_path = glob(checkpoint_pattern)
     print(checkpoint_path)
-    model = load_from_checkpoint(path=checkpoint_path, model=model)
+    model = load_from_checkpoint(path=checkpoint_path[-1], model=model)
     # freeze the last layer for feature extraction
     model.fc = nn.Sequential()
     model.to('cuda')
