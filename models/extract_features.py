@@ -172,7 +172,7 @@ def main(args):
         json_data_path = os.path.join(OUTPUTS_ROOT_DIR, model_dir, 'data_params.json')
         with open(json_data_path, 'r') as f:
             data_params = json.load(f)
-        paths = get_paths(data_params['dataset'], 'all', data_params['fold'], args.data_path)
+        paths = get_paths(data_params['dataset'], 'all', 'A', args.data_path)
         if data_params['include_buildings']:
            paths_b = get_paths(data_params['dataset'], 'all', data_params['fold'], args.buildings_records)
         else:
@@ -181,7 +181,7 @@ def main(args):
         batcher = Batcher(paths, None, data_params['ls_bands'], data_params['nl_band'],
                           data_params['label_name'],
                           data_params['nl_label'],data_params['include_buildings'],paths_b,normalize='DHS', augment=False, clipn=True,
-                          batch_size=data_params['batch_size'], groupby=data_params['groupby'],
+                          batch_size=128, groupby=data_params['groupby'],
                           cache=False, shuffle=False)  # assumes no scalar features are present
 
         ## TODO fix in the future
