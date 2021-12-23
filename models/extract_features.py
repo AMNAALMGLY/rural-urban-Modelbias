@@ -111,7 +111,8 @@ def run_extraction_on_models(model_dir: str,
     model.to('cuda')
     model.eval()
     # model.freeze()
-
+    for p in model.parameters():
+        p.requires_grad=False
     with torch.no_grad():
         # initalizating
         np_dict = defaultdict()
