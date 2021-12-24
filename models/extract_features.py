@@ -146,6 +146,7 @@ def run_extraction_on_models(model_dir: str,
                     else:
                         np_dict[key] = np.append(np_dict[key], record[key], axis=0)
             features = output.to('cpu').numpy()
+            print(features[:10])
             if i == 0:
                 np_dict['features'] = features
             else:
