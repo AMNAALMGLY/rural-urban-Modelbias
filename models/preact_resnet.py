@@ -317,6 +317,7 @@ def load_tensor_pack(model,path,in_channels):
 
     # assign values of the edited tensorpack to keys of running dict
     for key1, value2 in zip(list(running.keys())[:-2], list(EMA.values())[:-2]):
+        print('stateDICT: ',key1)
         running[key1] = value2
     # load values into models state_dict
     for key in state_dict.keys():
