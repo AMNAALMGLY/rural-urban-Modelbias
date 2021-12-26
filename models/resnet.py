@@ -326,24 +326,49 @@ def resnet50(in_channels: int, pretrained: bool = False, progress: bool = True, 
 
 
 def init_first_layer_weights(in_channels: int, rgb_weights,
-                                 hs_weight_init: str) -> Tensor:
+                                 hs_weight_init: str) :
+    '''Initializes the weights for filters in the first conv layer.
+
+      If we are using RGB-only, then just initializes var to rgb_weights. Otherwise, uses
+      hs_weight_init to determine how to initialize the weights for non-RGB bands.
+
+      Args
+      - int: in_channesl, input channels
+          - in_channesl is  either 3 (RGB), 7 (lxv3), or 9 (Landsat7) or 2 (NL)
+      - rgb_weights: ndarray of np.float32, shape [64, 3, F, F]
+      - hs_weight_init: str, one of ['random', 'same', 'samescaled']
+
+      Returs
+      -torch tensor : final_weights
+      '''
+
     out_channels, rgb_channels, H, W = rgb_weights.shape
     print('rgb weight shape ',rgb_weights.shape)
+    rgb_weights=torch.tensor(rgb_weights)
     ms_channels = in_channels - rgb_channels
-    if in_channels == 3:
-        final_weights = rgb_weights
-    elif in_channels <3:
+    if in_channels == 3 :
+        if args.include_buildings:
+            with torch.no_grad():
+                mean = rgb_weights.mean()
+                std = rgb_weights.std()
+                final_weights = torch.empty((out_channels, in_channels, H, W))
+                final_weights = torch.nn.init.trunc_normal_(final_weights, mean, std)
+        else:
+            final_weights=rgb_weights
+
+    elif in_channels <3:   #NL
         with torch.no_grad():
             mean = rgb_weights.mean()
             std = rgb_weights.std()
-            final_weights = torch.normal(mean, std, size=(out_channels, in_channels, H, W))
+            final_weights = torch.empty((out_channels, in_channels, H, W))
+            final_weights=torch.nn.init.trunc_normal_(final_weights,mean, std)
     elif in_channels > 3:
         # spectral images
 
         if hs_weight_init == 'same':
 
             with torch.no_grad():
-                mean = rgb_weights.mean(axis=1, keepdims=True)  # mean across the in_channel dimension
+                mean = rgb_weights.mean(dim=1, keepdim=True)  # mean across the in_channel dimension
                 mean = torch.tile(mean, (1, ms_channels, 1, 1))
                 ms_weights = mean
 
@@ -352,13 +377,14 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
             with torch.no_grad():
                 mean = rgb_weights.mean()
                 std = rgb_weights.std()
-                ms_weights = torch.normal(mean, std, size=(out_channels, ms_channels, H, W))
+                ms_weights=torch.empty((out_channels, ms_channels, H, W))
+                ms_weights = torch.nn.init.trunc_normal_(ms_weights,mean, std)
             print(f'random: {time.time() - start}')
 
         elif hs_weight_init == 'samescaled':
             start = time.time()
             with torch.no_grad():
-                mean = rgb_weights.mean(axis=1, keepdims=True)  # mean across the in_channel dimension
+                mean = rgb_weights.mean(dim=1, keepdim=True)  # mean across the in_channel dimension
                 mean = torch.tile(mean, (1, ms_channels, 1, 1))
                 ms_weights = (mean * 3) / (3 + ms_channels)
                 # scale both rgb_weights and ms_weights
@@ -372,5 +398,4 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
         final_weights = torch.cat([rgb_weights, ms_weights], dim=1)
     print('init__layer_weight shape ', final_weights.shape)
     return final_weights
-
 
