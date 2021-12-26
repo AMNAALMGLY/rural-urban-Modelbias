@@ -163,8 +163,7 @@ class PreActResNet(nn.Module):
         x = self.dropout(self.layer2(x))
 
         x = self.layer3(x)
-        x = self.dropout(self.layer4(x))
-
+        x = self.layer4(x)
         #x = self.final_bn(x)
         #x = self.final_relu(x)
         x = self.avgpool(x)

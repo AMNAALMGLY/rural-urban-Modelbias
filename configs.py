@@ -23,9 +23,9 @@ args = Namespace(
     patience=20,
 
     lr=.0001,  # lr0001         #0.0001 nl,ms
-    fc_reg=0.0001,
+    fc_reg=0.00001,
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=0.0001,
+    conv_reg=0.00001,
 
     # data
 
@@ -63,7 +63,7 @@ args = Namespace(
     resume=None,
     weight_model=None,
     #'/atlas/u/amna/rural-urban-Modelbias/outputs/dhs_ooc/DHS_OOC_A_nl_random_b32_fc01_conv01_lr0001/best.ckpt',
-    accumlation_steps=2,
+    accumlation_steps=1,
     metric='r2',
 
     # Visualization
