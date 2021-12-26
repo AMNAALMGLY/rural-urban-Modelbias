@@ -8,7 +8,7 @@ args = Namespace(
 
     # Model
 
-    model_name='resnet50',
+    model_name='resnet18',
     hs_weight_init='samescaled',  # [same, samescaled,random]
     model_init='imagenet',
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
@@ -23,9 +23,9 @@ args = Namespace(
     patience=20,
 
     lr=.0001,  # lr0001         #0.0001 nl,ms
-    fc_reg=1.0,
+    fc_reg=0.0001,
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=1.0,
+    conv_reg=0.0001,
 
     # data
 
