@@ -23,9 +23,9 @@ args = Namespace(
     patience=20,
 
     lr=.0001,  # lr0001         #0.0001 nl,ms
-    fc_reg=0.01,
+    fc_reg=1.0,
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=0.01,
+    conv_reg=1.0,
 
     # data
 
@@ -51,7 +51,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_A_building_urban',
+    experiment_name='DHS_OOC_A',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
@@ -63,8 +63,8 @@ args = Namespace(
     resume=None,
     weight_model=None,
     #'/atlas/u/amna/rural-urban-Modelbias/outputs/dhs_ooc/DHS_OOC_A_nl_random_b32_fc01_conv01_lr0001/best.ckpt',
-    accumlation_steps=1,
-    metric='R2',
+    accumlation_steps=2,
+    metric='r2',
 
     # Visualization
     # wandb project:

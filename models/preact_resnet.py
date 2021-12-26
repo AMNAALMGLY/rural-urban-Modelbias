@@ -122,6 +122,7 @@ class PreActResNet(nn.Module):
         self.final_relu = nn.ReLU(inplace=True)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
+        self.dropout=nn.Dropout(p=0.2)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -159,9 +160,10 @@ class PreActResNet(nn.Module):
 
         x = self.layer1(x)
 
-        x = self.layer2(x)
+        x = self.dropout(self.layer2(x))
+
         x = self.layer3(x)
-        x = self.layer4(x)
+        x = self.dropout(self.layer4(x))
 
         #x = self.final_bn(x)
         #x = self.final_relu(x)

@@ -82,7 +82,7 @@ class Trainer:
                              'against')
 
         self.metric_str=metric
-        self.metric = Metric(self.num_outputs).get_metric(metric)  # TODO if it is a list
+        self.metric = Metric(self.num_outputs).get_metric(metric)
 
         self.scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
         self.opt = self.configure_optimizers()['optimizer']
@@ -220,7 +220,7 @@ class Trainer:
                     time.sleep(0.1)
 
             # Metric calulation and average loss
-            r2 = self.metric.compute()
+            r2 = (self.metric.compute())**2 if self.metric_str=='r2' else self.metric.compute()
             wandb.log({f'{self.metric_str} train': r2, 'epoch': epoch})
             avgloss = epoch_loss / train_steps
             wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
