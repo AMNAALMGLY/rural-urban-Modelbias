@@ -204,7 +204,8 @@ class Batcher():
                 #ex[band].set_shape([448*448])
                 #ex[band] = tf.image.resize_with_crop_or_pad(ex[band], 3, 3)
                 #ex[band] = tf.reshape(ex[band], [448, 448])
-                ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]  # crop to 224x224
+                ex[band] = tf.reshape(ex[band], [255, 255])
+                #[15:-16, 15:-16]  # crop to 224x224
 
                 if self.clipn:
                     ex[band] = tf.nn.relu(ex[band])
