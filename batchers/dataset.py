@@ -204,8 +204,7 @@ class Batcher():
                 #ex[band].set_shape([448*448])
                 #ex[band] = tf.image.resize_with_crop_or_pad(ex[band], 3, 3)
                 #ex[band] = tf.reshape(ex[band], [448, 448])
-                ex[band] = tf.reshape(ex[band], [255, 255])
-                #[15:-16, 15:-16]  # crop to 224x224
+                ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]  # crop to 224x224
 
                 if self.clipn:
                     ex[band] = tf.nn.relu(ex[band])
@@ -395,8 +394,7 @@ class Batcher():
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         print(img.shape)
-       # img=tf.image.stateless_random_crop(
-         #   img, size=[210, 210, args.in_channels], seed=seed)
+        img=tf.image.stateless_random_crop(img, size=[210, 210, args.in_channels], seed=seed)
 
         if self.nl_bands and self.ls_bands:
             if self.nl_label == 'merge':
@@ -412,10 +410,10 @@ class Batcher():
 
         elif self.ls_bands:
 
-           # img = tf.image.stateless_random_brightness(img, max_delta=0.5, seed=seed)
-           # img = tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25, seed=seed)
-           img= tf.image.random_brightness(img, max_delta=0.5)
-           img = tf.image.random_contrast(img, lower=0.75, upper=1.25)
+            img = tf.image.stateless_random_brightness(img, max_delta=0.5, seed=seed)
+            img = tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25, seed=seed)
+           #img= tf.image.random_brightness(img, max_delta=0.5)
+           #img = tf.image.random_contrast(img, lower=0.75, upper=1.25)
         print('images augment')
 
         ex['images'] = img
