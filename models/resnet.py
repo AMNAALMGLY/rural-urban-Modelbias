@@ -20,10 +20,10 @@ __all__ = [
 ]
 
 model_urls = {
-    "resnet18": "https://zenodo.org/record/4728033/files/seco_resnet18_100k.ckpt?download=1",
-        #"https://download.pytorch.org/models/resnet18-f37072fd.pth",
+    "resnet18": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
     "resnet34": "https://download.pytorch.org/models/resnet34-b627a593.pth",
-    "resnet50": "https://download.pytorch.org/models/resnet50-0676ba61.pth",
+    "resnet50":'https://zenodo.org/record/4728033/files/seco_resnet50_100k.ckpt?download=1',
+        #"https://download.pytorch.org/models/resnet50-0676ba61.pth",
 
 }
 
@@ -98,7 +98,7 @@ class BasicBlock(nn.Module):
 
 class Bottleneck(nn.Module):
     # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
-    # while original implementation places the stride at the first 1x1 convolution(self.conv1)
+    # while original implementation places the strhttps://zenodo.org/record/4728033/files/seco_resnet50_100k.ckpt?download=1ide at the first 1x1 convolution(self.conv1)
     # according to "Deep residual learning for image recognition"https://arxiv.org/abs/1512.03385.
     # This variant is also known as ResNet V1.5 and improves accuracy according to
     # https://ngc.nvidia.com/catalog/model-scripts/nvidia:resnet_50_v1_5_for_pytorch.
@@ -197,7 +197,7 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2, dilate=replace_stride_with_dilation[2])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
-
+        self.dropout=nn.Dropout(p=0.2)
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
@@ -264,8 +264,8 @@ class ResNet(nn.Module):
         x = self.maxpool(x)
 
         x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
+        x = self.dropout(self.layer2(x))
+        x = self.dropout(self.layer3(x))
         x = self.layer4(x)
 
         x = self.avgpool(x)
@@ -290,7 +290,6 @@ def _resnet(
     model = ResNet(block, in_channels, layers, **kwargs)
     if pretrained:
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
-
         state_dict['conv1.weight'] = nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
         model.load_state_dict(state_dict)
