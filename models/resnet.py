@@ -20,7 +20,8 @@ __all__ = [
 ]
 
 model_urls = {
-    "resnet18": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
+    "resnet18": "https://zenodo.org/record/4728033/files/seco_resnet18_100k.ckpt?download=1",
+        #"https://download.pytorch.org/models/resnet18-f37072fd.pth",
     "resnet34": "https://download.pytorch.org/models/resnet34-b627a593.pth",
     "resnet50": "https://download.pytorch.org/models/resnet50-0676ba61.pth",
 
@@ -289,6 +290,7 @@ def _resnet(
     model = ResNet(block, in_channels, layers, **kwargs)
     if pretrained:
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
+
         state_dict['conv1.weight'] = nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
         model.load_state_dict(state_dict)
