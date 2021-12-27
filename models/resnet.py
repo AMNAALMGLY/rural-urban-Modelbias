@@ -290,7 +290,7 @@ def _resnet(
 ) -> ResNet:
     model = ResNet(block, in_channels, layers, **kwargs)
     if pretrained:
-        state_dict=torch.load(model_urls[arch])
+        state_dict=torch.load('seco_resnet50_100k.ckpt')
         #state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         state_dict['conv1.weight'] = nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
