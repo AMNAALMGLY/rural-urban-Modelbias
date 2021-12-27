@@ -160,11 +160,11 @@ class PreActResNet(nn.Module):
 
         x = self.layer1(x)
 
-        x = self.dropout(self.layer2(x))
+        x = self.layer2(x)
 
-        x = self.dropout(self.layer3(x))
+        x = self.layer3(x)
         x = self.layer4(x)
-        #x = self.final_bn(x)
+        x = self.final_bn(x)
         #x = self.final_relu(x)
         x = self.avgpool(x)
         #x=torch.mean(x,dim=(-1,-2))
@@ -318,7 +318,7 @@ def load_tensor_pack(model,path,in_channels):
             EMA[key]=tensor_pack_dict[key]
 
     # assign values of the edited tensorpack to keys of running dict
-    for key1, value2 in zip(list(running.keys())[:-2], list(EMA.values())[:-2]):
+    for key1, value2 in zip(list(running.keys()), list(EMA.values())):
         running[key1] = value2
     # load values into models state_dict
     for key in state_dict.keys():

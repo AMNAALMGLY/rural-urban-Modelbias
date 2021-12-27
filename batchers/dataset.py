@@ -393,9 +393,10 @@ class Batcher():
         img = ex['images']
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
-        print(img.shape)
-        img=tf.image.stateless_random_crop(img, size=[210, 210, args.in_channels], seed=seed)
+        #img=tf.image.stateless_random_crop(img, size=[210, 210, args.in_channels], seed=seed)
         img=tf.image.rot90(img)
+        img=tf.image.resize_with_crop_or_pad(img, 448, 448)
+        print(img.shape)
 
         if self.nl_bands and self.ls_bands:
             if self.nl_label == 'merge':

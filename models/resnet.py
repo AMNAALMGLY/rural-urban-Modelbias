@@ -265,8 +265,8 @@ class ResNet(nn.Module):
         x = self.maxpool(x)
 
         x = self.layer1(x)
-        x = self.dropout(self.layer2(x))
-        x = self.dropout(self.layer3(x))
+        x = self.layer2(x)
+        x = self.layer3(x)
         x = self.layer4(x)
 
         x = self.avgpool(x)
@@ -290,8 +290,8 @@ def _resnet(
 ) -> ResNet:
     model = ResNet(block, in_channels, layers, **kwargs)
     if pretrained:
-        state_dict=torch.load('seco_resnet50_100k.ckpt')
-        #state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
+        #state_dict=torch.load('seco_resnet50_100k.ckpt')
+        state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         state_dict['conv1.weight'] = nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
         model.load_state_dict(state_dict)
