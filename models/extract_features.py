@@ -109,7 +109,7 @@ def run_extraction_on_models(model_dir: str,
     # freeze the last layer for feature extraction
     model.fc = nn.Sequential()
     model.to('cuda')
-    model.eval()
+
     # model.freeze()
     for p in model.parameters():
         p.requires_grad=False
