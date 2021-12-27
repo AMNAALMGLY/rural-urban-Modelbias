@@ -71,7 +71,7 @@ class Trainer:
             fc = nn.Linear(model.fc.in_features, num_outputs)
             # initialization
             torch.nn.init.trunc_normal_(fc.weight.data, std=0.01)
-            torch.nn.init.constant_(fc.bias.data, 0)
+            torch.nn.init.constant_(fc.bias.data, 0.01)
 
             model.fc = fc
 
