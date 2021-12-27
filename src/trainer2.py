@@ -68,7 +68,7 @@ class Trainer:
         self.num_outputs=num_outputs
         if num_outputs is not None:
 
-            fc = nn.Linear(model.fc.in_features, num_outputs)
+            fc = nn.Linear(model.fc.in_features, num_outputs,use_bias=True)
             # initialization
             torch.nn.init.trunc_normal_(fc.weight.data, std=0.01)
             torch.nn.init.constant_(fc.bias.data, 0.01)
