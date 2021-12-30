@@ -393,7 +393,7 @@ class Batcher():
         img = ex['images']
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
-        img=tf.image.stateless_random_crop(img, size=[210, 210, args.in_channels], seed=seed)
+        #img=tf.image.stateless_random_crop(img, size=[210, 210, args.in_channels], seed=seed)
         #img=tf.image.central_crop(img,0.8)
         #img=tf.image.rot90(img)
         #img=tf.image.resize_with_crop_or_pad(img, 448, 448)
@@ -404,18 +404,22 @@ class Batcher():
 
                 img = tf.image.stateless_random_brightness(img[:, :, :-1], max_delta=0.5, seed=seed)
                 img = tf.image.stateless_random_contrast(img[:, :, :-1], lower=0.75, upper=1.25, seed=seed)
+                img = tf.image.stateless_random_saturation(img[:, :, :-1], lower=0.75, upper=1.25, seed=seed)
+                img = tf.image.stateless_random_hue(img[:, :, :-1], max_delta=0.1, seed=seed)
                 img = tf.concat([img, ex['image'][:, :, -1:]], axis=2)
             else:
 
                 img = tf.image.stateless_random_brightness(img[:, :, :-2], max_delta=0.5, seed=seed)
                 img = tf.image.stateless_random_contrast(img[:, :, :-2], lower=0.75, upper=1.25, seed=seed)
+                img = tf.image.stateless_random_saturation(img[:, :, :-2], lower=0.75, upper=1.25, seed=seed)
+                img = tf.image.stateless_random_hue(img[:, :, :-2], max_delta=0.1, seed=seed)
                 img = tf.concat([img, ex['images'][:, :, -2:]], axis=2)
 
         elif self.ls_bands:
 
             img = tf.image.stateless_random_brightness(img, max_delta=0.5, seed=seed)
             img = tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25, seed=seed)
-            img=tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25,seed=seed)
+            img=tf.image.stateless_random_saturation(img, lower=0.75, upper=1.25,seed=seed)
             img=tf.image.stateless_random_hue(img,max_delta=0.1,seed=seed)
 
            #img= tf.image.random_brightness(img, max_delta=0.5)
