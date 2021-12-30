@@ -404,23 +404,23 @@ class Batcher():
 
                 img = tf.image.stateless_random_brightness(img[:, :, :-1], max_delta=0.5, seed=seed)
                 img = tf.image.stateless_random_contrast(img[:, :, :-1], lower=0.75, upper=1.25, seed=seed)
-                img = tf.image.stateless_random_saturation(img[:, :, :-1], lower=0.75, upper=1.25, seed=seed)
-                img = tf.image.stateless_random_hue(img[:, :, :-1], max_delta=0.1, seed=seed)
+                #img = tf.image.random_saturation(img[:, :, :-1], lower=0.75, upper=1.25, seed=seed)
+                #img = tf.image.random_hue(img[:, :, :-1], max_delta=0.1)
                 img = tf.concat([img, ex['image'][:, :, -1:]], axis=2)
             else:
 
                 img = tf.image.stateless_random_brightness(img[:, :, :-2], max_delta=0.5, seed=seed)
                 img = tf.image.stateless_random_contrast(img[:, :, :-2], lower=0.75, upper=1.25, seed=seed)
-                img = tf.image.stateless_random_saturation(img[:, :, :-2], lower=0.75, upper=1.25, seed=seed)
-                img = tf.image.stateless_random_hue(img[:, :, :-2], max_delta=0.1, seed=seed)
+                #img = tf.image.stateless_random_saturation(img[:, :, :-2], lower=0.75, upper=1.25, seed=seed)
+                #img = tf.image.stateless_random_hue(img[:, :, :-2], max_delta=0.1, seed=seed)
                 img = tf.concat([img, ex['images'][:, :, -2:]], axis=2)
 
         elif self.ls_bands:
 
             img = tf.image.stateless_random_brightness(img, max_delta=0.5, seed=seed)
             img = tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25, seed=seed)
-            img=tf.image.stateless_random_saturation(img, lower=0.75, upper=1.25,seed=seed)
-            img=tf.image.stateless_random_hue(img,max_delta=0.1,seed=seed)
+          #  img=tf.image.stateless_random_saturation(img, lower=0.75, upper=1.25,seed=seed)
+           # img=tf.image.stateless_random_hue(img,max_delta=0.1,seed=seed)
 
            #img= tf.image.random_brightness(img, max_delta=0.5)
            #img = tf.image.random_contrast(img, lower=0.75, upper=1.25)
