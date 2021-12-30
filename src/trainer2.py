@@ -110,7 +110,7 @@ class Trainer:
 
 
         target = target.type_as(self.model.conv1.weight)
-        x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
+        x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # from [batch_size,H,W,in_channels] to [batch_size ,in_channels, H ,W]
 
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)

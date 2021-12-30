@@ -397,23 +397,23 @@ class Batcher():
         #img=tf.image.central_crop(img,0.8)
         #img=tf.image.rot90(img)
         #img=tf.image.resize_with_crop_or_pad(img, 448, 448)
-        print(img.shape)
+
 
         if self.nl_bands and self.ls_bands:
             if self.nl_label == 'merge':
 
                 img = tf.image.stateless_random_brightness(img[:, :, :-1], max_delta=0.5, seed=seed)
                 img = tf.image.stateless_random_contrast(img[:, :, :-1], lower=0.75, upper=1.25, seed=seed)
-                #img = tf.image.random_saturation(img[:, :, :-1], lower=0.75, upper=1.25, seed=seed)
-                #img = tf.image.random_hue(img[:, :, :-1], max_delta=0.1)
-                img = tf.concat([img, ex['image'][:, :, -1:]], axis=2)
+                print(img.shape)
+                img = tf.concat([img, ex['image'][:, :, -1]], axis=-1)
+                print(img.shape)
             else:
 
                 img = tf.image.stateless_random_brightness(img[:, :, :-2], max_delta=0.5, seed=seed)
                 img = tf.image.stateless_random_contrast(img[:, :, :-2], lower=0.75, upper=1.25, seed=seed)
                 #img = tf.image.stateless_random_saturation(img[:, :, :-2], lower=0.75, upper=1.25, seed=seed)
                 #img = tf.image.stateless_random_hue(img[:, :, :-2], max_delta=0.1, seed=seed)
-                img = tf.concat([img, ex['images'][:, :, -2:]], axis=2)
+                img = tf.concat([img, ex['images'][:, :, -2:]], axis=-1)
 
         elif self.ls_bands:
 
