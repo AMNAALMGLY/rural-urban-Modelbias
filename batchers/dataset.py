@@ -400,7 +400,7 @@ class Batcher():
 
 
         if self.nl_bands and self.ls_bands:
-            if self.nl_label == 'merge':
+            if self.nl_bands == 'merge':
 
                 img = tf.image.stateless_random_brightness(img[:, :, :-1], max_delta=0.5, seed=seed)
                 img = tf.image.stateless_random_contrast(img[:, :, :-1], lower=0.75, upper=1.25, seed=seed)
