@@ -415,6 +415,9 @@ class Batcher():
 
             img = tf.image.stateless_random_brightness(img, max_delta=0.5, seed=seed)
             img = tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25, seed=seed)
+            img=tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25,seed=seed)
+            img=tf.image.stateless_random_hue(img,max_delta=0.1,seed=seed)
+
            #img= tf.image.random_brightness(img, max_delta=0.5)
            #img = tf.image.random_contrast(img, lower=0.75, upper=1.25)
         print('images augment')

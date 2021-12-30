@@ -9,7 +9,7 @@ args = Namespace(
     # Model
 
     model_name='resnet18',
-    hs_weight_init='samescaled',  # [same, samescaled,random]
+    hs_weight_init='random',  # [same, samescaled,random]
     model_init='imagenet',
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
 
@@ -23,15 +23,14 @@ args = Namespace(
     patience=20,
 
     lr=.0001,  # lr0001         #0.0001 nl,ms
-    fc_reg=0.00001,
+    fc_reg=0.1,
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=0.00001,
+    conv_reg=0.1,
 
     # data
 
     data_path='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    buildings_records=None,
-    #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
+    buildings_records='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
     label_name='wealthpooled', #urban_rural
     cache=['train', 'train_eval', 'val'],
     augment=True,
@@ -39,10 +38,10 @@ args = Namespace(
     ooc=True,
     dataset='DHS_OOC',
     fold='B',
-    ls_bands='ms',
+    ls_bands=None,
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    include_buildings=False,
+    include_buildings=True,
     scaler_features_keys=None,
     #{'urban_rural':tf.float32},
 
@@ -51,7 +50,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_B_exp',
+    experiment_name='DHS_OOC_B_builidngs',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
@@ -63,7 +62,7 @@ args = Namespace(
     resume=None,
     weight_model=None,
     #'/atlas/u/amna/rural-urban-Modelbias/outputs/dhs_ooc/DHS_OOC_A_nl_random_b32_fc01_conv01_lr0001/best.ckpt',
-    accumlation_steps=1,
+    accumlation_steps=2,
     metric='r2',
 
     # Visualization
