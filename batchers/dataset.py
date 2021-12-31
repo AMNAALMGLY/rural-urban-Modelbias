@@ -405,7 +405,7 @@ class Batcher():
                 img = tf.image.stateless_random_brightness(img[:, :, :-1], max_delta=0.5, seed=seed)
                 img = tf.image.stateless_random_contrast(img[:, :, :-1], lower=0.75, upper=1.25, seed=seed)
                 print(img.shape)
-                img = tf.concat([img, ex['image'][:, :, -1]], axis=-1)
+                img = tf.concat([img, ex['images'][:, :, -1]], axis=-1)
                 print(img.shape)
             else:
 
