@@ -12,6 +12,7 @@ from src.trainer2 import Trainer
 from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name, load_from_checkpoint
 from configs import args as default_args
 from utils.utils import seed_everything
+import  tensorflow as tf
 import wandb
 from torch.utils.tensorboard import SummaryWriter
 
@@ -127,8 +128,12 @@ def main(args):
                             cache=True, shuffle=True)
 
 
-    batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                            args.nl_label,args.include_buildings, paths_valid_b,'DHS',False, args.clipn, args.batch_size, groupby=args.group,
+    #batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
+         #                   args.nl_label,args.include_buildings, paths_valid_b,'DHS',False, args.clipn, args.batch_size, groupby=args.group,
+              #              cache=True, shuffle=False)
+    batcher_valid = Batcher(paths_valid, {'urban_rural':tf.float32}, args.ls_bands, args.nl_band, args.label_name,
+                            args.nl_label, args.include_buildings, paths_valid_b, 'DHS', False, args.clipn,
+                            args.batch_size, groupby='urban',
                             cache=True, shuffle=False)
 
 

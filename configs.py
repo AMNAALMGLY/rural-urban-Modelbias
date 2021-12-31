@@ -30,8 +30,7 @@ args = Namespace(
     # data
 
     data_path='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    buildings_records=None,
-    #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
+    buildings_records='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
     label_name='wealthpooled', #urban_rural
     cache=['train', 'train_eval', 'val'],
     augment=True,
@@ -39,10 +38,10 @@ args = Namespace(
     ooc=True,
     dataset='DHS_OOC',
     fold='B',
-    ls_bands='ms',
-    nl_band='merge',  # [None , merge , split]
+    ls_bands=None,
+    nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    include_buildings=False,
+    include_buildings=True,
     scaler_features_keys=None,
     #{'urban_rural':tf.float32},
 
@@ -51,7 +50,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_B_msnl',
+    experiment_name='DHS_OOC_B_ptest',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
