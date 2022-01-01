@@ -15,6 +15,9 @@ from utils.utils import seed_everything
 import  tensorflow as tf
 import wandb
 from torch.utils.tensorboard import SummaryWriter
+from wilds import get_dataset
+from wilds.common.data_loaders import get_train_loader,get_eval_loader
+import torchvision.transforms as transforms
 
 writer = SummaryWriter()
 wandp = default_args.wandb_p
@@ -72,7 +75,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
 
     # Fitting...
 
-    best_loss, path,= trainer.fit(train_loader, valid_loader, max_epochs=args.max_epochs, gpus='cuda',class_model=class_model)
+    best_loss, path,= trainer.fit_wilds(train_loader, valid_loader, max_epochs=args.max_epochs, gpus='cuda',class_model=class_model)
 
     return best_loss, path,
 
@@ -140,12 +143,36 @@ def main(args):
     #batcher_test = Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
     #                       args.nl_label, 'DHS', False, args.clipn, args.batch_size, groupby=args.group,
      #                      cache=True, shuffle=False)
+    ##############################################################WILDS dataset############################################################
+    dataset = get_dataset(dataset="poverty", download=True)
+
+    # Get the training set
+    train_data = dataset.get_subset(
+        "train",
+        transform=transforms.Compose(
+            [transforms.Resize((224, 224)), transforms.ToTensor()]
+        ),
+    )
+
+    # Prepare the standard data loader
+    train_loader = get_train_loader("standard", train_data, batch_size=64)
+    # Get the test set
+    test_data = dataset.get_subset(
+        "test",
+        transform=transforms.Compose(
+            [transforms.Resize((224, 224)), transforms.ToTensor()]
+        ),
+    )
+
+    # Prepare the data loader
+    test_loader = get_eval_loader("standard", test_data, batch_size=16)
 
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)
 
 
-    best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args)
+    #best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args)
+    best_loss, best_path = setup_experiment(model,train_loader, test_loader, args.resume, args)
 
     print(f'Path to best model found during training: \n{best_path}')
 
