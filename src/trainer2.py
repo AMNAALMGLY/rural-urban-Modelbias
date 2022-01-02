@@ -130,7 +130,9 @@ class Trainer:
             loss = loss + args.lamda * custom_loss
             # print('total_loss',loss)
         elif self.loss_type == 'subshift':
-            loss = self.subshift(x, target, group)
+            trainloss = self.subshift(x, target, group)
+        else:
+            trainloss=loss
         # Metric calculation
         if self.loss_type == 'classification' and self.num_outputs > 1:
 
@@ -147,11 +149,11 @@ class Trainer:
         metric_fn.to('cuda')
         metric_fn.update(preds, target)
 
-        return loss
+        return loss,trainloss
 
     def training_step(self, batch, ):
 
-        train_loss = self._shared_step(batch, self.metric)
+        _,train_loss = self._shared_step(batch, self.metric)
         self.opt.zero_grad()
 
         train_loss.backward()
@@ -163,7 +165,7 @@ class Trainer:
         return train_loss
 
     def validation_step(self, batch, ):
-        loss = self._shared_step(batch, self.metric)
+        loss,_ = self._shared_step(batch, self.metric)
 
         return loss
 
@@ -374,7 +376,7 @@ class Trainer:
                 for record in tepoch:
                     tepoch.set_description(f"Epoch {epoch}")
 
-                    train_loss = self._shared_step(record, self.metric)
+                    _,train_loss = self._shared_step(record, self.metric)
                     train_loss.backward()
                     # Implementing gradient accumlation
                     if (train_step + 1) % args.accumlation_steps == 0:
