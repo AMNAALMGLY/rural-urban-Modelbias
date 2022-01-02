@@ -203,7 +203,7 @@ class Trainer:
                     x = x.type_as(self.model.conv1.weight)
                     y = y.type_as(self.model.conv1.weight)
                     outputs = self.model(x)
-                    outputs = outputs.squeeze(dim=-1)
+                    y = y.squeeze(dim=-1)
                     train_loss = self.criterion(outputs, y)
                     train_loss.backward()
                     # Implementing gradient accumlation
@@ -242,7 +242,7 @@ class Trainer:
                     x = x.type_as(self.model.conv1.weight)
                     y = y.type_as(self.model.conv1.weight)
                     outputs = self.model(x)
-                    outputs = outputs.squeeze(dim=-1)
+                    y = y.squeeze(dim=-1)
                     valid_loss = self.criterion(outputs, y)
 
                     valid_epoch_loss += valid_loss.item()
