@@ -13,6 +13,7 @@ from tqdm import tqdm
 from utils.utils import Metric
 from configs import args
 import wandb
+
 writer = SummaryWriter()
 patience = args.patience
 
@@ -65,14 +66,14 @@ class Trainer:
         self.weight_decay = weight_decay
         self.loss_type = loss_type
         self.save_dir = save_dir
-        self.num_outputs=num_outputs
+        self.num_outputs = num_outputs
         if num_outputs is not None:
 
-            fc = nn.Linear(model.fc.in_features, num_outputs,bias=True)
+            fc = nn.Linear(model.fc.in_features, num_outputs, bias=True)
             # initialization
             torch.nn.init.trunc_normal_(fc.weight.data, std=0.01)
-            #fc.bias.data.zero_()
-            #torch.nn.init.constant_(fc.bias.data, 0.01)
+            # fc.bias.data.zero_()
+            # torch.nn.init.constant_(fc.bias.data, 0.01)
 
             model.fc = fc
 
@@ -82,7 +83,7 @@ class Trainer:
             raise ValueError('please specify a value for your number of outputs for the loss function to evaluate '
                              'against')
 
-        self.metric_str=metric
+        self.metric_str = metric
         self.metric = Metric(self.num_outputs).get_metric(metric)
 
         self.scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
@@ -91,15 +92,15 @@ class Trainer:
         self.setup_criterion()
 
     def _shared_step(self, batch, metric_fn):
-        if args.include_buildings :
+        if args.include_buildings:
             if args.ls_bands or args.nl_band:
                 x = torch.tensor(batch[0]['images'], )
                 b = torch.tensor(batch[1]['buildings'], )
                 x = torch.cat((x, b), dim=-1)
                 target = torch.tensor(batch[0]['labels'], )
             else:
-                x=torch.tensor(batch[1]['buildings'])
-                target=torch.tensor(batch[0]['labels'])
+                x = torch.tensor(batch[1]['buildings'])
+                target = torch.tensor(batch[0]['labels'])
 
 
         else:
@@ -108,37 +109,36 @@ class Trainer:
 
         x = x.type_as(self.model.conv1.weight)
 
-
         target = target.type_as(self.model.conv1.weight)
-        x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # from [batch_size,H,W,in_channels] to [batch_size ,in_channels, H ,W]
-
+        x = x.reshape(-1, x.shape[-1], x.shape[-3],
+                      x.shape[-2])  # from [batch_size,H,W,in_channels] to [batch_size ,in_channels, H ,W]
 
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
-        #Re-weighting data
+        # Re-weighting data
         if self.class_model:
-           Beta= self.weight_ex(x,self.class_model)
+            Beta = self.weight_ex(x, self.class_model)
 
-           outputs=outputs*(Beta**0.5)
-        #Loss
+            outputs = outputs * (Beta ** 0.5)
+        # Loss
 
         loss = self.criterion(outputs, target)
-        if self.loss_type=='custom':
-               custom_loss=self.custom_loss(x,target)
-               #print(loss,custom_loss)
-               loss=loss+args.lamda*custom_loss
-               #print('total_loss',loss)
-        elif self.loss_type=='subshift':
-            loss=self.subshift(x,target,batch['urban_rural'])
-        #Metric calculation
-        if self.loss_type == 'classification' and self.num_outputs >1:
+        if self.loss_type == 'custom':
+            custom_loss = self.custom_loss(x, target)
+            # print(loss,custom_loss)
+            loss = loss + args.lamda * custom_loss
+            # print('total_loss',loss)
+        elif self.loss_type == 'subshift':
+            loss = self.subshift(x, target, batch['urban_rural'])
+        # Metric calculation
+        if self.loss_type == 'classification' and self.num_outputs > 1:
 
             preds = nn.functional.softmax(outputs, dim=1)
             target = target.long
 
-        elif self.loss_type=='classification' and self.num_outputs==1:
-            preds=torch.sigmoid(outputs,)
-            target=target.long()
+        elif self.loss_type == 'classification' and self.num_outputs == 1:
+            preds = torch.sigmoid(outputs, )
+            target = target.long()
 
         else:
             preds = torch.tensor(outputs, device='cuda')
@@ -170,7 +170,9 @@ class Trainer:
         loss = self._shared_step(batch, self.metric)
 
         return loss
-    def fit_wilds(self,trainloader, validloader, max_epochs, gpus, class_model=None,early_stopping=True, save_every=10):
+
+    def fit_wilds(self, trainloader, validloader, max_epochs, gpus, class_model=None, early_stopping=True,
+                  save_every=10):
         self.model.to(gpus)
         # Weighting model
         if class_model:
@@ -199,9 +201,9 @@ class Trainer:
                 print('-----------------------Training--------------------------------')
                 self.model.train()
                 self.opt.zero_grad()
-                for x,y,_ in tepoch:
+                for x, y, _ in tepoch:
                     tepoch.set_description(f"Epoch {epoch}")
-                    print('inLoader:',x.shape)
+                    print('inLoader:', x.shape)
                     x = x.type_as(self.model.conv1.weight)
                     y = y.type_as(self.model.conv1.weight)
                     outputs = self.model(x)
@@ -241,7 +243,7 @@ class Trainer:
                 valid_epoch_loss = 0
                 print('--------------------------Validation-------------------- ')
                 self.model.eval()
-                for x,y,_ in validloader:
+                for x, y, _ in validloader:
                     x = x.type_as(self.model.conv1.weight)
                     y = y.type_as(self.model.conv1.weight)
                     outputs = self.model(x)
@@ -261,7 +263,6 @@ class Trainer:
                     self.metric.update(preds, y)
 
                 avg_valid_loss = valid_epoch_loss / valid_steps
-
 
                 r2_valid = (self.metric.compute()) ** 2 if self.metric_str == 'r2' else self.metric.compute()
 
@@ -339,16 +340,14 @@ class Trainer:
         best_path = os.path.join(self.save_dir, 'best.ckpt')
         return best_loss, best_path,
 
-
-
-    def fit(self, trainloader, validloader, max_epochs, gpus, class_model=None,early_stopping=True, save_every=10):
+    def fit(self, trainloader, validloader, max_epochs, gpus, class_model=None, early_stopping=True, save_every=10):
 
         self.model.to(gpus)
-        #Weighting model
+        # Weighting model
         if class_model:
-                self.class_model=class_model.to(gpus)
+            self.class_model = class_model.to(gpus)
         else:
-            self.class_model=None
+            self.class_model = None
         # log the gradients
         wandb.watch(self.model, log='all')
         train_steps = len(trainloader)
@@ -377,7 +376,7 @@ class Trainer:
                     train_loss = self._shared_step(record, self.metric)
                     train_loss.backward()
                     # Implementing gradient accumlation
-                    if (train_step+1) % args.accumlation_steps == 0:
+                    if (train_step + 1) % args.accumlation_steps == 0:
                         self.opt.step()
                         self.opt.zero_grad()
 
@@ -385,16 +384,15 @@ class Trainer:
                     train_step += 1
                     # print statistics
                     print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item():.2f}')
-                    if (train_step+1) % 20 == 0:
+                    if (train_step + 1) % 20 == 0:
                         running_train = epoch_loss / (train_step)
                         wandb.log({"train_loss": running_train, 'epoch': epoch})
-
 
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
 
             # Metric calulation and average loss
-            r2 = (self.metric.compute())**2 if self.metric_str=='r2' else self.metric.compute()
+            r2 = (self.metric.compute()) ** 2 if self.metric_str == 'r2' else self.metric.compute()
             wandb.log({f'{self.metric_str} train': r2, 'epoch': epoch})
             avgloss = epoch_loss / train_steps
             wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
@@ -412,18 +410,17 @@ class Trainer:
                     valid_step += 1
                     print(
                         f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item():.2f}')
-                    if (valid_step+1) % 20 == 0:
+                    if (valid_step + 1) % 20 == 0:
                         running_loss = valid_epoch_loss / (valid_step)
                         wandb.log({"valid_loss": running_loss, 'epoch': epoch})
 
                 avg_valid_loss = valid_epoch_loss / valid_steps
 
-                r2_valid = (self.metric.compute())**2 if self.metric_str=='r2' else self.metric.compute()
+                r2_valid = (self.metric.compute()) ** 2 if self.metric_str == 'r2' else self.metric.compute()
 
                 print(f'Validation {self.metric_str}is {r2_valid:.2f} and loss {avg_valid_loss}')
                 wandb.log({f'{self.metric_str} valid': r2_valid, 'epoch': epoch})
                 wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
-
 
                 # early stopping with loss
                 if best_loss - avg_valid_loss >= 0:
@@ -434,7 +431,7 @@ class Trainer:
                     count2 += 1
                     best_loss = avg_valid_loss
                     # start saving after a threshold of epochs and a patience of improvement
-                    if  count2 >= 1:
+                    if count2 >= 1:
                         print('in best path saving')
                         save_path = os.path.join(self.save_dir, f'best_Epoch{epoch}.ckpt')
                         torch.save(self.model.state_dict(), save_path)
@@ -451,7 +448,7 @@ class Trainer:
                     count2 = 0  # improving tracker
                     if counter >= patience and early_stopping:
                         print(f'.................Early stopping can be in this Epoch{epoch}.....................')
-                        #break
+                        # break
 
             # Saving the model for later use every 10 epochs:
             if epoch % save_every == 0:
@@ -478,7 +475,6 @@ class Trainer:
             best_path = r2_dict[max(r2_dict.keys())]
             print(f'{self.metric_str} of best model saved is {max(r2_dict.keys())} , path {best_path}')
 
-
             shutil.move(best_path,
                         os.path.join(self.save_dir, 'best.ckpt'))
 
@@ -492,7 +488,7 @@ class Trainer:
 
             # better_path=best_path
 
-            print("Time Elapsed for all epochs : {:.2} H".format((time.time() - start) /120))
+            print("Time Elapsed for all epochs : {:.2} H".format((time.time() - start) / 120))
         best_path = os.path.join(self.save_dir, 'best.ckpt')
         return best_loss, best_path,
         # TODO implement overfit batches
@@ -504,9 +500,9 @@ class Trainer:
         return {
             'optimizer': opt,
             'lr_scheduler': {
-                 #'scheduler': ExponentialLR(opt,
-                  #            gamma=args.lr_decay),
-                'scheduler':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=20)
+                # 'scheduler': ExponentialLR(opt,
+                #            gamma=args.lr_decay),
+                'scheduler': torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=20)
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min')
 
             }
@@ -514,58 +510,58 @@ class Trainer:
 
     def setup_criterion(self):
 
-        if self.loss_type == 'classification' and self.num_outputs >1:
+        if self.loss_type == 'classification' and self.num_outputs > 1:
             self.criterion = nn.CrossEntropyLoss()
-        elif self.loss_type=='classification' and self.num_outputs==1:
-            self.criterion=nn.BCEWithLogitsLoss()
+        elif self.loss_type == 'classification' and self.num_outputs == 1:
+            self.criterion = nn.BCEWithLogitsLoss()
 
         else:
             self.criterion = nn.MSELoss()
 
     def custom_loss(self, batch, target):
-        losses=[]
+        losses = []
 
-        sorted, indices = torch.sort(target,descending=False,dim=0)
+        sorted, indices = torch.sort(target, descending=False, dim=0)
         batch = batch[indices]
-        target=target[indices]
+        target = target[indices]
 
-        #print(sorted==target)
-        quantiles_x=torch.split(batch,5)
-        quantiles_y=torch.split(target,5)
+        # print(sorted==target)
+        quantiles_x = torch.split(batch, 5)
+        quantiles_y = torch.split(target, 5)
         for i in range(5):
-            losses.append(torch.nn.functional.mse_loss(self.model(quantiles_x[i]).squeeze(-1),quantiles_y[i]))
-        #print('losses_list',losses)
+            losses.append(torch.nn.functional.mse_loss(self.model(quantiles_x[i]).squeeze(-1), quantiles_y[i]))
+        # print('losses_list',losses)
         return max(losses)
-    def weight_ex(self,x,class_model):
+
+    def weight_ex(self, x, class_model):
         '''
         use binary classification for finiding weights for data
         :return: weghing factor Beta that can be added to loss function
         '''
 
-        hx=torch.sigmoid(class_model(x))
+        hx = torch.sigmoid(class_model(x))
 
-        Beta=torch.exp(hx.squeeze(-1))
+        Beta = torch.exp(hx.squeeze(-1))
         return Beta
-    def subshift(self,x,y,group):
+
+    def subshift(self, x, y, group):
         sorted, indices = torch.sort(y, descending=False, dim=0)
         x = x[indices]
         y = y[indices]
 
-        losses=[]
-        urban_x=x[torch.where(group==1)]
-        rural_x = x[torch.where(group == 0)]
-        urban_y = y[torch.where(group== 1)]
-        rural_y = y[torch.where(group == 0)]
-        urban_grouped=torch.split(urban_x,2)
-        rural_grouped=torch.split(rural_x,2)
+        losses = []
+        urban_index = (group == 1.0).nonzero(as_tuple=True)[0]
+        rural_index = (group == 0.0).nonzero(as_tuple=True)[0]
+        urban_x, urban_y = x[urban_index], y[urban_index]
+        rural_x, rural_y = x[rural_index], y[rural_index]
+
+        urban_grouped = torch.split(urban_x, 2)
+        rural_grouped = torch.split(rural_x, 2)
         urban_y_grouped = torch.split(urban_y, 2)
         rural_y_grouped = torch.split(rural_y, 2)
         for i in range(2):
-            losses.append(torch.nn.functional.mse_loss(self.model(urban_grouped[i]).squeeze(-1),urban_y_grouped[i]))
+            losses.append(torch.nn.functional.mse_loss(self.model(urban_grouped[i]).squeeze(-1), urban_y_grouped[i]))
         for i in range(2):
             losses.append(torch.nn.functional.mse_loss(self.model(rural_grouped[i]).squeeze(-1), rural_y_grouped[i]))
         print(losses)
         return max(losses)
-
-
-
