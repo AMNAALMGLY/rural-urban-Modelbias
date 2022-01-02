@@ -136,7 +136,7 @@ def main(args):
 
 
     batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                            args.nl_label,args.include_buildings, paths_valid_b,'DHS',False, args.clipn, args.batch_size, groupby='urban',
+                            args.nl_label,args.include_buildings, paths_valid_b,'DHS',False, args.clipn, args.batch_size, groupby=args.group,
                            cache=True, shuffle=False)
 
 
