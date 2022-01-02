@@ -107,7 +107,7 @@ class Trainer:
         else:
             x = torch.tensor(batch['images'])
             target = torch.tensor(batch['labels'], )
-            group=torch.tensor(batch['urban_rural'])
+            group=torch.tensor(batch['urban_rural']) if args.scaler_features_keys else None
         x = x.type_as(self.model.conv1.weight)
 
         target = target.type_as(self.model.conv1.weight)
