@@ -98,10 +98,11 @@ class Trainer:
                 b = torch.tensor(batch[1]['buildings'], )
                 x = torch.cat((x, b), dim=-1)
                 target = torch.tensor(batch[0]['labels'], )
+
             else:
                 x = torch.tensor(batch[1]['buildings'])
                 target = torch.tensor(batch[0]['labels'])
-
+            group=torch.tensor(batch[0]['urban_rural'])
 
         else:
             x = torch.tensor(batch['images'])
@@ -129,7 +130,7 @@ class Trainer:
             loss = loss + args.lamda * custom_loss
             # print('total_loss',loss)
         elif self.loss_type == 'subshift':
-            loss = self.subshift(x, target, batch['urban_rural'])
+            loss = self.subshift(x, target, group)
         # Metric calculation
         if self.loss_type == 'classification' and self.num_outputs > 1:
 
