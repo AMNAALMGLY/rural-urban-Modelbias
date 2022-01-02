@@ -199,6 +199,9 @@ class Trainer:
                 self.opt.zero_grad()
                 for x,y,_ in tepoch:
                     tepoch.set_description(f"Epoch {epoch}")
+                    print('inLoader:',x.shape)
+                    x = x.type_as(self.model.conv1.weight)
+                    y = y.type_as(self.model.conv1.weight)
                     outputs = self.model(x)
                     outputs = outputs.squeeze(dim=-1)
                     train_loss = self.criterion(outputs, y)
@@ -236,6 +239,8 @@ class Trainer:
                 print('--------------------------Validation-------------------- ')
                 self.model.eval()
                 for x,y,_ in validloader:
+                    x = x.type_as(self.model.conv1.weight)
+                    y = y.type_as(self.model.conv1.weight)
                     outputs = self.model(x)
                     outputs = outputs.squeeze(dim=-1)
                     valid_loss = self.criterion(outputs, y)
