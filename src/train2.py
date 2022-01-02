@@ -128,7 +128,7 @@ def main(args):
         paths_valid_b = get_paths(args.dataset, 'val', args.fold, args.buildings_records)
         print('b_train',len(paths_train_b))
         print('b_valid',len(paths_valid_b))
-    #paths_test = get_paths(args.dataset, 'test', args.fold, args.data_path)
+    paths_test = get_paths(args.dataset, 'test', args.fold, args.data_path)
 
     batcher_train = Batcher(paths_train,args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                             args.nl_label,args.include_buildings,paths_train_b,'DHS', args.augment ,args.clipn, args.batch_size, groupby=args.group,
@@ -140,9 +140,9 @@ def main(args):
                            cache=True, shuffle=False)
 
 
-    #batcher_test = Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-    #                       args.nl_label, 'DHS', False, args.clipn, args.batch_size, groupby=args.group,
-     #                      cache=True, shuffle=False)
+    batcher_test = Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
+                          args.nl_label, 'DHS', False, args.clipn, args.batch_size, groupby=args.group,
+                        cache=True, shuffle=False)
     ##############################################################WILDS dataset############################################################
     dataset = get_dataset(dataset="poverty", download=True)
 
@@ -172,7 +172,7 @@ def main(args):
 
 
     #best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args)
-    best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args)
+    best_loss, best_path = setup_experiment(model,batcher_train, batcher_test, args.resume, args)
 
     print(f'Path to best model found during training: \n{best_path}')
 
