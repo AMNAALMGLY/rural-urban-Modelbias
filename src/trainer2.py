@@ -91,7 +91,7 @@ class Trainer:
 
         self.setup_criterion()
 
-    def _shared_step(self, batch, metric_fn):
+    def _shared_step(self, batch, metric_fn,is_training=True):
         if args.include_buildings:
             if args.ls_bands or args.nl_band:
                 x = torch.tensor(batch[0]['images'], )
@@ -107,7 +107,7 @@ class Trainer:
         else:
             x = torch.tensor(batch['images'])
             target = torch.tensor(batch['labels'], )
-
+            group=torch.tensor(batch['urban_rural'])
         x = x.type_as(self.model.conv1.weight)
 
         target = target.type_as(self.model.conv1.weight)
@@ -129,7 +129,7 @@ class Trainer:
             # print(loss,custom_loss)
             loss = loss + args.lamda * custom_loss
             # print('total_loss',loss)
-        elif self.loss_type == 'subshift':
+        elif self.loss_type == 'subshift' and is_training:
             trainloss = self.subshift(x, target, group)
         else:
             trainloss=loss
@@ -165,7 +165,7 @@ class Trainer:
         return train_loss
 
     def validation_step(self, batch, ):
-        loss,_ = self._shared_step(batch, self.metric)
+        loss,_ = self._shared_step(batch, self.metric,is_training=False)
 
         return loss
 
