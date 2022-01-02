@@ -134,10 +134,6 @@ def main(args):
     #batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
          #                   args.nl_label,args.include_buildings, paths_valid_b,'DHS',False, args.clipn, args.batch_size, groupby=args.group,
               #              cache=True, shuffle=False)
-    batcher_valid = Batcher(paths_valid, {'urban_rural':tf.float32}, args.ls_bands, args.nl_band, args.label_name,
-                            args.nl_label, args.include_buildings, paths_valid_b, 'DHS', False, args.clipn,
-                            args.batch_size, groupby='urban',
-                            cache=True, shuffle=False)
 
 
     #batcher_test = Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
@@ -149,9 +145,9 @@ def main(args):
     # Get the training set
     train_data = dataset.get_subset(
         "train",
-        transform=transforms.Compose(
-            [transforms.Resize((224, 224)), transforms.ToTensor()]
-        ),
+       # transform=transforms.Compose(
+       #     [transforms.Resize((224, 224)), transforms.ToTensor()]
+        #),
     )
 
     # Prepare the standard data loader
@@ -159,9 +155,9 @@ def main(args):
     # Get the test set
     test_data = dataset.get_subset(
         "test",
-        transform=transforms.Compose(
-            [transforms.Resize((224, 224)), transforms.ToTensor()]
-        ),
+       # transform=transforms.Compose(
+        #    [transforms.Resize((224, 224)), transforms.ToTensor()]
+        #),
     )
 
     # Prepare the data loader
