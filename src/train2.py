@@ -74,8 +74,12 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
     trainer = Trainer(save_dir=dirpath, **params)
 
     # Fitting...
+    if args.dataset=='wilds':
+        best_loss, path,= trainer.fit_wilds(train_loader, valid_loader, max_epochs=args.max_epochs, gpus='cuda',class_model=class_model)
+    else:
+        best_loss, path, = trainer.fit(train_loader, valid_loader, max_epochs=args.max_epochs, gpus='cuda',
+                                             class_model=class_model)
 
-    best_loss, path,= trainer.fit_wilds(train_loader, valid_loader, max_epochs=args.max_epochs, gpus='cuda',class_model=class_model)
 
     return best_loss, path,
 
@@ -131,9 +135,9 @@ def main(args):
                             cache=True, shuffle=True)
 
 
-    #batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-         #                   args.nl_label,args.include_buildings, paths_valid_b,'DHS',False, args.clipn, args.batch_size, groupby=args.group,
-              #              cache=True, shuffle=False)
+    batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
+                            args.nl_label,args.include_buildings, paths_valid_b,'DHS',False, args.clipn, args.batch_size, groupby='urban_rural',
+                           cache=True, shuffle=False)
 
 
     #batcher_test = Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
@@ -168,7 +172,7 @@ def main(args):
 
 
     #best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args)
-    best_loss, best_path = setup_experiment(model,train_loader, test_loader, args.resume, args)
+    best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args)
 
     print(f'Path to best model found during training: \n{best_path}')
 

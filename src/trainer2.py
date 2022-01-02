@@ -128,6 +128,8 @@ class Trainer:
                #print(loss,custom_loss)
                loss=loss+args.lamda*custom_loss
                #print('total_loss',loss)
+        elif self.loss_type=='subshift':
+            loss=self.subshift(x,target,batch['urban_rural'])
         #Metric calculation
         if self.loss_type == 'classification' and self.num_outputs >1:
 
@@ -544,3 +546,26 @@ class Trainer:
 
         Beta=torch.exp(hx.squeeze(-1))
         return Beta
+    def subshift(self,x,y,group):
+        sorted, indices = torch.sort(y, descending=False, dim=0)
+        x = x[indices]
+        y = y[indices]
+
+        losses=[]
+        urban_x=x[torch.where(group==1)]
+        rural_x = x[torch.where(group == 0)]
+        urban_y = y[torch.where(group== 1)]
+        rural_y = y[torch.where(group == 0)]
+        urban_grouped=torch.split(urban_x,2)
+        rural_grouped=torch.split(rural_x,2)
+        urban_y_grouped = torch.split(urban_y, 2)
+        rural_y_grouped = torch.split(rural_y, 2)
+        for i in range(2):
+            losses.append(torch.nn.functional.mse_loss(self.model(urban_grouped[i]).squeeze(-1),urban_y_grouped[i]))
+        for i in range(2):
+            losses.append(torch.nn.functional.mse_loss(self.model(rural_grouped[i]).squeeze(-1), rural_y_grouped[i]))
+        print(losses)
+        return max(losses)
+
+
+

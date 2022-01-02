@@ -16,16 +16,16 @@ args = Namespace(
     # Training
 
     lr_decay=0.96,
-    batch_size=64,
+    batch_size=128,
     gpu=-1,
     max_epochs=200,
     epoch_thresh=150,
     patience=20,
 
     lr=.0001,  # lr0001         #0.0001 nl,ms
-    fc_reg=0.1,
+    fc_reg=1.0,
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=0.1,
+    conv_reg=1.0,
 
     # data
 
@@ -39,30 +39,29 @@ args = Namespace(
     dataset='DHS_OOC',
     fold='B',
     ls_bands=None,
-    nl_band=None,  # [None , merge , split]
+    nl_band='split',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     include_buildings=True,
-    scaler_features_keys=None,
-    #{'urban_rural':tf.float32},
+    scaler_features_keys={'urban_rural':tf.float32},
 
     # keep_frac {keep_frac}
 
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_B_ptest',
+    experiment_name='DHS_OOC_B_nl_subshift',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
     #'urban',
 
-    loss_type='regression',
+    loss_type='subshift',
     lamda=0.5,
     num_outputs=1,
     resume=None,
     weight_model=None,
     #'/atlas/u/amna/rural-urban-Modelbias/outputs/dhs_ooc/DHS_OOC_A_nl_random_b32_fc01_conv01_lr0001/best.ckpt',
-    accumlation_steps=2,
+    accumlation_steps=1,
     metric='r2',
 
     # Visualization
