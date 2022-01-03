@@ -140,9 +140,9 @@ def main(args):
                            cache=True, shuffle=False)
 
 
-    batcher_test = Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                          args.nl_label, args.include_buildings, paths_valid_b,'DHS', False, args.clipn, args.batch_size, groupby=args.group,
-                        cache=True, shuffle=False)
+    #batcher_test = Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
+                   #       args.nl_label, args.include_buildings, paths_valid_b,'DHS', False, args.clipn, args.batch_size, groupby=args.group,
+                      #  cache=True, shuffle=False)
     ##############################################################WILDS dataset############################################################
     dataset = get_dataset(dataset="poverty", download=True)
 
@@ -171,8 +171,8 @@ def main(args):
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)
 
 
-    #best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args)
-    best_loss, best_path = setup_experiment(model,batcher_train, batcher_test, args.resume, args)
+    best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args)
+   # best_loss, best_path = setup_experiment(model,batcher_train, batcher_test, args.resume, args)
 
     print(f'Path to best model found during training: \n{best_path}')
 

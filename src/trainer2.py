@@ -165,9 +165,9 @@ class Trainer:
         return train_loss
 
     def validation_step(self, batch, ):
-        loss,_ = self._shared_step(batch, self.metric,is_training=False)
+        loss,subshift_loss = self._shared_step(batch, self.metric,is_training=False)
 
-        return loss
+        return subshift_loss
 
     def test_step(self, batch, ):
         loss = self._shared_step(batch, self.metric)
