@@ -141,7 +141,7 @@ def main(args):
 
 
     batcher_test = Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                          args.nl_label, 'DHS', False, args.clipn, args.batch_size, groupby=args.group,
+                          args.nl_label, args.include_buildings, paths_valid_b,'DHS', False, args.clipn, args.batch_size, groupby=args.group,
                         cache=True, shuffle=False)
     ##############################################################WILDS dataset############################################################
     dataset = get_dataset(dataset="poverty", download=True)
