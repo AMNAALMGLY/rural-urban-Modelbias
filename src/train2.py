@@ -158,21 +158,22 @@ def main(args):
     train_loader = get_train_loader("standard", train_data, batch_size=64)
     # Get the test set
     test_data = dataset.get_subset(
-        "test",
+        "val",
        # transform=transforms.Compose(
         #    [transforms.Resize((224, 224)), transforms.ToTensor()]
         #),
     )
 
     # Prepare the data loader
-    test_loader = get_eval_loader("standard", test_data, batch_size=16)
+    test_loader = get_eval_loader("standard", test_data, batch_size=64)
 
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)
 
 
-    best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args)
+    #best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args)
    # best_loss, best_path = setup_experiment(model,batcher_train, batcher_test, args.resume, args)
+    best_loss, best_path = setup_experiment(model, train_loader, test_loader, args.resume, args)
 
     print(f'Path to best model found during training: \n{best_path}')
 
