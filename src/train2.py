@@ -115,57 +115,59 @@ def main(args):
     wandb.config.update(data_params)
 
     # dataloader
-    paths_train = get_paths(args.dataset, 'train', args.fold, args.data_path)
+    if args.dataset=='DHS_OOC':
+        paths_train = get_paths(args.dataset, 'train', args.fold, args.data_path)
 
-    paths_valid = get_paths(args.dataset, 'val', args.fold, args.data_path)
-    print('num_train',len(paths_train))
-    print('num_valid',len(paths_valid))
+        paths_valid = get_paths(args.dataset, 'val', args.fold, args.data_path)
+        print('num_train',len(paths_train))
+        print('num_valid',len(paths_valid))
 
-    paths_train_b=None
-    paths_valid_b=None
-    if args.include_buildings:
-        paths_train_b = get_paths(args.dataset, 'train', args.fold, args.buildings_records)
-        paths_valid_b = get_paths(args.dataset, 'val', args.fold, args.buildings_records)
-        print('b_train',len(paths_train_b))
-        print('b_valid',len(paths_valid_b))
-    paths_test = get_paths(args.dataset, 'test', args.fold, args.data_path)
+        paths_train_b=None
+        paths_valid_b=None
+        if args.include_buildings:
+            paths_train_b = get_paths(args.dataset, 'train', args.fold, args.buildings_records)
+            paths_valid_b = get_paths(args.dataset, 'val', args.fold, args.buildings_records)
+            print('b_train',len(paths_train_b))
+            print('b_valid',len(paths_valid_b))
+        paths_test = get_paths(args.dataset, 'test', args.fold, args.data_path)
 
-    batcher_train = Batcher(paths_train,args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                            args.nl_label,args.include_buildings,paths_train_b,'DHS', args.augment ,args.clipn, args.batch_size, groupby=args.group,
-                            cache=True, shuffle=True)
+        batcher_train = Batcher(paths_train,args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
+                                args.nl_label,args.include_buildings,paths_train_b,'DHS', args.augment ,args.clipn, args.batch_size, groupby=args.group,
+                                cache=True, shuffle=True)
 
 
-    batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                            args.nl_label,args.include_buildings, paths_valid_b,'DHS',False, args.clipn, args.batch_size, groupby=args.group,
-                           cache=True, shuffle=False)
+        batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
+                                args.nl_label,args.include_buildings, paths_valid_b,'DHS',False, args.clipn, args.batch_size, groupby=args.group,
+                               cache=True, shuffle=False)
 
 
     #batcher_test = Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                    #       args.nl_label, args.include_buildings, paths_valid_b,'DHS', False, args.clipn, args.batch_size, groupby=args.group,
                       #  cache=True, shuffle=False)
     ##############################################################WILDS dataset############################################################
-    dataset = get_dataset(dataset="poverty", download=True)
+    else:
+        dataset = get_dataset(dataset="poverty", download=True)
 
-    # Get the training set
-    train_data = dataset.get_subset(
-        "train",
-       # transform=transforms.Compose(
-       #     [transforms.Resize((224, 224)), transforms.ToTensor()]
-        #),
-    )
+        # Get the training set
+        train_data = dataset.get_subset(
+            "train",
+           # transform=transforms.Compose(
+           #     [transforms.Resize((224, 224)), transforms.ToTensor()]
+            #),
+        )
 
-    # Prepare the standard data loader
-    train_loader = get_train_loader("standard", train_data, batch_size=64)
-    # Get the test set
-    test_data = dataset.get_subset(
-        "val",
-       # transform=transforms.Compose(
-        #    [transforms.Resize((224, 224)), transforms.ToTensor()]
-        #),
-    )
+        # Prepare the standard data loader
+        train_loader = get_train_loader("standard", train_data, batch_size=64)
+        # Get the test set
+        test_data = dataset.get_subset(
+            "val",
+           # transform=transforms.Compose(
+            #    [transforms.Resize((224, 224)), transforms.ToTensor()]
+            #),
+        )
 
-    # Prepare the data loader
-    test_loader = get_eval_loader("standard", test_data, batch_size=64)
+        # Prepare the data loader
+        test_loader = get_eval_loader("standard", test_data, batch_size=64)
 
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)
