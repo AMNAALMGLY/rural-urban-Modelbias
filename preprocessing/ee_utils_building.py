@@ -217,9 +217,10 @@ class AfricaBuildings:
         - end_date: str, string representation of end date
         '''
         self.t = ee.FeatureCollection('GOOGLE/Research/open-buildings/v1/polygons')
-        self.t_gte_070 = self.t.filter('confidence >= 0.70')
+        #self.t_gte_070 = self.t.filter('confidence >= 0.70')
+        self.t_gte_070 = self.t.filter('area_in_meters >= 200')
         
-        t_img = self.t_gte_070.reduceToImage(['area'], ee.Reducer.first()).unmask(0)
+        t_img = self.t_gte_070.reduceToImage(['area_in_meters'], ee.Reducer.first()).unmask(0)
         t_img_rescaled = t_img.setDefaultProjection('EPSG:3857').reduceResolution(reducer=ee.Reducer.mean(), maxPixels=900)
         
         self.t_img = t_img_rescaled.rename(['buildings'])
