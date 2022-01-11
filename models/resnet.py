@@ -346,6 +346,7 @@ def _resnet(
         #if 'attn' in model.state_dict():
         for key in attn_weights:
                 if 'conv' in key:
+                    print(model.state_dict()[key].shape)
                     nn.init.kaiming_normal_(model.state_dict()[key], mode="fan_out", nonlinearity="relu")
                 else:
                     nn.init.constant_(model.state_dict()[key],0.0)
