@@ -23,8 +23,8 @@ __all__ = [
 model_urls = {
     "resnet18": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
     "resnet34": "https://download.pytorch.org/models/resnet34-b627a593.pth",
-    "resnet50":'https://zenodo.org/record/4728033/files/seco_resnet50_100k.ckpt?download=1',
-        #"https://download.pytorch.org/models/resnet50-0676ba61.pth",
+    #"resnet50":'https://zenodo.org/record/4728033/files/seco_resnet50_100k.ckpt?download=1',
+      'resnet50':  "https://download.pytorch.org/models/resnet50-0676ba61.pth",
 
 }
 
