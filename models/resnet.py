@@ -335,9 +335,21 @@ def _resnet(
     model = ResNet(block, in_channels, layers, **kwargs)
     if pretrained:
         #state_dict=torch.load('seco_resnet50_100k.ckpt')
+        #if using attention:
+        attn_weights=["attn.gamma", "attn.query_conv.weight", "attn.query_conv.bias", "attn.key_conv.weight",
+                      "attn.key_conv.bias", "attn.value_conv.weight", "attn.value_conv.bias"]
+
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         state_dict['conv1.weight'] = nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
+        if 'attn' in model.state_dict():
+            for key in attn_weights:
+                if 'conv' in key:
+                    nn.init.kaiming_normal_(model.state_dict()[key], mode="fan_out", nonlinearity="relu")
+                else:
+                    nn.init.constant_(model.state_dict()[key],0.0)
+                state_dict[key]=model.state_dict()[key]
+
         model.load_state_dict(state_dict)
     return model
 
