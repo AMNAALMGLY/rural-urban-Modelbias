@@ -342,7 +342,7 @@ def _resnet(
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         state_dict['conv1.weight'] = nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
-        print(model.state_dict(()))
+        print(model.state_dict())
         if 'attn' in model.state_dict():
             for key in attn_weights:
                 if 'conv' in key:
