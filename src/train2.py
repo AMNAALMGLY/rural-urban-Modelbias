@@ -173,9 +173,9 @@ def main(args):
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)
 
 
-    #best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args)
+    best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args)
    # best_loss, best_path = setup_experiment(model,batcher_train, batcher_test, args.resume, args)
-    best_loss, best_path = setup_experiment(model, train_loader, test_loader, args.resume, args)
+    #best_loss, best_path = setup_experiment(model, train_loader, test_loader, args.resume, args)
 
     print(f'Path to best model found during training: \n{best_path}')
 
