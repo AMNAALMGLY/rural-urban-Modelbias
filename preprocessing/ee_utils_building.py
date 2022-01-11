@@ -209,7 +209,7 @@ def wait_on_tasks(tasks: Mapping[Any, ee.batch.Task],
 
 
 class AfricaBuildings:
-     def __init__(self) -> None:
+     def __init__(self,prop) -> None:
         '''
         Args
         - filterpoly: ee.Geometry
@@ -218,11 +218,17 @@ class AfricaBuildings:
         '''
         self.t = ee.FeatureCollection('GOOGLE/Research/open-buildings/v1/polygons')
         #self.t_gte_070 = self.t.filter('confidence >= 0.70')
-        self.t_gte_070 = self.t.filter('area_in_meters >= 200')
-        
-        t_img = self.t_gte_070.reduceToImage(['area_in_meters'], ee.Reducer.first()).unmask(0)
+        #self.t_gte_070 = self.t.filter('area_in_meters >= 200')
+
+        t_img = self.t.reduceToImage([prop], ee.Reducer.first()).unmask(0)
         t_img_rescaled = t_img.setDefaultProjection('EPSG:3857').reduceResolution(reducer=ee.Reducer.mean(), maxPixels=900)
         
         self.t_img = t_img_rescaled.rename(['buildings'])
 
-    
+     def add_layer(self,prop)-> None:
+         c_image=self.t.reduceToImage([prop],ee.Reducer.first()).unmask(0)
+         c_img_rescaled = c_image.setDefaultProjection('EPSG:3857').reduceResolution(reducer=ee.Reducer.mean(),
+                                                                                   maxPixels=900)
+         c_img_rescaled=c_img_rescaled.rename(['buildings_conf'])
+         self.t_img.addBands(c_img_rescaled)
+

@@ -547,7 +547,7 @@ class Trainer:
 
         Beta = torch.exp(hx.squeeze(-1))
         return Beta
-
+    '''
     def subshift(self, x, y, group):
         sorted, indices = torch.sort(y, descending=False, dim=0)
         x = x[indices]
@@ -569,3 +569,4 @@ class Trainer:
             losses.append(torch.nn.functional.mse_loss(self.model(rural_grouped[i]).squeeze(-1), rural_y_grouped[i]))
         print(losses)
         return max(losses)
+    '''
