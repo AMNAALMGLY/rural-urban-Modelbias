@@ -104,7 +104,7 @@ class Trainer:
             else:
                 x = torch.tensor(batch[1]['buildings'])
                 target = torch.tensor(batch[0]['labels'])
-            group = torch.tensor(batch[0]['urban_rural'])
+            group = torch.tensor(batch[0].get('urban_rural',None))
 
         else:
             x = torch.tensor(batch['images'])
@@ -234,16 +234,16 @@ class Trainer:
                     time.sleep(0.1)
 
                     preds = torch.tensor(outputs, device='cuda')
-                    self.metric.to('cuda')
-                    self.metric.update(preds, y)
+                    self.metric[0].to('cuda')
+                    self.metric[0].update(preds, y)
 
             # Metric calulation and average loss
-            r2 = (self.metric.compute()) ** 2 if self.metric_str == 'r2' else self.metric.compute()
+            r2 = (self.metric[0].compute()) ** 2 if self.metric_str == 'r2' else self.metric[0].compute()
             wandb.log({f'{self.metric_str} train': r2, 'epoch': epoch})
             avgloss = epoch_loss / train_steps
             wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
             print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str} is {r2:.2f}')
-            self.metric.reset()
+            self.metric[0].reset()
             with torch.no_grad():
                 valid_step = 0
                 valid_epoch_loss = 0
@@ -265,12 +265,12 @@ class Trainer:
                         running_loss = valid_epoch_loss / (valid_step)
                         wandb.log({"valid_loss": running_loss, 'epoch': epoch})
                     preds = torch.tensor(outputs, device='cuda')
-                    self.metric.to('cuda')
-                    self.metric.update(preds, y)
+                    self.metric[0].to('cuda')
+                    self.metric[0].update(preds, y)
 
                 avg_valid_loss = valid_epoch_loss / valid_steps
 
-                r2_valid = (self.metric.compute()) ** 2 if self.metric_str == 'r2' else self.metric.compute()
+                r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str == 'r2' else self.metric[0].compute()
 
                 print(f'Validation {self.metric_str}is {r2_valid:.2f} and loss {avg_valid_loss}')
                 wandb.log({f'{self.metric_str} valid': r2_valid, 'epoch': epoch})
@@ -312,7 +312,7 @@ class Trainer:
                 torch.save(self.model.state_dict(), resume_path)
                 print(f'Saving model to {resume_path}')
 
-            self.metric.reset()
+            self.metric[0].reset()
             self.scheduler.step()
 
             print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
