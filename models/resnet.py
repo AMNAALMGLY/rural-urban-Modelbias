@@ -240,7 +240,7 @@ class ResNet(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
         #Attention
-        self.attn = Self_Attn(in_dim=64)
+        self.attn = Self_Attn(in_dim=256)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
