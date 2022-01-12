@@ -24,7 +24,7 @@ wandp = default_args.wandb_p
 entity = default_args.entity
 
 
-def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args):
+def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args,batcher_test=None):
     '''
    setup the experiment paramaters
    :param model: model class :PreActResnet
@@ -79,9 +79,10 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
     else:
         best_loss, path, = trainer.fit(train_loader, valid_loader, max_epochs=args.max_epochs, gpus='cuda',
                                              class_model=class_model)
+    score=trainer.test(batcher_test)
 
 
-    return best_loss, path,
+    return best_loss, path,score
 
 
 def main(args):
@@ -119,16 +120,21 @@ def main(args):
         paths_train = get_paths(args.dataset, 'train', args.fold, args.data_path)
 
         paths_valid = get_paths(args.dataset, 'val', args.fold, args.data_path)
+
+        paths_test=get_paths(args.dataset, 'test', args.fold, args.data_path)
         print('num_train',len(paths_train))
         print('num_valid',len(paths_valid))
+        print('num_valid', len(paths_test))
 
         paths_train_b=None
         paths_valid_b=None
         if args.include_buildings:
             paths_train_b = get_paths(args.dataset, 'train', args.fold, args.buildings_records)
             paths_valid_b = get_paths(args.dataset, 'val', args.fold, args.buildings_records)
+            paths_test_b = get_paths(args.dataset, 'test', args.fold, args.buildings_records)
             print('b_train',len(paths_train_b))
             print('b_valid',len(paths_valid_b))
+            print('b_test',len(paths_test_b))
         paths_test = get_paths(args.dataset, 'test', args.fold, args.data_path)
 
         batcher_train = Batcher(paths_train,args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
@@ -140,9 +146,9 @@ def main(args):
                                cache=True, shuffle=False)
 
 
-    #batcher_test = Batcher(paths_test, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                   #       args.nl_label, args.include_buildings, paths_valid_b,'DHS', False, args.clipn, args.batch_size, groupby=args.group,
-                      #  cache=True, shuffle=False)
+        batcher_test = Batcher(paths_test, {'urban_rural':tf.float32}, args.ls_bands, args.nl_band, args.label_name,
+                         args.nl_label, args.include_buildings, paths_test_b,'DHS', False, args.clipn, args.batch_size, groupby='urban',
+                        cache=True, shuffle=False)
     ##############################################################WILDS dataset############################################################
     else:
         dataset = get_dataset(dataset="poverty", download=True)
@@ -172,7 +178,8 @@ def main(args):
     model = get_model(args.model_name, in_channels=args.in_channels, pretrained=pretrained, ckpt_path=ckpt)
 
 
-    best_loss, best_path = setup_experiment(model,batcher_train, batcher_valid, args.resume, args)
+    best_loss, best_path ,score= setup_experiment(model,batcher_train, batcher_valid, args.resume, args,batcher_test)
+
    # best_loss, best_path = setup_experiment(model,batcher_train, batcher_test, args.resume, args)
     #best_loss, best_path = setup_experiment(model, train_loader, test_loader, args.resume, args)
 
@@ -180,7 +187,7 @@ def main(args):
 
 
 # TODO save hyperparameters .
-
+#TODO Save test scores in csv file
 
 if __name__ == "__main__":
     wandb.init(project=wandp, entity=entity, config={})

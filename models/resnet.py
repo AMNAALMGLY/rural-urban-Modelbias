@@ -302,7 +302,7 @@ class ResNet(nn.Module):
 
     def _forward_impl(self, x: Tensor) -> Tensor:
         # See note [TorchScript super()]
-        print(x.shape)
+
         #x,_=self.attn(x)
         x = self.conv1(x)
         x = self.bn1(x)
@@ -310,6 +310,7 @@ class ResNet(nn.Module):
         x = self.maxpool(x)
         #x,_=self.attn(x)
         x = self.layer1(x)
+        x, _ = self.attn(x)
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)

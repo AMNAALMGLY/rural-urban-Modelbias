@@ -8,7 +8,7 @@ args = Namespace(
 
     # Model
 
-    model_name='resnet18',
+    model_name='resnet50',
     hs_weight_init='random',  # [same, samescaled,random]
     model_init='imagenet',
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
@@ -16,7 +16,7 @@ args = Namespace(
     # Training
 
     lr_decay=0.96,
-    batch_size=128,
+    batch_size=64,
     gpu=-1,
     max_epochs=200,
     epoch_thresh=150,
@@ -37,32 +37,33 @@ args = Namespace(
     clipn=True,
     ooc=True,
     dataset='DHS_OOC',
-    fold='B',
+    fold='A',
     ls_bands=None,
-    nl_band='split',  # [None , merge , split]
+    nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     include_buildings=True,
-    scaler_features_keys={'urban_rural':tf.float32},
+    scaler_features_keys=None,
+    #{'urban_rural':tf.float32},
 
     # keep_frac {keep_frac}
 
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_B_nl_subshift',
+    experiment_name='DHS_OOC_A_attn_b',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
     #'urban',
 
-    loss_type='subshift',
+    loss_type='regression',
     lamda=0.5,
     num_outputs=1,
     resume=None,
     weight_model=None,
     #'/atlas/u/amna/rural-urban-Modelbias/outputs/dhs_ooc/DHS_OOC_A_nl_random_b32_fc01_conv01_lr0001/best.ckpt',
     accumlation_steps=1,
-    metric='r2',
+    metric=['r2'],
 
     # Visualization
     # wandb project:

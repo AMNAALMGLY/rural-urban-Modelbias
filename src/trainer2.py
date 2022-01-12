@@ -84,14 +84,16 @@ class Trainer:
                              'against')
 
         self.metric_str = metric
-        self.metric = Metric(self.num_outputs).get_metric(metric)
+        self.metric=[]
+        for m in metric:
+            self.metric.append(Metric(self.num_outputs).get_metric(m))
 
         self.scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
         self.opt = self.configure_optimizers()['optimizer']
 
         self.setup_criterion()
 
-    def _shared_step(self, batch, metric_fn,is_training=True):
+    def _shared_step(self, batch, metric_fn, is_training=True):
         if args.include_buildings:
             if args.ls_bands or args.nl_band:
                 x = torch.tensor(batch[0]['images'], )
@@ -102,12 +104,12 @@ class Trainer:
             else:
                 x = torch.tensor(batch[1]['buildings'])
                 target = torch.tensor(batch[0]['labels'])
-            group=torch.tensor(batch[0]['urban_rural'])
+            group = torch.tensor(batch[0]['urban_rural'])
 
         else:
             x = torch.tensor(batch['images'])
             target = torch.tensor(batch['labels'], )
-            group=torch.tensor(batch['urban_rural']) if args.scaler_features_keys else None
+            group = torch.tensor(batch['urban_rural']) if args.scaler_features_keys else None
         x = x.type_as(self.model.conv1.weight)
 
         target = target.type_as(self.model.conv1.weight)
@@ -132,7 +134,7 @@ class Trainer:
         elif self.loss_type == 'subshift' and is_training:
             trainloss = self.subshift(x, target, group)
         else:
-            trainloss=loss
+            trainloss = loss
         # Metric calculation
         if self.loss_type == 'classification' and self.num_outputs > 1:
 
@@ -146,14 +148,15 @@ class Trainer:
         else:
             preds = torch.tensor(outputs, device='cuda')
 
-        metric_fn.to('cuda')
-        metric_fn.update(preds, target)
+        for fn in metric_fn:
+            fn.to('cuda')
+            fn.update(preds, target)
 
-        return loss,trainloss
+        return loss, trainloss
 
     def training_step(self, batch, ):
 
-        _,train_loss = self._shared_step(batch, self.metric)
+        _, train_loss = self._shared_step(batch, self.metric)
         self.opt.zero_grad()
 
         train_loss.backward()
@@ -165,12 +168,12 @@ class Trainer:
         return train_loss
 
     def validation_step(self, batch, ):
-        loss,subshift_loss = self._shared_step(batch, self.metric,is_training=False)
+        loss, subshift_loss = self._shared_step(batch, self.metric, is_training=False)
 
         return subshift_loss
 
     def test_step(self, batch, ):
-        loss = self._shared_step(batch, self.metric)
+        loss, _ = self._shared_step(batch, self.metric)
 
         return loss
 
@@ -376,7 +379,7 @@ class Trainer:
                 for record in tepoch:
                     tepoch.set_description(f"Epoch {epoch}")
 
-                    _,train_loss = self._shared_step(record, self.metric)
+                    _, train_loss = self._shared_step(record, self.metric)
                     train_loss.backward()
                     # Implementing gradient accumlation
                     if (train_step + 1) % args.accumlation_steps == 0:
@@ -395,12 +398,12 @@ class Trainer:
                     time.sleep(0.1)
 
             # Metric calulation and average loss
-            r2 = (self.metric.compute()) ** 2 if self.metric_str == 'r2' else self.metric.compute()
-            wandb.log({f'{self.metric_str} train': r2, 'epoch': epoch})
+            r2 = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
+            wandb.log({f'{self.metric_str[0]} train': r2, 'epoch': epoch})
             avgloss = epoch_loss / train_steps
             wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
-            print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str} is {r2:.2f}')
-            self.metric.reset()
+            print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str[0]} is {r2:.2f}')
+            self.metric[0].reset()
             with torch.no_grad():
                 valid_step = 0
                 valid_epoch_loss = 0
@@ -419,10 +422,10 @@ class Trainer:
 
                 avg_valid_loss = valid_epoch_loss / valid_steps
 
-                r2_valid = (self.metric.compute()) ** 2 if self.metric_str == 'r2' else self.metric.compute()
+                r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
 
-                print(f'Validation {self.metric_str}is {r2_valid:.2f} and loss {avg_valid_loss}')
-                wandb.log({f'{self.metric_str} valid': r2_valid, 'epoch': epoch})
+                print(f'Validation {self.metric_str[0]}is {r2_valid:.2f} and loss {avg_valid_loss}')
+                wandb.log({f'{self.metric_str[0]} valid': r2_valid, 'epoch': epoch})
                 wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
 
                 # early stopping with loss
@@ -461,7 +464,7 @@ class Trainer:
                 torch.save(self.model.state_dict(), resume_path)
                 print(f'Saving model to {resume_path}')
 
-            self.metric.reset()
+            self.metric[0].reset()
             self.scheduler.step()
 
             print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
@@ -497,6 +500,31 @@ class Trainer:
         # TODO implement overfit batches
         # TODO savelast
 
+    def test(self, batcher_test):
+
+                with torch.no_grad():
+                    test_step = 0
+                    test_epoch_loss = 0
+                    print('--------------------------Testing-------------------- ')
+                    self.model.eval()
+                    for i,record in enumerate(batcher_test):
+                        test_loss = self.test_step(record)
+                        test_epoch_loss += test_loss.item()
+                        test_step += 1
+
+
+                    avg_test_loss = test_epoch_loss / test_step
+                    r2_test=[]
+                    for i,m in enumerate(self.metric):
+                        r2_test[i] = (m.compute()) ** 2 if self.metric_str[i] == 'r2' else m.compute()
+
+                        wandb.log({f'{self.metric_str[i]} Test': r2_test[i],})
+                        wandb.log({"test_loss": avg_test_loss})
+                        m.reset()
+
+
+                return r2_test
+
     def configure_optimizers(self):
         opt = torch.optim.Adam(self.model.parameters(), lr=self.lr,
                                weight_decay=self.weight_decay)
@@ -505,8 +533,8 @@ class Trainer:
             'lr_scheduler': {
                 # 'scheduler': ExponentialLR(opt,
                 #            gamma=args.lr_decay),
-                #'scheduler': torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=20)
-                'scheduler':torch.optim.lr_scheduler.StepLR(opt,step_size=1,gamma=args.lr_decay,verbose=True)
+                # 'scheduler': torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=20)
+                'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, verbose=True)
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min')
 
             }
@@ -547,6 +575,7 @@ class Trainer:
 
         Beta = torch.exp(hx.squeeze(-1))
         return Beta
+
     '''
     def subshift(self, x, y, group):
         sorted, indices = torch.sort(y, descending=False, dim=0)
