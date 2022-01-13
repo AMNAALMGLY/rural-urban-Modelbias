@@ -183,10 +183,10 @@ class Batcher():
         # prefetch 2 batches at a time
         #dataset = dataset.prefetch(2)
 
-        iterator =  tf.compat.v1.data.make_initializable_iterator(dataset)
-        batch = iterator.get_next()
-        iter_init = iterator.initializer
-        return iter_init, batch
+        iterator =  iter(dataset)
+        batch = next(iterator)
+        #iter_init = iterator.initializer
+        return iterator, batch
 
     def process_tfrecords(self, example_proto):
         '''
