@@ -183,8 +183,8 @@ class Batcher():
         # prefetch 2 batches at a time
         dataset = dataset.prefetch(2)
 
-        iterator =  dataset.as_numpy_iterator()
-        batch = next(iterator)
+        iterator =  tf.compat.v1.data.Iterator(dataset)
+        batch = iterator.get_next()
         iter_init = iterator.initializer
         return iter_init, batch
 
