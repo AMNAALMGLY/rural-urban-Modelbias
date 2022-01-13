@@ -181,12 +181,12 @@ class Batcher():
         dataset = dataset.repeat(self.epochs)
 
         # prefetch 2 batches at a time
-        #dataset = dataset.prefetch(2)
+        dataset = dataset.prefetch(2)
 
         iterator =  iter(dataset)
         batch = next(iterator)
         #iter_init = iterator.initializer
-        return iterator, batch
+        return next(dataset)
 
     def process_tfrecords(self, example_proto):
         '''
