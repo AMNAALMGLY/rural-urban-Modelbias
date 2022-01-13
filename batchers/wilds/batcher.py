@@ -181,7 +181,7 @@ class Batcher():
         dataset = dataset.repeat(self.epochs)
 
         # prefetch 2 batches at a time
-        dataset = dataset.prefetch(2)
+        #dataset = dataset.prefetch(2)
 
         iterator =  dataset.make_initializable_iterator()
         batch = iterator.get_next()
