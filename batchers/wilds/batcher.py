@@ -1,7 +1,7 @@
 ########
 # ADAPTED from github.com/sustainlab-group/africa_poverty
 ########
-from dataset_constants import SIZES, SURVEY_NAMES, MEANS_DICT, STD_DEVS_DICT
+from batchers.wilds.dataset_constants import SIZES, SURVEY_NAMES, MEANS_DICT, STD_DEVS_DICT
 
 from glob import glob
 import os
