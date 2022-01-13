@@ -184,7 +184,7 @@ class Batcher():
         dataset = dataset.prefetch(2)
 
         iterator =  dataset.as_numpy_iterator()
-        batch = iterator.get_next()
+        batch = next(iterator)
         iter_init = iterator.initializer
         return iter_init, batch
 
