@@ -144,7 +144,7 @@ class Batcher():
             # shuffle the order of the input files, then interleave their individual records
             dataset = tf.data.Dataset.from_tensor_slices(self.tfrecord_files)
             dataset = dataset.shuffle(buffer_size=1000)
-            dataset = dataset.apply(tf.contrib.data.parallel_interleave(
+            dataset = dataset.apply(tf.data.experimental.parallel_interleave(
                 lambda file_path: tf.data.TFRecordDataset(file_path, compression_type='GZIP'),
                 cycle_length=self.num_threads,
                 block_length=1
@@ -220,11 +220,11 @@ class Batcher():
 
         keys_to_features = {}
         for band in bands:
-            keys_to_features[band] = tf.FixedLenFeature(shape=[255**2], dtype=tf.float32)
+            keys_to_features[band] = tf.io.FixedLenFeature(shape=[255**2], dtype=tf.float32)
         for key in scalar_float_keys:
-            keys_to_features[key] = tf.FixedLenFeature(shape=[], dtype=tf.float32)
+            keys_to_features[key] = tf.io.FixedLenFeature(shape=[], dtype=tf.float32)
 
-        ex = tf.parse_single_example(example_proto, features=keys_to_features)
+        ex = tf.io.parse_single_example(example_proto, features=keys_to_features)
         loc = tf.stack([ex['lat'], ex['lon']])
         year = tf.cast(ex.get('year', -1), tf.int32)
 
@@ -361,9 +361,9 @@ class UrbanBatcher(Batcher):
         - predicate: tf.Tensor, type bool, True to keep, False to filter out
         '''
         keys_to_features = {
-            'urban_rural': tf.FixedLenFeature(shape=[], dtype=tf.float32)
+            'urban_rural': tf.io.FixedLenFeature(shape=[], dtype=tf.float32)
         }
-        ex = tf.parse_single_example(example_proto, features=keys_to_features)
+        ex = tf.io.parse_single_example(example_proto, features=keys_to_features)
         do_keep = tf.equal(ex['urban_rural'], 1.0)
         return do_keep
 
@@ -378,9 +378,9 @@ class RuralBatcher(Batcher):
         - predicate: tf.Tensor, type bool, True to keep, False to filter out
         '''
         keys_to_features = {
-            'urban_rural': tf.FixedLenFeature(shape=[], dtype=tf.float32)
+            'urban_rural': tf.io.FixedLenFeature(shape=[], dtype=tf.float32)
         }
-        ex = tf.parse_single_example(example_proto, features=keys_to_features)
+        ex = tf.io.parse_single_example(example_proto, features=keys_to_features)
         do_keep = tf.equal(ex['urban_rural'], 0.0)
         return do_keep
 

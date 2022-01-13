@@ -33,7 +33,7 @@ def get_images(tfrecord_paths, label_name='wealthpooled', return_meta=False):
         augment=False,
         negatives='zero',
         normalize=True).get_batch()
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
         sess.run(init_iter)
         if return_meta:
             ret = sess.run(batch_op)
