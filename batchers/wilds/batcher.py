@@ -186,8 +186,7 @@ class Batcher():
         iterator =  iter(dataset)
         batch = next(iterator)
         #iter_init = iterator.initializer
-        return next(dataset)
-
+        return batch
     def process_tfrecords(self, example_proto):
         '''
         Args
