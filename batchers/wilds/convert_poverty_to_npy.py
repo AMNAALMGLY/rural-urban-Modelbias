@@ -3,8 +3,8 @@ Adapted from github.com/sustainlab-group/africa_poverty/data_analysis/dhs.ipynb
 '''
 import tensorflow as tf
 import numpy as np
-import batcher
-import dataset_constants
+from batchers.wilds import batcher
+from batchers.wilds import dataset_constants
 from tqdm import tqdm
 
 FOLDS = ['A', 'B', 'C', 'D', 'E']
@@ -26,8 +26,8 @@ def get_images(tfrecord_paths, label_name='wealthpooled', return_meta=False):
         tfrecord_files=tfrecord_paths,
         dataset=DATASET,
         batch_size=32,
-        ls_bands='ms',
-        nl_band='merge',
+        ls_bands='buildings',
+        nl_band=None,
         label_name=label_name,
         shuffle=False,
         augment=False,
