@@ -22,7 +22,7 @@ def get_images(tfrecord_paths, label_name='wealthpooled', return_meta=False):
 
     Returns: np.array, shape [N, 224, 224, 8], type float32
     '''
-    init_iter, batch_op = batcher.Batcher(
+    batch = batcher.Batcher(
         tfrecord_files=tfrecord_paths,
         dataset=DATASET,
         batch_size=32,
@@ -33,14 +33,17 @@ def get_images(tfrecord_paths, label_name='wealthpooled', return_meta=False):
         augment=False,
         negatives='zero',
         normalize=True).get_batch()
-    with tf.compat.v1.Session() as sess:
+    '''
+    #with tf.compat.v1.Session() as sess:
+    for elem in dataset:
         sess.run(init_iter)
         if return_meta:
             ret = sess.run(batch_op)
         else:
             ret = sess.run(batch_op['images'])
     return ret
-
+    '''
+    return batch['images']
 
 if __name__ == '__main__':
     tfrecord_paths = np.asarray(batcher.get_tfrecord_paths(dataset=DATASET, split='all'))
