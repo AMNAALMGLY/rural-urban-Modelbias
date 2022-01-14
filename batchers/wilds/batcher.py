@@ -208,8 +208,8 @@ class Batcher():
             bands = ['BLUE', 'GREEN', 'RED']  # BGR order
         elif self.ls_bands == 'ms':
             bands = ['BLUE', 'GREEN', 'RED', 'SWIR1', 'SWIR2', 'TEMP1', 'NIR']
-        else:
-            bands=['buildings']
+        #else:
+         #   bands=['buildings']
         if self.nl_band is not None:
             bands += ['NIGHTLIGHTS']
 
