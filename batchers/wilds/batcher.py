@@ -10,7 +10,7 @@ import tensorflow as tf
 
 
 ROOT_DIR = '/atlas/u/chrisyeh/africa_poverty/'
-DHS_TFRECORDS_PATH_ROOT='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings'
+DHS_TFRECORDS_PATH_ROOT='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords'
 #DHS_TFRECORDS_PATH_ROOT = os.path.join(ROOT_DIR, 'data/dhs_tfrecords')
 LSMS_TFRECORDS_PATH_ROOT = os.path.join(ROOT_DIR, 'data/lsms_tfrecords')
 
