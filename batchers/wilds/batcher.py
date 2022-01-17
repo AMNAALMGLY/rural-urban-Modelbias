@@ -1,6 +1,8 @@
 ########
 # ADAPTED from github.com/sustainlab-group/africa_poverty
 ########
+import numpy as np
+
 from batchers.wilds.dataset_constants_buildings import SIZES, SURVEY_NAMES, MEANS_DICT, STD_DEVS_DICT
 
 from glob import glob
@@ -14,30 +16,21 @@ DHS_TFRECORDS_PATH_ROOT = '/atlas/u/erikrozi/bias_mitigation/africa_poverty_clea
 LSMS_TFRECORDS_PATH_ROOT = os.path.join(ROOT_DIR, 'data/lsms_tfrecords')
 
 
-def get_tfrecord_paths(dataset, split='all'):
-    '''
-    Args
-    - dataset: str, a key in SURVEY_NAMES
-    - split: str, one of ['train', 'val', 'test', 'all']
-
-    Returns:
-    - tfrecord_paths: list of str, paths to TFRecord files, sorted
-    '''
-    expected_size = SIZES[dataset][split]
+def get_paths(dataset: str, split: str, fold: str, root) -> np.ndarray:
     if split == 'all':
         splits = ['train', 'val', 'test']
     else:
-        splits = [split]
+        splits=[split]
+    paths = []
+    fold_name = SURVEY_NAMES[f'{dataset}_{fold}']
+    for s in splits:
+        for country in fold_name[s]:
+            path = os.path.join(root, country + '*', '*.tfrecord.gz')
+            paths += glob(path)
+    assert  len(paths)==SIZES[f'{dataset}_{fold}'][split]
 
-    survey_names = SURVEY_NAMES[dataset]
-    tfrecord_paths = []
-    for split in splits:
-        for country_year in survey_names[split]:
-            glob_path = os.path.join(DHS_TFRECORDS_PATH_ROOT, country_year + '*', '*.tfrecord.gz')
-            tfrecord_paths.extend(glob(glob_path))
-    tfrecord_paths = sorted(tfrecord_paths)
-    assert len(tfrecord_paths) == expected_size
-    return tfrecord_paths
+    return np.sort(paths)
+
 
 
 def get_lsms_tfrecord_paths(cys):
