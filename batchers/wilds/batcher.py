@@ -16,7 +16,7 @@ DHS_TFRECORDS_PATH_ROOT = '/atlas/u/erikrozi/bias_mitigation/africa_poverty_clea
 LSMS_TFRECORDS_PATH_ROOT = os.path.join(ROOT_DIR, 'data/lsms_tfrecords')
 
 
-def get_paths(dataset: str, split: str, fold: str, root) -> np.ndarray:
+def get_tfrecord_paths(dataset: str, split: str, fold: str, root) -> np.ndarray:
     if split == 'all':
         splits = ['train', 'val', 'test']
     else:
