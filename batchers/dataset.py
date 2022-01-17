@@ -211,11 +211,15 @@ class Batcher():
                 if self.normalize:
                     means = MEANS_DICT[self.normalize]
                     stds = STD_DEVS_DICT[self.normalize]
+                    maximum=means+(3*stds)
+                    minimum=-(means+3*stds)
+                    range=maximum-minimum
                     if band == 'NIGHTLIGHTS':
                         ex[band] = (tf.cond(
                             year < 2012,  # true = DMSP
-                            true_fn=lambda: (ex[band] - means['DMSP']) / stds['DMSP'],
-                            false_fn=lambda: (ex[band] - means['VIIRS']) / stds['VIIRS']))
+                            true_fn=lambda: ((ex[band] - means['DMSP']) / stds['DMSP'])/maximum,
+                            false_fn=lambda: ((ex[band] - means['VIIRS']) / stds['VIIRS'])/maximum)
+                        )
 
                     else:
                         ex[band] = (ex[band] - means[band]) / stds[band]
