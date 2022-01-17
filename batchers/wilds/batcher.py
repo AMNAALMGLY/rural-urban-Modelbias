@@ -97,8 +97,8 @@ class Batcher():
             raise ValueError(f'Error: got {ls_bands} for "ls_bands"')
         self.ls_bands = ls_bands
 
-        if dataset not in MEANS_DICT:
-            raise ValueError(f'Error: got {dataset} for "dataset"')
+        #if dataset not in MEANS_DICT:
+        #    raise ValueError(f'Error: got {dataset} for "dataset"')
         self.dataset = dataset
 
         if negatives not in [None, 'zero']:
