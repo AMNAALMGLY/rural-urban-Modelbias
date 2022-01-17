@@ -32,7 +32,7 @@ def get_images(tfrecord_paths, label_name='wealthpooled', return_meta=False):
         shuffle=False,
         augment=False,
         negatives='zero',
-        normalize=True).get_batch()
+        normalize=False).get_batch()
     '''
     #with tf.compat.v1.Session() as sess:
     for elem in dataset:
