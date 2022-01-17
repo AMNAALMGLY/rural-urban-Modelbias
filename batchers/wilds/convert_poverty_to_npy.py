@@ -10,7 +10,7 @@ from tqdm import tqdm
 FOLDS = ['A', 'B', 'C', 'D', 'E']
 SPLITS = ['train', 'val', 'test']
 BAND_ORDER = ['BLUE', 'GREEN', 'RED', 'SWIR1', 'SWIR2', 'TEMP1', 'NIR', 'NIGHTLIGHTS']
-DATASET = ' DHS_OOC'
+DATASET = 'DHS_OOC'
 
 COUNTRIES = np.asarray(dataset_constants_buildings.DHS_COUNTRIES)
 
