@@ -25,7 +25,7 @@ def get_images(tfrecord_paths, label_name='wealthpooled', return_meta=False):
     batch = batcher.Batcher(
         tfrecord_files=tfrecord_paths,
         dataset=DATASET,
-        batch_size=32,
+        batch_size=16,
         ls_bands=None,
         nl_band='split',
         label_name=label_name,
@@ -48,14 +48,14 @@ def get_images(tfrecord_paths, label_name='wealthpooled', return_meta=False):
 if __name__ == '__main__':
     tfrecord_paths = np.asarray(batcher.get_tfrecord_paths(dataset=DATASET, split='all'))
 
-    num_batches = len(tfrecord_paths) // 32
-    if len(tfrecord_paths) % 32 != 0:
+    num_batches = len(tfrecord_paths) // 16
+    if len(tfrecord_paths) % 16 != 0:
         num_batches += 1
 
     imgs = []
 
     for i in tqdm(range(num_batches)):
-        imgs.append(get_images(tfrecord_paths[i*32: (i+1)*32]))
+        imgs.append(get_images(tfrecord_paths[i*16: (i+1)*16]))
 
     imgs = np.concatenate(imgs, axis=0)
     np.save('./landsat_poverty_imgs.npy', imgs)
