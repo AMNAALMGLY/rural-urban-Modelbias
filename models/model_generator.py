@@ -2,7 +2,7 @@ from models.preact_resnet import PreActResNet18, PreActResNet34, PreActResNet50
 from models.resnet import  resnet18,resnet34,resnet50
 from utils.utils import load_from_checkpoint
 
-model_type = dict(resnet18=resnet18,
+model_type = dict(resnet18=PreActResNet18,
                   resnet34=resnet34,
                   resnet50=resnet50)
 
