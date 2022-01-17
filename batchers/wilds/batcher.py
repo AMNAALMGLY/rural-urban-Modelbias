@@ -1,17 +1,16 @@
 ########
 # ADAPTED from github.com/sustainlab-group/africa_poverty
 ########
-from batchers.wilds.dataset_constants import SIZES, SURVEY_NAMES, MEANS_DICT, STD_DEVS_DICT
+from batchers.wilds.dataset_constants_buildings import SIZES, SURVEY_NAMES, MEANS_DICT, STD_DEVS_DICT
 
 from glob import glob
 import os
 
 import tensorflow as tf
 
-
 ROOT_DIR = '/atlas/u/chrisyeh/africa_poverty/'
-DHS_TFRECORDS_PATH_ROOT='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords'
-#DHS_TFRECORDS_PATH_ROOT = os.path.join(ROOT_DIR, 'data/dhs_tfrecords')
+DHS_TFRECORDS_PATH_ROOT = '/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings'
+# DHS_TFRECORDS_PATH_ROOT = os.path.join(ROOT_DIR, 'data/dhs_tfrecords')
 LSMS_TFRECORDS_PATH_ROOT = os.path.join(ROOT_DIR, 'data/lsms_tfrecords')
 
 
@@ -100,7 +99,7 @@ class Batcher():
         self.normalize = normalize
         self.cache = cache
 
-        if ls_bands not in [None, 'rgb', 'ms','buildings']:
+        if ls_bands not in [None, 'rgb', 'ms', 'buildings']:
             raise ValueError(f'Error: got {ls_bands} for "ls_bands"')
         self.ls_bands = ls_bands
 
@@ -183,10 +182,11 @@ class Batcher():
         # prefetch 2 batches at a time
         dataset = dataset.prefetch(2)
 
-        iterator =  iter(dataset)
+        iterator = iter(dataset)
         batch = next(iterator)
-        #iter_init = iterator.initializer
+        # iter_init = iterator.initializer
         return batch
+
     def process_tfrecords(self, example_proto):
         '''
         Args
@@ -208,8 +208,8 @@ class Batcher():
             bands = ['BLUE', 'GREEN', 'RED']  # BGR order
         elif self.ls_bands == 'ms':
             bands = ['BLUE', 'GREEN', 'RED', 'SWIR1', 'SWIR2', 'TEMP1', 'NIR']
-        #else:
-         #   bands=['buildings']
+        elif self.ls_bands == 'buildings':
+            bands = ['buildings']
         if self.nl_band is not None:
             bands += ['NIGHTLIGHTS']
 
@@ -219,7 +219,7 @@ class Batcher():
 
         keys_to_features = {}
         for band in bands:
-            keys_to_features[band] = tf.io.FixedLenFeature(shape=[255**2], dtype=tf.float32)
+            keys_to_features[band] = tf.io.FixedLenFeature(shape=[255 ** 2], dtype=tf.float32)
         for key in scalar_float_keys:
             keys_to_features[key] = tf.io.FixedLenFeature(shape=[], dtype=tf.float32)
 
@@ -246,7 +246,7 @@ class Batcher():
                             true_fn=lambda: (ex[band] - means['DMSP']) / std_devs['DMSP'],
                             false_fn=lambda: (ex[band] - means['VIIRS']) / std_devs['VIIRS']
                         )
-                    elif band=='buildings':
+                    elif band == 'buildings':
                         continue
                     else:
                         ex[band] = (ex[band] - means[band]) / std_devs[band]
@@ -331,6 +331,7 @@ class Batcher():
 
         Returns: tf.Tensor with data augmentation applied
         '''
+
         def rand_levels(image):
             # up to 0.5 std dev brightness change
             image = tf.image.random_brightness(image, max_delta=0.5)

@@ -5,7 +5,7 @@
 import tensorflow as tf
 import numpy as np
 import batcher
-import dataset_constants
+import dataset_constants_buildings
 from tqdm import tqdm
 from utils.general import load_npz
 import pickle
@@ -17,10 +17,10 @@ FOLDS = ['A', 'B', 'C', 'D', 'E']
 SPLITS = ['train', 'val', 'test']
 BAND_ORDER = ['BLUE', 'GREEN', 'RED', 'SWIR1', 'SWIR2', 'TEMP1', 'NIR', 'NIGHTLIGHTS']
 DATASET = '2009-17'
-ROOT = Path('../data') # Path to files from sustainlab-group/africa_poverty
+ROOT = Path('./data') # Path to files from sustainlab-group/africa_poverty
 DSTROOT = Path('/u/scr/nlp/dro/poverty/data')
 
-COUNTRIES = np.asarray(dataset_constants.DHS_COUNTRIES)
+COUNTRIES = np.asarray(dataset_constants_buildings.DHS_COUNTRIES)
 
 file_path = ROOT / 'dhs_image_hists.npz'
 npz = load_npz(file_path)
@@ -54,4 +54,4 @@ df = pd.DataFrame.from_records(
     df_data,
     columns=['lat', 'lon', 'wealthpooled', 'country', 'year', 'urban', 'nl_mean', 'nl_center', 'households'])
 
-df.to_csv(DSTROOT / 'dhs_metadata.csv', index=False)
+df.to_csv(ROOT / 'dhs_metadata.csv', index=False)

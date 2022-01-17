@@ -104,7 +104,7 @@ class Trainer:
             else:
                 x = torch.tensor(batch[1]['buildings'])
                 target = torch.tensor(batch[0]['labels'])
-            if batch[0].get('urban_rural'):
+            if 'urban_rural' in args.scaler_features_keys:
                 group = torch.tensor(batch[0]['urban_rural'])
 
 
