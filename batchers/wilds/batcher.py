@@ -27,7 +27,8 @@ def get_tfrecord_paths(dataset: str, split: str, fold: str, root=DHS_TFRECORDS_P
         for country in fold_name[s]:
             path = os.path.join(root, country + '*', '*.tfrecord.gz')
             paths += glob(path)
-    assert  len(paths)==SIZES[f'{dataset}_{fold}'][split]
+    print(len(paths))
+    #assert  len(paths)==SIZES[f'{dataset}_{fold}'][split]
 
     return np.sort(paths)
 
