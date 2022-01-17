@@ -46,7 +46,7 @@ def get_images(tfrecord_paths, label_name='wealthpooled', return_meta=False):
     return batch['images']
 
 if __name__ == '__main__':
-    tfrecord_paths = np.asarray(batcher.get_tfrecord_paths(dataset=DATASET, split='all'))
+    tfrecord_paths = np.asarray(batcher.get_tfrecord_paths(dataset=DATASET, split='all',fold='A'))
 
     num_batches = len(tfrecord_paths) // 32
     if len(tfrecord_paths) % 32 != 0:
