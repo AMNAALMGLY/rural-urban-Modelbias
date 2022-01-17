@@ -104,7 +104,9 @@ class Trainer:
             else:
                 x = torch.tensor(batch[1]['buildings'])
                 target = torch.tensor(batch[0]['labels'])
-            group = torch.tensor(batch[0]['urban_rural'])if batch[0].get('urban_rural',None) else None
+            if batch[0].get('urban_rural'):
+                group = torch.tensor(batch[0]['urban_rural'])
+
 
         else:
             x = torch.tensor(batch['images'])
