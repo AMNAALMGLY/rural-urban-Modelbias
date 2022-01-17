@@ -223,8 +223,8 @@ class Batcher():
 
         img = float('nan')
         if len(bands) > 0:
-            means = MEANS_DICT[self.dataset]
-            std_devs = STD_DEVS_DICT[self.dataset]
+            means = MEANS_DICT['DHS']
+            std_devs = STD_DEVS_DICT['DHS']
 
             # for each band, subtract mean and divide by std dev
             # then reshape to (255, 255) and crop to (224, 224)
