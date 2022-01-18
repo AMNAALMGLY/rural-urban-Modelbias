@@ -25,11 +25,13 @@ COUNTRIES = np.asarray(dataset_constants_buildings.DHS_COUNTRIES)
 file_path = ROOT / 'dhs_image_hists.npz'
 npz = load_npz(file_path)
 
-labels = npz['labels']
-locs = npz['locs']
-years = npz['years']
-nls_center = npz['nls_center']
-nls_mean = npz['nls_mean']
+df = pd.read_csv('data/dhs_clusters.csv', float_precision='high', index_col=False)
+labels = df[df['country'].isin(COUNTRIES)]['wealthpooled'].to_numpy(dtype=np.float32)
+locs = df[df['country'].isin(COUNTRIES)][['lat', 'lon']].to_numpy(dtype=np.float32)
+years = df[df['country'].isin(COUNTRIES)]['year'].to_numpy(dtype=np.float32)
+#years = npz['years']
+#nls_center = npz['nls_center']
+#nls_mean = npz['nls_mean']
 
 num_examples = len(labels)
 assert np.all(np.asarray([len(labels), len(locs), len(years)]) == num_examples)
@@ -41,17 +43,17 @@ with open(ROOT / 'dhs_loc_dict.pkl', 'rb') as f:
     loc_dict = pickle.load(f)
 
 df_data = []
-for label, loc, nl_mean, nl_center in zip(labels, locs, nls_mean, nls_center):
+for label, loc, nl_mean, nl_center in zip(labels, locs,):
     lat, lon = loc
     loc_info = loc_dict[(lat, lon)]
     country = loc_info['country']
     year = int(loc_info['country_year'][-4:])  # use the year matching the surveyID
     urban = loc_info['urban']
     household = loc_info['households']
-    row = [lat, lon, label, country, year, urban, nl_mean, nl_center, household]
+    row = [lat, lon, label, country, year, urban, household]
     df_data.append(row)
 df = pd.DataFrame.from_records(
     df_data,
-    columns=['lat', 'lon', 'wealthpooled', 'country', 'year', 'urban', 'nl_mean', 'nl_center', 'households'])
+    columns=['lat', 'lon', 'wealthpooled', 'country', 'year', 'urban', 'households'])
 
 df.to_csv(ROOT / 'dhs_metadata.csv', index=False)
