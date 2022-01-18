@@ -481,7 +481,7 @@ class Trainer:
 
         elif len(r2_dict.keys()) > 0:
             best_path = r2_dict[max(r2_dict.keys())]
-            print(f'{self.metric_str} of best model saved is {max(r2_dict.keys())} , path {best_path}')
+            print(f'{self.metric_str[0]} of best model saved is {max(r2_dict.keys())} , path {best_path}')
 
             shutil.move(best_path,
                         os.path.join(self.save_dir, 'best.ckpt'))
@@ -518,7 +518,7 @@ class Trainer:
                     avg_test_loss = test_epoch_loss / test_step
                     r2_test=[]
                     for i,m in enumerate(self.metric):
-                        r2_test[i] = (m.compute()) ** 2 if self.metric_str[i] == 'r2' else m.compute()
+                        r2_test.append((m.compute()) ** 2 if self.metric_str[i] == 'r2' else m.compute())
 
                         wandb.log({f'{self.metric_str[i]} Test': r2_test[i],})
                         wandb.log({"test_loss": avg_test_loss})
