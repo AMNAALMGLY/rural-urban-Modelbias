@@ -4,8 +4,8 @@
 
 import tensorflow as tf
 import numpy as np
-import batcher
-import dataset_constants_buildings
+from batchers.wilds import batcher
+from batchers.wilds import dataset_constants_buildings
 from tqdm import tqdm
 from utils.general import load_npz
 import pickle
