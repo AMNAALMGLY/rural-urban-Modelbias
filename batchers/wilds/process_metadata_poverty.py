@@ -23,7 +23,7 @@ DSTROOT = Path('/u/scr/nlp/dro/poverty/data')
 COUNTRIES = np.asarray(dataset_constants_buildings.DHS_COUNTRIES)
 
 file_path = ROOT / 'dhs_image_hists.npz'
-npz = load_npz(file_path)
+#npz = load_npz(file_path)
 
 df = pd.read_csv('data/dhs_clusters.csv', float_precision='high', index_col=False)
 labels = df[df['country'].isin(COUNTRIES)]['wealthpooled'].to_numpy(dtype=np.float32)
@@ -43,7 +43,7 @@ with open(ROOT / 'dhs_loc_dict.pkl', 'rb') as f:
     loc_dict = pickle.load(f)
 
 df_data = []
-for label, loc, nl_mean, nl_center in zip(labels, locs,):
+for label, loc,  in zip(labels, locs,):
     lat, lon = loc
     loc_info = loc_dict[(lat, lon)]
     country = loc_info['country']
