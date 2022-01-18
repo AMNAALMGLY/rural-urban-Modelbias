@@ -7,7 +7,7 @@ import numpy as np
 from batchers.wilds import batcher
 from batchers.wilds import dataset_constants_buildings
 from tqdm import tqdm
-from utils.general import load_npz
+from utils.utils import load_npz
 import pickle
 import pandas as pd
 from pathlib import Path
