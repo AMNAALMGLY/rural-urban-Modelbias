@@ -217,10 +217,10 @@ class Batcher():
                     if band == 'NIGHTLIGHTS':
                         ex[band] = (tf.cond(
                             year < 2012,  # true = DMSP
-                            true_fn=lambda: (((ex[band] - means['DMSP']) / stds['DMSP']) - minimum) / range,
-                            false_fn=lambda: (((ex[band] - means['VIIRS']) / stds['VIIRS'])-minimum)/range))
-                            #true_fn=lambda: (ex[band] - means['DMSP']) / stds['DMSP'],
-                            #false_fn=lambda: (ex[band] - means['VIIRS']) / stds['VIIRS']))
+                            #true_fn=lambda: (((ex[band] - means['DMSP']) / stds['DMSP']) - minimum) / range,
+                            #false_fn=lambda: (((ex[band] - means['VIIRS']) / stds['VIIRS'])-minimum)/range))
+                            true_fn=lambda: (ex[band] - means['DMSP']) / stds['DMSP'],
+                            false_fn=lambda: (ex[band] - means['VIIRS']) / stds['VIIRS']))
 
                     else:
                         ex[band] = (ex[band] - means[band]) / stds[band]
