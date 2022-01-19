@@ -128,6 +128,7 @@ def main(args):
 
         paths_train_b=None
         paths_valid_b=None
+        paths_test_b=None
         if args.include_buildings:
             paths_train_b = get_paths(args.dataset, 'train', args.fold, args.buildings_records)
             paths_valid_b = get_paths(args.dataset, 'val', args.fold, args.buildings_records)
@@ -135,7 +136,6 @@ def main(args):
             print('b_train',len(paths_train_b))
             print('b_valid',len(paths_valid_b))
             print('b_test',len(paths_test_b))
-        paths_test = get_paths(args.dataset, 'test', args.fold, args.data_path)
 
         batcher_train = Batcher(paths_train,args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                                 args.nl_label,args.include_buildings,paths_train_b,'DHS', args.augment ,args.clipn, args.batch_size, groupby=args.group,
