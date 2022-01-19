@@ -535,8 +535,8 @@ class Trainer:
             'lr_scheduler': {
                 # 'scheduler': ExponentialLR(opt,
                 #            gamma=args.lr_decay),
-                # 'scheduler': torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=20)
-                'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, verbose=True)
+                 'scheduler': torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=200)
+               # 'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, verbose=True)
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min')
 
             }
