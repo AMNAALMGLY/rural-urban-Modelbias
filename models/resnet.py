@@ -47,7 +47,7 @@ def conv1x1(in_planes: int, out_planes: int, stride: int = 1) -> nn.Conv2d:
     """1x1 convolution"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
 
-
+'''
 class Self_Attn(nn.Module):
     """ Self attention Layer
         https://github.com/heykeetae/Self-Attention-GAN/blob/master/sagan_models.py
@@ -85,7 +85,25 @@ class Self_Attn(nn.Module):
 
         out = self.gamma * out + x
         return out, attention
+'''
 
+class SE_Block(nn.Module):
+    "credits: https://github.com/moskomule/senet.pytorch/blob/master/senet/se_module.py#L4"
+    def __init__(self, c, r=16):
+        super().__init__()
+        self.squeeze = nn.AdaptiveAvgPool2d(1)
+        self.excitation = nn.Sequential(
+            nn.Linear(c, c // r, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(c // r, c, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        bs, c, _, _ = x.shape
+        y = self.squeeze(x).view(bs, c)
+        y = self.excitation(y).view(bs, c, 1, 1)
+        return x * y.expand_as(x)
 
 class BasicBlock(nn.Module):
     expansion: int = 1
@@ -240,7 +258,7 @@ class ResNet(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
         #Attention
-        self.attn = Self_Attn(in_dim=256)
+        self.attn =SE_Block(c=512)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -314,7 +332,7 @@ class ResNet(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-
+        x=self.attn(x)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.fc(x)
@@ -338,8 +356,10 @@ def _resnet(
     if pretrained:
         #state_dict=torch.load('seco_resnet50_100k.ckpt')
         #if using attention:
-        attn_weights=["attn.gamma", "attn.query_conv.weight", "attn.query_conv.bias", "attn.key_conv.weight",
-                      "attn.key_conv.bias", "attn.value_conv.weight", "attn.value_conv.bias"]
+        #attn_weights=["attn.gamma", "attn.query_conv.weight", "attn.query_conv.bias", "attn.key_conv.weight",
+         #             "attn.key_conv.bias", "attn.value_conv.weight", "attn.value_conv.bias"]
+        attn_weights=["attn.excitation.linear1.weight","attn.excitation.linear1.bias","attn.excitation.linear2.weight",
+                      "attn.excitation.linear2.bias"]
 
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         state_dict['conv1.weight'] = nn.Parameter(
@@ -348,7 +368,7 @@ def _resnet(
         #if 'attn' in model.state_dict():
         for key in attn_weights:
                 if 'weight'  in key:
-                    print(model.state_dict()[key].shape)
+
                     nn.init.kaiming_normal_(model.state_dict()[key], mode="fan_out", nonlinearity="relu")
                 else:
                     nn.init.constant_(model.state_dict()[key],0.0)

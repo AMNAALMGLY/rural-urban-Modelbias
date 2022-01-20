@@ -165,7 +165,7 @@ class PreActResNet(nn.Module):
         x = self.layer3(x)
         x = self.layer4(x)
         x = self.final_bn(x)
-        #x = self.final_relu(x)
+        x = self.final_relu(x)
         x = self.avgpool(x)
         #x=torch.mean(x,dim=(-1,-2))
         x = x.view(x.size(0), -1)

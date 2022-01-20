@@ -8,7 +8,7 @@ args = Namespace(
 
     # Model
 
-    model_name='resnet18',
+    model_name='resnet50',
     hs_weight_init='random',  # [same, samescaled,random]
     model_init='imagenet',
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
