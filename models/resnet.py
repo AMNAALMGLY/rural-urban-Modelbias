@@ -358,15 +358,15 @@ def _resnet(
         #if using attention:
         #attn_weights=["attn.gamma", "attn.query_conv.weight", "attn.query_conv.bias", "attn.key_conv.weight",
          #             "attn.key_conv.bias", "attn.value_conv.weight", "attn.value_conv.bias"]
-        attn_weights=["attn.excitation.linear1.weight","attn.excitation.linear1.bias","attn.excitation.linear2.weight",
-                      "attn.excitation.linear2.bias"]
+        attn_weights=["attn.excitation.0.weight","attn.excitation.2.weight",
+                      ]
 
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         state_dict['conv1.weight'] = nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
         #print(model.state_dict())
         #if 'attn' in model.state_dict():
-        '''
+
         for key in attn_weights:
                 if 'weight'  in key:
 
@@ -374,7 +374,7 @@ def _resnet(
                 else:
                     nn.init.constant_(model.state_dict()[key],0.0)
                 state_dict[key]=model.state_dict()[key]
-        '''
+
         model.load_state_dict(state_dict)
     return model
 
