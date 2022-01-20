@@ -137,11 +137,14 @@ def main(args):
             print('b_valid',len(paths_valid_b))
             print('b_test',len(paths_test_b))
 
-        batcher_train = Batcher(paths_train[0:9000],args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
+        valid=paths_train[0:400]+paths_train[855:1155]+paths_train[1601:2000]
+        train=paths_train[400:855]+paths_train[1155:1601]+paths_train[2000:5000]
+
+        batcher_train = Batcher(train,args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                                 args.nl_label,args.include_buildings,paths_train_b,'DHS', args.augment ,args.clipn, args.batch_size, groupby=args.group,
                                 cache=True, shuffle=True)
 
-        batcher_valid = Batcher(paths_train[9000:], args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
+        batcher_valid = Batcher(valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                                 args.nl_label,args.include_buildings, paths_valid_b,'DHS',False, args.clipn, args.batch_size, groupby=args.group,
                                cache=True, shuffle=False)
 
