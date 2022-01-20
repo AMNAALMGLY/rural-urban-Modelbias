@@ -75,9 +75,9 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
 
     # Fitting...
     if args.dataset=='wilds':
-        best_loss, path,= trainer.fit_wilds(train_loader, valid_loader, max_epochs=args.max_epochs, gpus='cuda',class_model=class_model)
+        best_loss, path,= trainer.fit_wilds(train_loader, valid_loader, max_epochs=args.max_epochs, gpus=args.gpus,class_model=class_model)
     else:
-        best_loss, path, = trainer.fit(train_loader, valid_loader, max_epochs=args.max_epochs, gpus='cuda',
+        best_loss, path, = trainer.fit(train_loader, valid_loader, max_epochs=args.max_epochs, gpus=args.gpus,
                                              class_model=class_model)
     score=trainer.test(batcher_test)
 

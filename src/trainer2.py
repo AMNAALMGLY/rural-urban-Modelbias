@@ -148,10 +148,10 @@ class Trainer:
             target = target.long()
 
         else:
-            preds = torch.tensor(outputs, device='cuda')
+            preds = torch.tensor(outputs, device=args.gpus)
 
         for fn in metric_fn:
-            fn.to('cuda')
+            fn.to(args.gpus)
             fn.update(preds, target)
 
         return loss, trainloss
@@ -235,8 +235,8 @@ class Trainer:
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
 
-                    preds = torch.tensor(outputs, device='cuda')
-                    self.metric[0].to('cuda')
+                    preds = torch.tensor(outputs, device=args.gpus)
+                    self.metric[0].to(args.gpus)
                     self.metric[0].update(preds, y)
 
             # Metric calulation and average loss
@@ -266,8 +266,8 @@ class Trainer:
                     if (valid_step + 1) % 20 == 0:
                         running_loss = valid_epoch_loss / (valid_step)
                         wandb.log({"valid_loss": running_loss, 'epoch': epoch})
-                    preds = torch.tensor(outputs, device='cuda')
-                    self.metric[0].to('cuda')
+                    preds = torch.tensor(outputs, device=args.gpus)
+                    self.metric[0].to(args.gpus)
                     self.metric[0].update(preds, y)
 
                 avg_valid_loss = valid_epoch_loss / valid_steps
