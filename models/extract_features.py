@@ -108,7 +108,7 @@ def run_extraction_on_models(model_dir: str,
     model = load_from_checkpoint(path=checkpoint_path[-1], model=model)
     # freeze the last layer for feature extraction
     model.fc = nn.Sequential()
-    model.to('cuda')
+    model.to(args.gpus)
 
     # model.freeze()
     for p in model.parameters():
