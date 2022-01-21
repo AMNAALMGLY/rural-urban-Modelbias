@@ -8,7 +8,7 @@ from torch import Tensor
 import torch.nn as nn
 from models._internally_replaced_utils import load_state_dict_from_url
 from models.utils import _log_api_usage_once
-from configs import  args
+from configs import args
 import time
 import pytorch_lightning
 
@@ -23,8 +23,8 @@ __all__ = [
 model_urls = {
     "resnet18": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
     "resnet34": "https://download.pytorch.org/models/resnet34-b627a593.pth",
-    #"resnet50":'https://zenodo.org/record/4728033/files/seco_resnet50_100k.ckpt?download=1',
-      'resnet50':  "https://download.pytorch.org/models/resnet50-0676ba61.pth",
+    # "resnet50":'https://zenodo.org/record/4728033/files/seco_resnet50_100k.ckpt?download=1',
+    'resnet50': "https://download.pytorch.org/models/resnet50-0676ba61.pth",
 
 }
 
@@ -46,6 +46,7 @@ def conv3x3(in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, d
 def conv1x1(in_planes: int, out_planes: int, stride: int = 1) -> nn.Conv2d:
     """1x1 convolution"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
+
 
 '''
 class Self_Attn(nn.Module):
@@ -87,8 +88,10 @@ class Self_Attn(nn.Module):
         return out, attention
 '''
 
+
 class SE_Block(nn.Module):
     "credits: https://github.com/moskomule/senet.pytorch/blob/master/senet/se_module.py#L4"
+
     def __init__(self, c, r=16):
         super().__init__()
         self.squeeze = nn.AdaptiveAvgPool2d(1)
@@ -104,6 +107,7 @@ class SE_Block(nn.Module):
         y = self.squeeze(x).view(bs, c)
         y = self.excitation(y).view(bs, c, 1, 1)
         return x * y.expand_as(x)
+
 
 class BasicBlock(nn.Module):
     expansion: int = 1
@@ -134,7 +138,7 @@ class BasicBlock(nn.Module):
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
         self.stride = stride
-        self.se=SE_Block(c=planes)
+        self.se = SE_Block(c=planes)
 
     def forward(self, x: Tensor) -> Tensor:
         identity = x
@@ -145,7 +149,7 @@ class BasicBlock(nn.Module):
 
         out = self.conv2(out)
         out = self.bn2(out)
-        out=self.se(out)
+        out = self.se(out)
         if self.downsample is not None:
             identity = self.downsample(x)
 
@@ -189,8 +193,6 @@ class Bottleneck(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
-
-
 
     def forward(self, x: Tensor) -> Tensor:
         identity = x
@@ -258,9 +260,8 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2, dilate=replace_stride_with_dilation[2])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
-        #Attention
-        self.attn =SE_Block(c=512)
-
+        # Attention
+        #self.attn = SE_Block(c=512)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -323,19 +324,19 @@ class ResNet(nn.Module):
     def _forward_impl(self, x: Tensor) -> Tensor:
         # See note [TorchScript super()]
 
-        #x,_=self.attn(x)
+        # x,_=self.attn(x)
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
         x = self.maxpool(x)
-        #x,_=self.attn(x)
+        # x,_=self.attn(x)
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-        #print('before attention',x.shape)
-        #x=self.attn(x)
-        #print('after attention',x.shape)
+        # print('before attention',x.shape)
+        # x=self.attn(x)
+        # print('after attention',x.shape)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.fc(x)
@@ -357,33 +358,35 @@ def _resnet(
 ) -> ResNet:
     model = ResNet(block, in_channels, layers, **kwargs)
     if pretrained:
-        #state_dict=torch.load('seco_resnet50_100k.ckpt')
-        #if using attention:
-        #attn_weights=["attn.gamma", "attn.query_conv.weight", "attn.query_conv.bias", "attn.key_conv.weight",
-         #             "attn.key_conv.bias", "attn.value_conv.weight", "attn.value_conv.bias"]
-        #attn_weights=["attn.excitation.0.weight","attn.excitation.2.weight" ]
-        attn_weights=["layer1.0.se.excitation.0.weight", "layer1.0.se.excitation.2.weight", "layer1.1.se.excitation.0.weight",
-                      "layer1.1.se.excitation.2.weight", "layer2.0.se.excitation.0.weight",
-                      "layer2.0.se.excitation.2.weight", "layer2.1.se.excitation.0.weight",
-                      "layer2.1.se.excitation.2.weight", "layer3.0.se.excitation.0.weight",
-                      "layer3.0.se.excitation.2.weight", "layer3.1.se.excitation.0.weight",
-                      "layer3.1.se.excitation.2.weight", "layer4.0.se.excitation.0.weight",
-                      "layer4.0.se.excitation.2.weight", "layer4.1.se.excitation.0.weight",
-                      "layer4.1.se.excitation.2.weight"]
+        # state_dict=torch.load('seco_resnet50_100k.ckpt')
+        # if using attention:
+        # attn_weights=["attn.gamma", "attn.query_conv.weight", "attn.query_conv.bias", "attn.key_conv.weight",
+        #             "attn.key_conv.bias", "attn.value_conv.weight", "attn.value_conv.bias"]
+        # attn_weights=["attn.excitation.0.weight","attn.excitation.2.weight" ]
+        attn_weights = [
+                        "layer1.0.se.excitation.0.weight", "layer1.0.se.excitation.2.weight",
+                        "layer1.1.se.excitation.0.weight",
+                        "layer1.1.se.excitation.2.weight", "layer2.0.se.excitation.0.weight",
+                        "layer2.0.se.excitation.2.weight", "layer2.1.se.excitation.0.weight",
+                        "layer2.1.se.excitation.2.weight", "layer3.0.se.excitation.0.weight",
+                        "layer3.0.se.excitation.2.weight", "layer3.1.se.excitation.0.weight",
+                        "layer3.1.se.excitation.2.weight", "layer4.0.se.excitation.0.weight",
+                        "layer4.0.se.excitation.2.weight", "layer4.1.se.excitation.0.weight",
+                        "layer4.1.se.excitation.2.weight"]
 
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         state_dict['conv1.weight'] = nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
-        #print(model.state_dict())
-        #if 'attn' in model.state_dict():
+        # print(model.state_dict())
+        # if 'attn' in model.state_dict():
 
         for key in attn_weights:
-                if 'weight'  in key:
+            if 'weight' in key:
 
-                    nn.init.kaiming_normal_(model.state_dict()[key], mode="fan_out", nonlinearity="relu")
-                else:
-                    nn.init.constant_(model.state_dict()[key],0.0)
-                state_dict[key]=model.state_dict()[key]
+                nn.init.kaiming_normal_(model.state_dict()[key], mode="fan_out", nonlinearity="relu")
+            else:
+                nn.init.constant_(model.state_dict()[key], 0.0)
+            state_dict[key] = model.state_dict()[key]
 
         model.load_state_dict(state_dict)
     return model
@@ -420,7 +423,7 @@ def resnet50(in_channels: int, pretrained: bool = False, progress: bool = True, 
 
 
 def init_first_layer_weights(in_channels: int, rgb_weights,
-                                 hs_weight_init: str) :
+                             hs_weight_init: str):
     '''Initializes the weights for filters in the first conv layer.
 
       If we are using RGB-only, then just initializes var to rgb_weights. Otherwise, uses
@@ -437,10 +440,10 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
       '''
 
     out_channels, rgb_channels, H, W = rgb_weights.shape
-    print('rgb weight shape ',rgb_weights.shape)
-    rgb_weights=torch.tensor(rgb_weights)
+    print('rgb weight shape ', rgb_weights.shape)
+    rgb_weights = torch.tensor(rgb_weights)
     ms_channels = in_channels - rgb_channels
-    if in_channels == 3 :
+    if in_channels == 3:
         if args.include_buildings:
             with torch.no_grad():
                 mean = rgb_weights.mean()
@@ -448,14 +451,14 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
                 final_weights = torch.empty((out_channels, in_channels, H, W))
                 final_weights = torch.nn.init.trunc_normal_(final_weights, mean, std)
         else:
-            final_weights=rgb_weights
+            final_weights = rgb_weights
 
-    elif in_channels <3:   #NL
+    elif in_channels < 3:  # NL
         with torch.no_grad():
             mean = rgb_weights.mean()
             std = rgb_weights.std()
             final_weights = torch.empty((out_channels, in_channels, H, W))
-            final_weights=torch.nn.init.trunc_normal_(final_weights,mean, std)
+            final_weights = torch.nn.init.trunc_normal_(final_weights, mean, std)
     elif in_channels > 3:
         # spectral images
 
@@ -471,8 +474,8 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
             with torch.no_grad():
                 mean = rgb_weights.mean()
                 std = rgb_weights.std()
-                ms_weights=torch.empty((out_channels, ms_channels, H, W))
-                ms_weights = torch.nn.init.trunc_normal_(ms_weights,mean, std)
+                ms_weights = torch.empty((out_channels, ms_channels, H, W))
+                ms_weights = torch.nn.init.trunc_normal_(ms_weights, mean, std)
             print(f'random: {time.time() - start}')
 
         elif hs_weight_init == 'samescaled':
@@ -492,4 +495,3 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
         final_weights = torch.cat([rgb_weights, ms_weights], dim=1)
     print('init__layer_weight shape ', final_weights.shape)
     return final_weights
-
