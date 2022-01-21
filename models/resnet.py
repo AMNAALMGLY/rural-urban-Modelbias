@@ -361,8 +361,15 @@ def _resnet(
         #if using attention:
         #attn_weights=["attn.gamma", "attn.query_conv.weight", "attn.query_conv.bias", "attn.key_conv.weight",
          #             "attn.key_conv.bias", "attn.value_conv.weight", "attn.value_conv.bias"]
-        attn_weights=["attn.excitation.0.weight","attn.excitation.2.weight",
-                      ]
+        #attn_weights=["attn.excitation.0.weight","attn.excitation.2.weight" ]
+        attn_weights=["layer1.0.se.excitation.0.weight", "layer1.0.se.excitation.2.weight", "layer1.1.se.excitation.0.weight",
+                      "layer1.1.se.excitation.2.weight", "layer2.0.se.excitation.0.weight",
+                      "layer2.0.se.excitation.2.weight", "layer2.1.se.excitation.0.weight",
+                      "layer2.1.se.excitation.2.weight", "layer3.0.se.excitation.0.weight",
+                      "layer3.0.se.excitation.2.weight", "layer3.1.se.excitation.0.weight",
+                      "layer3.1.se.excitation.2.weight", "layer4.0.se.excitation.0.weight",
+                      "layer4.0.se.excitation.2.weight", "layer4.1.se.excitation.0.weight",
+                      "layer4.1.se.excitation.2.weight"]
 
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         state_dict['conv1.weight'] = nn.Parameter(
