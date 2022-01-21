@@ -134,6 +134,7 @@ class BasicBlock(nn.Module):
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
         self.stride = stride
+        self.se=SE_Block(c=planes)
 
     def forward(self, x: Tensor) -> Tensor:
         identity = x
@@ -144,7 +145,7 @@ class BasicBlock(nn.Module):
 
         out = self.conv2(out)
         out = self.bn2(out)
-
+        out=self.se(out)
         if self.downsample is not None:
             identity = self.downsample(x)
 
@@ -258,7 +259,8 @@ class ResNet(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
         #Attention
-        self.attn =SE_Block(c=2048)
+        self.attn =SE_Block(c=512)
+
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -331,9 +333,9 @@ class ResNet(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-        print('before attention',x.shape)
-        x=self.attn(x)
-        print('after attention',x.shape)
+        #print('before attention',x.shape)
+        #x=self.attn(x)
+        #print('after attention',x.shape)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.fc(x)
