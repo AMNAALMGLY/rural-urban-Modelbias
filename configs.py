@@ -80,3 +80,6 @@ if not args.include_buildings:
     args.in_channels = args.bands_channels.get(args.ls_bands, 0) + args.bands_channels.get(args.nl_band, 0)
 else:
     args.in_channels = args.bands_channels.get(args.ls_bands, 0) + args.bands_channels.get(args.nl_band, 0) + 1
+
+if args.input=='locs':
+    args.in_channels=2
