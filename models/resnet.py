@@ -149,7 +149,7 @@ class BasicBlock(nn.Module):
 
         out = self.conv2(out)
         out = self.bn2(out)
-        out = self.se(out)
+        #out = self.se(out)
         if self.downsample is not None:
             identity = self.downsample(x)
 
@@ -261,7 +261,7 @@ class ResNet(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
         # Attention
-        #self.attn = SE_Block(c=512)
+        self.attn = SE_Block(c=512)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -335,7 +335,7 @@ class ResNet(nn.Module):
         x = self.layer3(x)
         x = self.layer4(x)
         # print('before attention',x.shape)
-        # x=self.attn(x)
+        x=self.attn(x)
         # print('after attention',x.shape)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
@@ -362,7 +362,8 @@ def _resnet(
         # if using attention:
         # attn_weights=["attn.gamma", "attn.query_conv.weight", "attn.query_conv.bias", "attn.key_conv.weight",
         #             "attn.key_conv.bias", "attn.value_conv.weight", "attn.value_conv.bias"]
-        # attn_weights=["attn.excitation.0.weight","attn.excitation.2.weight" ]
+        attn_weights=["attn.excitation.0.weight","attn.excitation.2.weight" ]
+        '''
         attn_weights = [
                         "layer1.0.se.excitation.0.weight", "layer1.0.se.excitation.2.weight",
                         "layer1.1.se.excitation.0.weight",
@@ -373,7 +374,7 @@ def _resnet(
                         "layer3.1.se.excitation.2.weight", "layer4.0.se.excitation.0.weight",
                         "layer4.0.se.excitation.2.weight", "layer4.1.se.excitation.0.weight",
                         "layer4.1.se.excitation.2.weight"]
-
+        '''
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         state_dict['conv1.weight'] = nn.Parameter(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
