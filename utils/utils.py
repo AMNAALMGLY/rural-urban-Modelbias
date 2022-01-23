@@ -308,7 +308,7 @@ def parse_arguments(parser, default_args):
         '--fold', default=default_args.fold, choices=['A', 'B', 'C', 'D', 'E'],
         help='fold to use')
     parser.add_argument(
-        '--normalize', default=default_args.ooc,
+        '--normalize', default=default_args.normalize,
         help='which data to normalize')
 
     parser.add_argument(
