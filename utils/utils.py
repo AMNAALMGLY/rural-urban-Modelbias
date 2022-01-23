@@ -308,8 +308,8 @@ def parse_arguments(parser, default_args):
         '--fold', default=default_args.fold, choices=['A', 'B', 'C', 'D', 'E'],
         help='fold to use')
     parser.add_argument(
-        '--ooc', default=default_args.ooc,
-        help='whether to use out-of-country split')
+        '--normalize', default=default_args.ooc,
+        help='which data to normalize')
 
     parser.add_argument(
         '--ls_bands', default=default_args.ls_bands,
