@@ -138,7 +138,7 @@ class BasicBlock(nn.Module):
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
         self.stride = stride
-        self.se = SE_Block(c=planes)
+        #self.se = SE_Block(c=planes)
 
     def forward(self, x: Tensor) -> Tensor:
         identity = x
