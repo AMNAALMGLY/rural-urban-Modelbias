@@ -496,3 +496,16 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
         final_weights = torch.cat([rgb_weights, ms_weights], dim=1)
     print('init__layer_weight shape ', final_weights.shape)
     return final_weights
+
+class MLP(nn.Module):
+   def __init__(self, input_dim, output_dim=512):
+      super().__init__()
+      self.input_dim=input_dim
+      self.output_dim=output_dim
+      self.layer1=nn.Linear(input_dim,output_dim//4)
+      self.layer2=nn.Linear(output_dim//4,output_dim)
+      self.fc=nn.Linear(output_dim,1)
+      #self.layer3=nn.Linear(output_dim,1)
+      self.relu=nn.ReLU()
+   def forward(self,x):
+       return self.fc(self.relu(self.layer2( self.relu(self.layer1(x)))))

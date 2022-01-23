@@ -96,7 +96,7 @@ class Trainer:
     def _shared_step(self, batch, metric_fn, is_training=True):
         if args.include_buildings:
             if args.ls_bands or args.nl_band:
-                x = torch.tensor(batch[0]['images'], )
+                x = torch.tensor(batch[0][args.input], )
                 b = torch.tensor(batch[1]['buildings'], )
                 x = torch.cat((x, b), dim=-1)
                 target = torch.tensor(batch[0]['labels'], )
@@ -109,7 +109,7 @@ class Trainer:
 
 
         else:
-            x = torch.tensor(batch['images'])
+            x = torch.tensor(batch[args.input])
             target = torch.tensor(batch['labels'], )
             group = torch.tensor(batch['urban_rural']) if args.scaler_features_keys else None
         x = x.type_as(self.model.conv1.weight)
