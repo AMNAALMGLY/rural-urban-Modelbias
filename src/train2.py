@@ -141,16 +141,16 @@ def main(args):
         train=list(paths_train[400:855])+list(paths_train[1155:1601])+list(paths_train[2000:5000])
 
         batcher_train = Batcher(train,args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                                args.nl_label,args.include_buildings,paths_train_b,'DHS', args.augment ,args.clipn, args.batch_size, groupby=args.group,
+                                args.nl_label,args.include_buildings,paths_train_b,args.normalize, args.augment ,args.clipn, args.batch_size, groupby=args.group,
                                 cache=True, shuffle=True)
 
         batcher_valid = Batcher(valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                                args.nl_label,args.include_buildings, paths_valid_b,'DHS',False, args.clipn, args.batch_size, groupby=args.group,
+                                args.nl_label,args.include_buildings, paths_valid_b,args.normalize,False, args.clipn, args.batch_size, groupby=args.group,
                                cache=True, shuffle=False)
 
 
         batcher_test = Batcher(paths_test, {'urban_rural':tf.float32}, args.ls_bands, args.nl_band, args.label_name,
-                         args.nl_label, args.include_buildings, paths_test_b,'DHS', False, args.clipn, args.batch_size, groupby='urban',
+                         args.nl_label, args.include_buildings, paths_test_b,args.normalize, False, args.clipn, args.batch_size, groupby='urban',
                         cache=True, shuffle=False)
     ##############################################################WILDS dataset############################################################
     else:
