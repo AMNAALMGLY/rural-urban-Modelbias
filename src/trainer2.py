@@ -13,8 +13,7 @@ from tqdm import tqdm
 from utils.utils import Metric
 from configs import args
 import wandb
-from warmup_scheduler import GradualWarmupScheduler
-
+from  pl_bolts import optimizers
 writer = SummaryWriter()
 patience = args.patience
 
@@ -91,7 +90,7 @@ class Trainer:
 
         self.scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
         self.opt = self.configure_optimizers()['optimizer']
-        #self.warmup=self.configure_optimizers()['lr_scheduler']['scheduler_warmup']
+
         self.setup_criterion()
 
     def _shared_step(self, batch, metric_fn, is_training=True):
@@ -531,16 +530,16 @@ class Trainer:
     def configure_optimizers(self):
         opt = torch.optim.Adam(self.model.parameters(), lr=self.lr,
                                weight_decay=self.weight_decay)
-        scheduler=torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=200)
+
         return {
             'optimizer': opt,
             'lr_scheduler': {
                 # 'scheduler': ExponentialLR(opt,
                 #            gamma=args.lr_decay),
-                 'scheduler': scheduler,
+                #'scheduler':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=200)
+                 'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt,warmup_epochs=5, max_epochs=200,warmup_start_lr=1e-8),
                # 'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, verbose=True)
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min')
-                #'scheduler_warmup' :GradualWarmupScheduler(opt, multiplier=1, total_epoch=5, after_scheduler=scheduler),
 
             }
         }
