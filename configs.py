@@ -18,7 +18,7 @@ args = Namespace(
     lr_decay=0.96,
     batch_size=64,
     gpu=-1,
-    max_epochs=500,
+    max_epochs=1000,
     epoch_thresh=150,
     patience=20,
 
