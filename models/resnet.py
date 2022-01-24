@@ -502,8 +502,8 @@ class MLP(nn.Module):
       super().__init__()
       self.input_dim=input_dim
       self.output_dim=output_dim
-      self.layer1=nn.Linear(input_dim,output_dim//4)
-      self.layer2=nn.Linear(output_dim//4,output_dim)
+      self.layer1=nn.Linear(input_dim,128)
+      self.layer2=nn.Linear(128,output_dim)
       self.fc=nn.Linear(output_dim,1)
       #self.layer3=nn.Linear(output_dim,1)
       self.relu=nn.ReLU()
