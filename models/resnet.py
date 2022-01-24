@@ -503,9 +503,18 @@ class MLP(nn.Module):
       self.input_dim=input_dim
       self.output_dim=output_dim
       self.layer1=nn.Linear(input_dim,128)
-      self.layer2=nn.Linear(128,output_dim)
-      self.fc=nn.Linear(output_dim,1)
+      self.layer2=nn.Linear(128,512)
+      self.fc=nn.Linear(512,1)
       #self.layer3=nn.Linear(output_dim,1)
       self.relu=nn.ReLU()
    def forward(self,x):
        return self.fc(self.relu(self.layer2( self.relu(self.layer1(x)))))
+
+def mlp(in_channels: int, pretrained: bool = False, progress: bool = True, **kwargs: Any) :
+    r"""ResNet-18 model from
+    `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+    """
+    return MLP(in_channels)

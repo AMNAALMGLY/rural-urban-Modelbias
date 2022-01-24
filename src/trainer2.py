@@ -67,7 +67,7 @@ class Trainer:
         self.loss_type = loss_type
         self.save_dir = save_dir
         self.num_outputs = num_outputs
-        if num_outputs is not None:
+        if num_outputs is not None :
 
             fc = nn.Linear(model.fc.in_features, num_outputs, bias=True)
             # initialization
