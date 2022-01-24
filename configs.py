@@ -23,9 +23,9 @@ args = Namespace(
     patience=20,
 
     lr=.00001,  # lr0001         #0.0001 nl,ms
-    fc_reg=.1,
+    fc_reg=.001,
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=.1,
+    conv_reg=.001,
 
     # data
 
