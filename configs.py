@@ -22,7 +22,7 @@ args = Namespace(
     epoch_thresh=150,
     patience=20,
 
-    lr=.0001,  # lr0001         #0.0001 nl,ms
+    lr=.00001,  # lr0001         #0.0001 nl,ms
     fc_reg=.1,
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
     conv_reg=.1,
