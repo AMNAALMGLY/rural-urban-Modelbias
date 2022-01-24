@@ -115,9 +115,9 @@ class Trainer:
         x = x.type_as(self.model.fc.weight)
 
         target = target.type_as(self.model.fc.weight)
-        x = x.reshape(-1, x.shape[-1], x.shape[-3],
-                      x.shape[-2])  # from [batch_size,H,W,in_channels] to [batch_size ,in_channels, H ,W]
+        x = x.reshape(-1, x.shape[-1], x.shape[-3],                        # from [batch_size,H,W,in_channels] to [batch_size ,in_channels, H ,W]
 
+                      x.shape[-2])  if args.input=='images' else x
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
         # Re-weighting data
