@@ -91,7 +91,7 @@ class Trainer:
 
         self.scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
         self.opt = self.configure_optimizers()['optimizer']
-        self.warmup=self.configure_optimizers()['lr_scheduler']['scheduler_warmup']
+        #self.warmup=self.configure_optimizers()['lr_scheduler']['scheduler_warmup']
         self.setup_criterion()
 
     def _shared_step(self, batch, metric_fn, is_training=True):
@@ -540,7 +540,7 @@ class Trainer:
                  'scheduler': scheduler,
                # 'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, verbose=True)
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min')
-                'scheduler_warmup' :GradualWarmupScheduler(opt, multiplier=1, total_epoch=5, after_scheduler=scheduler),
+                #'scheduler_warmup' :GradualWarmupScheduler(opt, multiplier=1, total_epoch=5, after_scheduler=scheduler),
 
             }
         }
