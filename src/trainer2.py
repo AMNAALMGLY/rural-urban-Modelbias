@@ -112,9 +112,9 @@ class Trainer:
             x = torch.tensor(batch[args.input])
             target = torch.tensor(batch['labels'], )
             group = torch.tensor(batch['urban_rural']) if args.scaler_features_keys else None
-        x = x.type_as(self.model.conv1.weight)
+        x = x.type_as(self.model.fc.weight)
 
-        target = target.type_as(self.model.conv1.weight)
+        target = target.type_as(self.model.fc.weight)
         x = x.reshape(-1, x.shape[-1], x.shape[-3],
                       x.shape[-2])  # from [batch_size,H,W,in_channels] to [batch_size ,in_channels, H ,W]
 
@@ -212,8 +212,8 @@ class Trainer:
                 for x, y, _ in tepoch:
                     tepoch.set_description(f"Epoch {epoch}")
                     print('inLoader:', x.shape)
-                    x = x.type_as(self.model.conv1.weight)
-                    y = y.type_as(self.model.conv1.weight)
+                    x = x.type_as(self.model.fc.weight)
+                    y = y.type_as(self.model.fc.weight)
                     outputs = self.model(x)
                     outputs = outputs.squeeze(dim=-1)
                     y = y.squeeze(dim=-1)
@@ -252,8 +252,8 @@ class Trainer:
                 print('--------------------------Validation-------------------- ')
                 self.model.eval()
                 for x, y, _ in validloader:
-                    x = x.type_as(self.model.conv1.weight)
-                    y = y.type_as(self.model.conv1.weight)
+                    x = x.type_as(self.model.fc.weight)
+                    y = y.type_as(self.model.fc.weight)
                     outputs = self.model(x)
                     outputs = outputs.squeeze(dim=-1)
                     y = y.squeeze(dim=-1)
