@@ -468,7 +468,7 @@ class Trainer:
                 print(f'Saving model to {resume_path}')
 
             self.metric[0].reset()
-            self.warmup.step(epoch)
+            self.scheduler.step()
 
             print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
 
