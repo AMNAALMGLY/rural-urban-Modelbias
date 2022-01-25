@@ -173,7 +173,7 @@ class Trainer:
 
         x = {key: value.type_as(self.model.fc.weight) for key, value in x.items()}
         x = {key: value.reshape(-1, value.shape[-1], value.shape[-3], value.shape[-2]) for key, value in x.items() if
-             value.dim >= 3}
+             value.dim() >= 3}
 
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
