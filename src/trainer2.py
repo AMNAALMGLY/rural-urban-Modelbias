@@ -118,6 +118,7 @@ class Trainer:
         x = x.reshape(-1, x.shape[-1], x.shape[-3],                        # from [batch_size,H,W,in_channels] to [batch_size ,in_channels, H ,W]
 
                       x.shape[-2])  if args.input=='images' else x
+
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
         # Re-weighting data
@@ -537,8 +538,8 @@ class Trainer:
                 # 'scheduler': ExponentialLR(opt,
                 #            gamma=args.lr_decay),
                 #'scheduler':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=200)
-                 'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt,warmup_epochs=5, max_epochs=200,warmup_start_lr=1e-7),
-               # 'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, verbose=True)
+                 #'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt,warmup_epochs=5, max_epochs=200,warmup_start_lr=1e-7),
+                'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, verbose=True)
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min')
 
             }
