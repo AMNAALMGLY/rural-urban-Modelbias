@@ -155,6 +155,7 @@ class Trainer:
                 for meta in args.metadata:
                     x[meta] = torch.tensor(batch[0][meta], )
             target = torch.tensor(batch[0]['labels'], )
+            target = target.type_as(self.model.fc.weight)
             x['buildings'] = torch.tensor(batch[1]['buildings'], )
 
         else:
