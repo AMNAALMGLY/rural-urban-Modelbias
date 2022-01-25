@@ -42,8 +42,9 @@ class Encoder(nn.Module):
         self.dim = dim
 
     def forward(self, x):
-        features_img, features_b, features_meta = torch.zeros((x['buildings'].shape[0], self.dim)), torch.zeros(
-            (x['buildings'].shape[0], self.dim)), torch.zeros((x['buildings'].shape[0], self.dim))
+        features_img, features_b, features_meta = torch.zeros((x['buildings'].shape[0], self.dim),device=args.gpus)\
+            , torch.zeros(
+            (x['buildings'].shape[0], self.dim),device=args.gpus), torch.zeros((x['buildings'].shape[0], self.dim),device=args.gpus)
         features_img = self.resnet_bands(x['images'])[1] if 'images' in x else features_img
         features_b = self.resnet_build(x['buildings'])[1] if 'buildings' in x else features_b
         features_meta = self.Mlp(x[args.metadata[0]])[1] if args.metadata[0] in x else features_meta
