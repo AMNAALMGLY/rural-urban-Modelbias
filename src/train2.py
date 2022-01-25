@@ -9,7 +9,7 @@ import torch
 from torch import nn
 
 from batchers.dataset import Batcher
-from models.model_generator import get_model, Encoder
+from models.model_generator import get_model, Encoder, MultiHeadedAttention
 from src.trainer2 import Trainer
 from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name, load_from_checkpoint
 from configs import args as default_args
@@ -184,6 +184,9 @@ def main(args):
     for (model_key,model_name),in_channels,model_init in zip(args.model_name.items(),args.in_channels,args.model_init):
         ckpt, pretrained = init_model(model_init, args.init_ckpt_dir, )
         model_dict[model_key] = get_model(model_name=model_name, in_channels=in_channels, pretrained=pretrained, ckpt_path=ckpt)
+    model_dict['self_attn']= MultiHeadedAttention(1,
+                                     d_model=512,
+                                     dropout=0.1)
     encoder=Encoder(**model_dict)
 
     best_loss, best_path ,score= setup_experiment(encoder,batcher_train, batcher_valid, args.resume, args,batcher_test)

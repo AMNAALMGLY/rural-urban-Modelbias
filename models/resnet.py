@@ -335,7 +335,7 @@ class ResNet(nn.Module):
         x = self.layer3(x)
         x = self.layer4(x)
         # print('before attention',x.shape)
-        x=self.attn(x)
+        #x=self.attn(x)
 
         # print('after attention',x.shape)
         x = self.avgpool(x)
@@ -364,7 +364,7 @@ def _resnet(
         # if using attention:
         # attn_weights=["attn.gamma", "attn.query_conv.weight", "attn.query_conv.bias", "attn.key_conv.weight",
         #             "attn.key_conv.bias", "attn.value_conv.weight", "attn.value_conv.bias"]
-        attn_weights=["attn.excitation.0.weight","attn.excitation.2.weight" ]
+        #attn_weights=["attn.excitation.0.weight","attn.excitation.2.weight" ]
         '''
         attn_weights = [
                         "layer1.0.se.excitation.0.weight", "layer1.0.se.excitation.2.weight",
@@ -382,7 +382,7 @@ def _resnet(
             init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
         # print(model.state_dict())
         # if 'attn' in model.state_dict():
-
+        '''
         for key in attn_weights:
             if 'weight' in key:
 
@@ -392,6 +392,7 @@ def _resnet(
             state_dict[key] = model.state_dict()[key]
 
         model.load_state_dict(state_dict)
+        '''
     return model
 
 
