@@ -46,6 +46,7 @@ class Encoder(nn.Module):
         self.self_attn=self_attn
         self.dim = dim
 
+
     def forward(self, x):
         features_img, features_b, features_meta = torch.zeros((x['buildings'].shape[0], self.dim),device=args.gpus)\
             , torch.zeros(
@@ -55,11 +56,18 @@ class Encoder(nn.Module):
         features_meta = self.Mlp(x[args.metadata[0]])[1] if args.metadata[0] in x else features_meta
 
         # aggergation:
-        features = features_img + features_b + features_meta
-        print('features shape together :', features.shape)
-        attn=self.dropout(self.self_attn(features,features,features))
+        #features = features_img + features_b + features_meta
+        features_img.unsqueeze_(-1)
+        features_b.unsqueeze_(-1)
+        features_meta.unsqueeze_(-1)
+        features_concat=torch.cat([features_img,features_b,features_meta],dim=-1)
+        featueres_concat=features_concat.transpose(-2,-1)
+        print('features shape together :', features_concat.shape)
+        attn=self.dropout(self.self_attn(features_concat,features_concat,features_concat))
         print('attention shape',attn.shape)
-        features=features+attn
+        features=features_concat+attn
+        features=torch.mean(features,dim=1,keepdim=False)
+        print('fc features',features.shape)
         return self.fc(self.relu(features))
 
 
