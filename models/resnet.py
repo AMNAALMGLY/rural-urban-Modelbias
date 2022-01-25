@@ -321,7 +321,7 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def _forward_impl(self, x: Tensor) -> Tensor:
+    def _forward_impl(self, x: Tensor) :
         # See note [TorchScript super()]
 
         # x,_=self.attn(x)
@@ -336,14 +336,15 @@ class ResNet(nn.Module):
         x = self.layer4(x)
         # print('before attention',x.shape)
         x=self.attn(x)
+        features=x
         # print('after attention',x.shape)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.fc(x)
 
-        return x
+        return x,features
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) :
         return self._forward_impl(x)
 
 
@@ -509,7 +510,7 @@ class MLP(nn.Module):
       #self.layer3=nn.Linear(output_dim,1)
       self.relu=nn.ReLU()
    def forward(self,x):
-       return self.fc(self.relu(self.layer2( self.relu(self.layer1(x)))))
+       return self.fc(self.relu(self.layer2( self.relu(self.layer1(x))))),self.layer2( self.relu(self.layer1(x)))
 
 def mlp(in_channels: int, pretrained: bool = False, progress: bool = True, **kwargs: Any) :
     r"""ResNet-18 model from
