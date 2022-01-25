@@ -64,7 +64,7 @@ class Encoder(nn.Module):
         features_concat=features_concat.transpose(-2,-1)
         print('features shape together :', features_concat.shape)
         #attn=self.dropout(self.self_attn(features_concat,features_concat,features_concat))
-        attn=attention(features_concat,features_concat,features_concat)
+        attn,_=attention(features_concat,features_concat,features_concat)
         print('attention shape',attn.shape)
         features=features_concat+attn
         features=torch.mean(features,dim=1,keepdim=False)
