@@ -1,4 +1,6 @@
 from argparse import Namespace
+from collections import defaultdict
+
 import torch
 import multiprocessing
 import os
@@ -8,9 +10,9 @@ args = Namespace(
 
     # Model
 
-    model_name='resnet18',
+    model_name=defaultdict(resnet_bands='resnet18',resnet_build='resnet18',mlp='mlp'),
     hs_weight_init='random',  # [same, samescaled,random]
-    model_init=None,
+    model_init=['imagenet','imagenet',None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
 
     # Training
@@ -39,19 +41,19 @@ args = Namespace(
     dataset='DHS_OOC',
     fold='A',
     ls_bands=None,
-    nl_band=None,  # [None , merge , split]
+    nl_band='split',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     include_buildings=True,
     scaler_features_keys={'urban_rural': tf.float32},
-    input='images',
-    #country
+    metadata=['locs'],
+    #countryresnet_bands=model_dict,resnet_build=,Mlp=
 
     # keep_frac {keep_frac}
 
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_A_building_attn',
+    experiment_name='DHS_OOC_A_encoder_b_nl_geo',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
@@ -75,7 +77,8 @@ args = Namespace(
 args.num_workers = multiprocessing.cpu_count()
 args.no_of_gpus = torch.cuda.device_count()
 args.gpus = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-args.bands_channels = {'rgb': 3, 'ms': 7, 'split': 2, 'merge': 1}
+args.bands_channels = {'rgb': 3, 'ms': 7, 'split': 2, 'merge': 1,'locs':2 ,'country':1,'buildings':1}
+'''
 if not args.include_buildings:
     args.in_channels = args.bands_channels.get(args.ls_bands, 0) + args.bands_channels.get(args.nl_band, 0)
 else:
@@ -83,3 +86,10 @@ else:
 
 if args.input == 'locs':
     args.in_channels = 2
+'''
+args.in_channels=[]
+args.in_channels.append( args.bands_channels.get(args.ls_bands, 0) + args.bands_channels.get(args.nl_band, 0))
+if args.include_buildings:
+    args.in_channels.append(args.bands_channels['buildings'])
+if args.metadata:
+    args.in_channels.append(args.bands_channels[args.metadata[0]])

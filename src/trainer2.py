@@ -13,7 +13,8 @@ from tqdm import tqdm
 from utils.utils import Metric
 from configs import args
 import wandb
-from  pl_bolts import optimizers
+from pl_bolts import optimizers
+
 writer = SummaryWriter()
 patience = args.patience
 
@@ -67,7 +68,7 @@ class Trainer:
         self.loss_type = loss_type
         self.save_dir = save_dir
         self.num_outputs = num_outputs
-        if num_outputs is not None :
+        if num_outputs is not None:
 
             fc = nn.Linear(model.fc.in_features, num_outputs, bias=True)
             # initialization
@@ -84,7 +85,7 @@ class Trainer:
                              'against')
 
         self.metric_str = metric
-        self.metric=[]
+        self.metric = []
         for m in metric:
             self.metric.append(Metric(self.num_outputs).get_metric(m))
 
@@ -94,12 +95,29 @@ class Trainer:
         self.setup_criterion()
 
     def _shared_step(self, batch, metric_fn, is_training=True):
+        '''
+        this functions assumes 4 types of input :building band (buildings), multispecttral(images)
+        , Nightlight (images) , combined bands (nl,ms) and metadata (meta)
+        split the batch input into these 4 inputs  or more into a dictionary as follows:
+        'images' 'buildings' ,'ms' , 'merge' , 'locs' ,'country'
+        if they are not none ofcourse, (images and ms are mutually exclusive)
+
+        #TODO do this in the dataset class
+        #TODO is grouping necessary?
+        :param batch:
+        :param metric_fn:
+        :param is_training:
+        :return:
+        '''
+        '''
         if args.include_buildings:
-            if args.ls_bands or args.nl_band:
-                x = torch.tensor(batch[0][args.input], )
+            if args.ls_bands or args.nl_band :
+                x = torch.tensor(batch[0]['images'], )
                 b = torch.tensor(batch[1]['buildings'], )
                 x = torch.cat((x, b), dim=-1)
                 target = torch.tensor(batch[0]['labels'], )
+
+
 
             else:
                 x = torch.tensor(batch[1]['buildings'])
@@ -108,34 +126,72 @@ class Trainer:
                 group = torch.tensor(batch[0]['urban_rural'])
 
 
+
         else:
-            x = torch.tensor(batch[args.input])
-            target = torch.tensor(batch['labels'], )
-            group = torch.tensor(batch['urban_rural']) if args.scaler_features_keys else None
+           if args.ls_bands or args.nl_band:
+                x = torch.tensor(batch['images'])
+           target = torch.tensor(batch['labels'], )
+           if 'urban_rural' in args.scaler_features_keys:
+                group = torch.tensor(batch['urban_rural'])
+
         x = x.type_as(self.model.fc.weight)
 
         target = target.type_as(self.model.fc.weight)
         x = x.reshape(-1, x.shape[-1], x.shape[-3],                        # from [batch_size,H,W,in_channels] to [batch_size ,in_channels, H ,W]
 
                       x.shape[-2])  if args.input=='images' else x
+        '''
+        x = defaultdict()
+        if args.include_buildings:
+            if args.ls_bands and args.nl_bands:
+                # 2 bands split them inot seperate inputs
+                # assumes for now it is only merged nl_bands
+                x[args.ls_bands] = torch.tensor(batch[0]['images'][:, :, :-1], )
+                x[args.nl_band] = torch.tensor(batch[0]['images'][:, :, -1], )
+            elif args.ls_bands or args.nl_bands:
+                # only one type of band
+                x['images'] = torch.tensor(batch[0]['images'])
+            if args.metadata:
+                for meta in args.metadata:
+                    x[meta] = torch.tensor(batch[0][meta], )
+            target = torch.tensor(batch[0]['labels'], )
+            x['buildings'] = torch.tensor(batch[1]['buildings'], )
+
+        else:
+            if args.ls_bands and args.nl_bands:
+                # 2 bands split them inot seperate inputs
+                # assumes for now it is only merged nl_bands
+                x[args.ls_bands] = torch.tensor(batch['images'][:, :, :-1], )
+                x[args.nl_band] = torch.tensor(batch['images'][:, :, -1], )
+            elif args.ls_bands or args.nl_bands:
+                # only one type of band
+                x['images'] = torch.tensor(batch['images'])
+            if args.metadata:
+                for meta in args.metadata:
+                    x[meta] = torch.tensor(batch[meta], )
+            target = torch.tensor(batch['labels'], )
+
+        x = {key: value.type_as(self.model.fc.weight) for key, value in x.items()}
+        x = {key: value.reshape(-1, value.shape[-1], value.shape[-3], value.shape[-2]) for key, value in x.items() if
+             value.dim >= 3}
 
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
         # Re-weighting data
         if self.class_model:
-            Beta = self.weight_ex(x, self.class_model)
+            Beta = self.weight_ex(x['images'], self.class_model)
 
             outputs = outputs * (Beta ** 0.5)
         # Loss
 
         loss = self.criterion(outputs, target)
         if self.loss_type == 'custom':
-            custom_loss = self.custom_loss(x, target)
+            custom_loss = self.custom_loss(x['images'], target)
             # print(loss,custom_loss)
             loss = loss + args.lamda * custom_loss
             # print('total_loss',loss)
-        elif self.loss_type == 'subshift' and is_training:
-            trainloss = self.subshift(x, target, group)
+        # elif self.loss_type == 'subshift' and is_training:
+        #    trainloss = self.subshift(x, target, group)
         else:
             trainloss = loss
         # Metric calculation
@@ -505,28 +561,26 @@ class Trainer:
 
     def test(self, batcher_test):
 
-                with torch.no_grad():
-                    test_step = 0
-                    test_epoch_loss = 0
-                    print('--------------------------Testing-------------------- ')
-                    self.model.eval()
-                    for i,record in enumerate(batcher_test):
-                        test_loss = self.test_step(record)
-                        test_epoch_loss += test_loss.item()
-                        test_step += 1
+        with torch.no_grad():
+            test_step = 0
+            test_epoch_loss = 0
+            print('--------------------------Testing-------------------- ')
+            self.model.eval()
+            for i, record in enumerate(batcher_test):
+                test_loss = self.test_step(record)
+                test_epoch_loss += test_loss.item()
+                test_step += 1
 
+            avg_test_loss = test_epoch_loss / test_step
+            r2_test = []
+            for i, m in enumerate(self.metric):
+                r2_test.append((m.compute()) ** 2 if self.metric_str[i] == 'r2' else m.compute())
 
-                    avg_test_loss = test_epoch_loss / test_step
-                    r2_test=[]
-                    for i,m in enumerate(self.metric):
-                        r2_test.append((m.compute()) ** 2 if self.metric_str[i] == 'r2' else m.compute())
+                wandb.log({f'{self.metric_str[i]} Test': r2_test[i], })
+                wandb.log({"test_loss": avg_test_loss})
+                m.reset()
 
-                        wandb.log({f'{self.metric_str[i]} Test': r2_test[i],})
-                        wandb.log({"test_loss": avg_test_loss})
-                        m.reset()
-
-
-                return r2_test
+        return r2_test
 
     def configure_optimizers(self):
         opt = torch.optim.Adam(self.model.parameters(), lr=self.lr,
@@ -537,9 +591,10 @@ class Trainer:
             'lr_scheduler': {
                 # 'scheduler': ExponentialLR(opt,
                 #            gamma=args.lr_decay),
-                #'scheduler':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=200)
-                 'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt,warmup_epochs=5, max_epochs=200,warmup_start_lr=1e-7),
-                #'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, verbose=True)
+                # 'scheduler':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=200)
+                'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5, max_epochs=200,
+                                                                                   warmup_start_lr=1e-7),
+                # 'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, verbose=True)
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min')
 
             }
