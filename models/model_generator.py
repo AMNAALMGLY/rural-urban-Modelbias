@@ -61,7 +61,7 @@ class Encoder(nn.Module):
         features_b.unsqueeze_(-1)
         features_meta.unsqueeze_(-1)
         features_concat=torch.cat([features_img,features_b,features_meta],dim=-1)
-        featueres_concat=features_concat.transpose(-2,-1)
+        features_concat=features_concat.transpose(-2,-1)
         print('features shape together :', features_concat.shape)
         attn=self.dropout(self.self_attn(features_concat,features_concat,features_concat))
         print('attention shape',attn.shape)
