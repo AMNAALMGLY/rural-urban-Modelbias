@@ -170,6 +170,7 @@ class Trainer:
                 for meta in args.metadata:
                     x[meta] = torch.tensor(batch[meta], )
             target = torch.tensor(batch['labels'], )
+            target = target.type_as(self.model.fc.weight)
 
         x = {key: value.type_as(self.model.fc.weight) for key, value in x.items()}
         x = {key: value.reshape(-1, value.shape[-1], value.shape[-3], value.shape[-2]) for key, value in x.items() if
