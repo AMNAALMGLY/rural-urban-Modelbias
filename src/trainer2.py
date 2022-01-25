@@ -178,6 +178,7 @@ class Trainer:
              value.dim() >= 3}
 
         outputs = self.model(x)
+        print(outputs.shape)
         outputs = outputs.squeeze(dim=-1)
         # Re-weighting data
         if self.class_model:

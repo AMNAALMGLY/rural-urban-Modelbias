@@ -57,7 +57,9 @@ class Encoder(nn.Module):
         # aggergation:
         features = features_img + features_b + features_meta
         print('features shape together :', features.shape)
-        features=features+self.dropout(self.self_attn(features,features,features))
+        attn=self.dropout(self.self_attn(features,features,features))
+        print('attention shape',attn.shape)
+        features=features+attn
         return self.fc(self.relu(features))
 
 
