@@ -44,6 +44,7 @@ args = Namespace(
     include_buildings=True,
     scaler_features_keys={'urban_rural': tf.float32},
     input='images',
+    #country
 
     # keep_frac {keep_frac}
 
