@@ -45,7 +45,8 @@ args = Namespace(
     nl_label=None,  # [center, mean,None]
     include_buildings=True,
     scaler_features_keys={'urban_rural': tf.float32},
-    metadata=['locs'],
+    metadata=None,
+    #['locs'],
     #countryresnet_bands=model_dict,resnet_build=,Mlp=
 
     # keep_frac {keep_frac}
