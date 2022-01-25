@@ -143,12 +143,12 @@ class Trainer:
         '''
         x = defaultdict()
         if args.include_buildings:
-            if args.ls_bands and args.nl_bands:
+            if args.ls_bands and args.nl_band:
                 # 2 bands split them inot seperate inputs
                 # assumes for now it is only merged nl_bands
                 x[args.ls_bands] = torch.tensor(batch[0]['images'][:, :, :-1], )
                 x[args.nl_band] = torch.tensor(batch[0]['images'][:, :, -1], )
-            elif args.ls_bands or args.nl_bands:
+            elif args.ls_bands or args.nl_band:
                 # only one type of band
                 x['images'] = torch.tensor(batch[0]['images'])
             if args.metadata:
@@ -158,12 +158,12 @@ class Trainer:
             x['buildings'] = torch.tensor(batch[1]['buildings'], )
 
         else:
-            if args.ls_bands and args.nl_bands:
+            if args.ls_bands and args.nl_band:
                 # 2 bands split them inot seperate inputs
                 # assumes for now it is only merged nl_bands
                 x[args.ls_bands] = torch.tensor(batch['images'][:, :, :-1], )
                 x[args.nl_band] = torch.tensor(batch['images'][:, :, -1], )
-            elif args.ls_bands or args.nl_bands:
+            elif args.ls_bands or args.nl_band:
                 # only one type of band
                 x['images'] = torch.tensor(batch['images'])
             if args.metadata:
