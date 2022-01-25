@@ -336,10 +336,11 @@ class ResNet(nn.Module):
         x = self.layer4(x)
         # print('before attention',x.shape)
         x=self.attn(x)
-        features=x
+
         # print('after attention',x.shape)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
+        features = x
         x = self.fc(x)
 
         return x,features
