@@ -117,6 +117,7 @@ def run_extraction_on_models(model_dir: str,
         # initalizating
         np_dict = defaultdict()
         for i, record in enumerate(batcher):
+            '''
             if data_params['include_buildings']:
                 if data_params['ls_bands'] or data_params['nl_band']:
                     x = torch.tensor(record[0]['images'], )
@@ -131,6 +132,39 @@ def run_extraction_on_models(model_dir: str,
 
             x = x.type_as(model.conv1.weight)
             x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
+            '''
+            x = defaultdict()
+            if data_params['include_buildings']:
+                if data_params['ls_bands'] and data_params['nl_band']:
+                    # 2 bands split them inot seperate inputs
+                    # assumes for now it is only merged nl_bands
+                    x[data_params['ls_bands']] = torch.tensor(record[0]['images'][:, :, :-1], )
+                    x[data_params['nl_band']] = torch.tensor(record[0]['images'][:, :, -1], )
+                elif data_params['ls_bands'] or data_params['nl_band']:
+                    # only one type of band
+                    x['images'] = torch.tensor(record[0]['images'])
+                if args.metadata: #TODO change this to data_params[metadata]
+                    for meta in args.metadata:
+                        x[meta] = torch.tensor(record[0][meta], )
+
+                x['buildings'] = torch.tensor(record[1]['buildings'], )
+
+            else:
+                if args.ls_bands and args.nl_band:
+                    # 2 bands split them inot seperate inputs
+                    # assumes for now it is only merged nl_bands
+                    x[data_params['ls_bands']] = torch.tensor(record['images'][:, :, :-1], )
+                    x[data_params['nl_band']] = torch.tensor(record['images'][:, :, -1], )
+                elif data_params['ls_bands'] or data_params['nl_band']:
+                    # only one type of band
+                    x['images'] = torch.tensor(record['images'])
+                if args.metadata:
+                    for meta in args.metadata:
+                        x[meta] = torch.tensor(record[meta], )
+            x = {key: value.type_as(model.fc.weight) for key, value in x.items()}
+            x = {key: value.reshape(-1, value.shape[-1], value.shape[-3], value.shape[-2]) for key, value in x.items()
+                 if
+                 value.dim() >= 3}
 
             output = model(x)
 
