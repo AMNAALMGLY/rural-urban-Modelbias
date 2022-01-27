@@ -11,6 +11,7 @@ args = Namespace(
     # Model
 
     model_name=defaultdict(resnet_bands='resnet18',resnet_build='resnet18',Mlp='mlp'),
+    self_attn=False,
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet','imagenet',None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',

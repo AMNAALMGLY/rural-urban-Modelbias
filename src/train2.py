@@ -109,13 +109,17 @@ def main(args):
     with open(params_filepath, 'w') as config_file:
         json.dump(data_params, config_file, indent=4)
 
+    '''
     # saving resnet model params
     params = dict(model_name=args.model_name, in_channels=args.in_channels)
     params_filepath = os.path.join(dirpath, 'params.json')
     with open(params_filepath, 'w') as config_file:
         json.dump(params, config_file, indent=4)
+    '''
+
 
     wandb.config.update(data_params)
+
 
     # dataloader
     if args.dataset=='DHS_OOC':
@@ -181,12 +185,25 @@ def main(args):
 
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model_dict=defaultdict()
+    encoder_params=defaultdict()
+
     for (model_key,model_name),in_channels,model_init in zip(args.model_name.items(),args.in_channels,args.model_init):
         ckpt, pretrained = init_model(model_init, args.init_ckpt_dir, )
         model_dict[model_key] = get_model(model_name=model_name, in_channels=in_channels, pretrained=pretrained, ckpt_path=ckpt)
-    model_dict['self_attn']= MultiHeadedAttention(1,
-                                     d_model=512,
-                                     dropout=0.1)
+
+        params = dict(model_name=args.model_name, in_channels=args.in_channels)
+        encoder_params[model_key]=params
+
+    # saving encoder params
+    encoder_params_filepath = os.path.join(dirpath, 'encoder_params.json')
+    with open(encoder_params_filepath, 'w') as config_file:
+            json.dump(encoder_params | dict(self_attn=args.self_attn), config_file, indent=4)
+
+    #model_dict['self_attn']= MultiHeadedAttention(1,   d_model=512,  dropout=0.1)
+    # save the encoder_params
+
+
+
     encoder=Encoder(**model_dict)
 
     best_loss, best_path ,score= setup_experiment(encoder,batcher_train, batcher_valid, args.resume, args,batcher_test)
@@ -195,6 +212,8 @@ def main(args):
     #best_loss, best_path = setup_experiment(model, train_loader, test_loader, args.resume, args)
 
     print(f'Path to best model found during training: \n{best_path}')
+
+
 
 
 # TODO save hyperparameters .
