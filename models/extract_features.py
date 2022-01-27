@@ -104,6 +104,7 @@ def run_extraction_on_models(model_dir: str,
     encoder=Encoder(**encoder_params)
     # redefine the model according to num_outputs
     fc = nn.Linear(encoder.fc.in_features, args.num_outputs)
+    print('fc shape',encoder.fc.in_features)
     #model.fc = fc
     encoder.fc=fc
     checkpoint_pattern = os.path.join(out_root_dir, model_dir, 'best.ckpt')
