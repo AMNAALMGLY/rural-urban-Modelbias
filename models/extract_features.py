@@ -147,30 +147,30 @@ def run_extraction_on_models(model_dir: str,
                 if data_params['ls_bands'] and data_params['nl_band']:
                     # 2 bands split them inot seperate inputs
                     # assumes for now it is only merged nl_bands
-                    x[data_params['ls_bands']] = torch.tensor(record[0]['images'][:, :, :-1], )
-                    x[data_params['nl_band']] = torch.tensor(record[0]['images'][:, :, -1], )
+                    x[data_params['ls_bands']] = torch.tensor(record[0]['images'][:, :, :-1], device=args.gpus)
+                    x[data_params['nl_band']] = torch.tensor(record[0]['images'][:, :, -1], device=args.gpus)
                 elif data_params['ls_bands'] or data_params['nl_band']:
                     # only one type of band
-                    x['images'] = torch.tensor(record[0]['images'])
+                    x['images'] = torch.tensor(record[0]['images'],device=args.gpus)
                 if args.metadata: #TODO change this to data_params[metadata]
                     for meta in args.metadata:
-                        x[meta] = torch.tensor(record[0][meta], )
+                        x[meta] = torch.tensor(record[0][meta],device=args.gpus )
 
-                x['buildings'] = torch.tensor(record[1]['buildings'], )
+                x['buildings'] = torch.tensor(record[1]['buildings'],device=args.gpus )
 
             else:
                 if args.ls_bands and args.nl_band:
                     # 2 bands split them inot seperate inputs
                     # assumes for now it is only merged nl_bands
-                    x[data_params['ls_bands']] = torch.tensor(record['images'][:, :, :-1], )
-                    x[data_params['nl_band']] = torch.tensor(record['images'][:, :, -1], )
+                    x[data_params['ls_bands']] = torch.tensor(record['images'][:, :, :-1],device=args.gpus )
+                    x[data_params['nl_band']] = torch.tensor(record['images'][:, :, -1], device=args.gpus)
                 elif data_params['ls_bands'] or data_params['nl_band']:
                     # only one type of band
-                    x['images'] = torch.tensor(record['images'])
+                    x['images'] = torch.tensor(record['images'],device=args.gpus)
                 if args.metadata:
                     for meta in args.metadata:
-                        x[meta] = torch.tensor(record[meta], )
-            x = {key: value.type_as(encoder.fc.weight) for key, value in x.items()}
+                        x[meta] = torch.tensor(record[meta],device=args.gpus )
+            #x = {key: value.type_as(encoder.fc.weight) for key, value in x.items()}
             x = {key: value.reshape(-1, value.shape[-1], value.shape[-3], value.shape[-2]) for key, value in x.items()
                  if
                  value.dim() >= 3}
