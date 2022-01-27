@@ -521,4 +521,6 @@ def mlp(in_channels: int, pretrained: bool = False, progress: bool = True, **kwa
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
+
+
     return MLP(in_channels)

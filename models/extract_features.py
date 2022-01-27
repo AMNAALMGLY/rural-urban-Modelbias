@@ -46,7 +46,7 @@ DHS_MODELS = [
       'DHS_OOC_C_encoder_b_nl_geo_b64_fc1_conv1_lr0001',
     'DHS_OOC_D_encoder_b_nl_geo_b64_fc1_conv1_lr0001',
     'DHS_OOC_E_encoder_b_nl_geo_b64_fc1_conv1_lr0001',
-
+     #DHS_OOC_A_encoder_b_nl_concat
    #  'DHS_OOC_A_ms_samescaled_b64_fc01_conv01_lr0001',
     # 'DHS_OOC_B_ms_samescaled_b64_fc001_conv001_lr0001',
     # 'DHS_OOC_C_ms_samescaled_b64_fc001_conv001_lr001',
@@ -98,7 +98,7 @@ def run_extraction_on_models(model_dir: str,
 
     print(f'Building model from {model_dir} checkpoint')
     encoder_params=defaultdict()
-    for key,value in model_params.items()[::-1]:             #don't include self attention for now
+    for key,value in model_params.items():             #don't include self attention for now
         encoder_params[key]=get_model(**value)
     #model = get_model(**model_params)
     encoder=Encoder(**encoder_params)
