@@ -27,7 +27,7 @@ def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
 
 
 class Encoder(nn.Module):
-    def __init__(self, resnet_bands=None, resnet_build=None, Mlp=None, self_attn=None, dim=512, num_outputs=1):
+    def __init__(self, resnet_bands=None, resnet_build=None, Mlp=None, self_attn=False, dim=512, num_outputs=1):
         # TODO add resnet_NL and resnet_Ms
         # TODO add multiple mlps for metadata
         """
@@ -60,19 +60,19 @@ class Encoder(nn.Module):
         # features = features_img + features_b + features_meta
         # features=torch.mean(features,dim=1,keepdim=False)
         # print('fc features',features.shape)
-
+        #TODO concatination when some outputs are none
         if self.self_attn:
             features_img.unsqueeze_(-1)
             features_b.unsqueeze_(-1)
-            features_meta.unsqueeze_(-1)
-            features_concat = torch.cat([features_img, features_b, features_meta], dim=-1)
-            features_concat = features_concat.transpose(-2, -1)
+            features_meta.unsqueeze_(-1) #bxdx1
+            features_concat = torch.cat([features_img, features_b], dim=-1) #bxdx3
+            features_concat = features_concat.transpose(-2, -1) # bx3xd
         # print('features shape together :', features_concat.shape)
         # attn=self.dropout(self.self_attn(features_concat,features_concat,features_concat))
-            attn, _ = attention(features_concat, features_concat, features_concat)
+            attn, _ = intersample_attention(features_concat, features_concat, features_concat)  #bx3xd
         # print('attention shape',attn.shape)
-            features = features_concat + attn
-            return self.fc(self.relu(features))
+            #features = features_concat + attn
+            return self.fc(self.relu(attn))
         else:
             features_concat = torch.cat([features_img, features_b, ], dim=-1)
             return self.fc(self.relu(features_concat))
@@ -92,8 +92,26 @@ def attention(query, key, value, dropout=None):
     output = torch.matmul(p_attn, value)  # bs, n , embed_dim
     return output, p_attn
 
-def intersample_attention():
-    return
+
+
+def intersample_attention(query,key,value):
+    "Calculate the intersample of a given query batch"
+    #x , bs , n , d
+
+    b,  n , d = query.shape
+    h=1  #I assume I have 1 head
+    #print(query.shape,key.shape, value.shape )
+    query , key , value = query.reshape(1, b, h, n*d), \
+                            key.reshape(1, b, h, n*d), \
+                                value.reshape(1, b, h, n*d)
+
+    output, _ = attention(query, key ,value)  #1 , b, n*d
+    output = output.squeeze(0) #b, n*d
+    output = output.reshape(b, h, n, d) #b,n,d
+
+    output.squeeze_(1) #squeeze the h dimension
+    return output
+
 
 class MultiHeadedAttention(nn.Module):
     def __init__(self, h, d_model, dropout=0.1):
