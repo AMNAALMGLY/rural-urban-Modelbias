@@ -9,6 +9,7 @@ from models.preact_resnet import PreActResNet18, PreActResNet34, PreActResNet50
 from models.resnet import resnet18, resnet34, resnet50, mlp
 from utils.utils import load_from_checkpoint
 import torch.nn.functional as F
+
 model_type = dict(resnet18=resnet18,
                   resnet34=resnet34,
                   resnet50=resnet50,
@@ -26,7 +27,7 @@ def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
 
 
 class Encoder(nn.Module):
-    def __init__(self, resnet_bands=None, resnet_build=None, Mlp=None, self_attn=None,dim=512, num_outputs=1):
+    def __init__(self, resnet_bands=None, resnet_build=None, Mlp=None, self_attn=None, dim=512, num_outputs=1):
         # TODO add resnet_NL and resnet_Ms
         # TODO add multiple mlps for metadata
         """
@@ -40,37 +41,41 @@ class Encoder(nn.Module):
         self.resnet_bands = resnet_bands  # images input
         self.resnet_build = resnet_build
         self.Mlp = Mlp  # metadata input
-        self.fc = nn.Linear(dim*2, num_outputs,device=args.gpus)  # combines both together
+        self.fc = nn.Linear(dim * 2, num_outputs, device=args.gpus)  # combines both together
         self.relu = nn.ReLU()
-        self.dropout=nn.Dropout(p=0.1)
-        #self.self_attn=self_attn
+        self.dropout = nn.Dropout(p=0.1)
+        self.self_attn = self_attn
         self.dim = dim
 
-
     def forward(self, x):
-        features_img, features_b, features_meta = torch.zeros((x['buildings'].shape[0], self.dim),device=args.gpus)\
+        features_img, features_b, features_meta = torch.zeros((x['buildings'].shape[0], self.dim), device=args.gpus) \
             , torch.zeros(
-            (x['buildings'].shape[0], self.dim),device=args.gpus), torch.zeros((x['buildings'].shape[0], self.dim),device=args.gpus)
+            (x['buildings'].shape[0], self.dim), device=args.gpus), torch.zeros((x['buildings'].shape[0], self.dim),
+                                                                                device=args.gpus)
         features_img = self.resnet_bands(x['images'])[1] if 'images' in x else features_img
         features_b = self.resnet_build(x['buildings'])[1] if 'buildings' in x else features_b
         features_meta = self.Mlp(x[args.metadata[0]])[1] if args.metadata in x else features_meta
 
         # aggergation:
-        #features = features_img + features_b + features_meta
-        #features_img.unsqueeze_(-1)
-        #features_b.unsqueeze_(-1)
-        #features_meta.unsqueeze_(-1)
-        #features_concat=torch.cat([features_img,features_b,features_meta],dim=-1)
-        features_concat = torch.cat([features_img, features_b,], dim=-1)
-        #features_concat=features_concat.transpose(-2,-1)
-        #print('features shape together :', features_concat.shape)
-        #attn=self.dropout(self.self_attn(features_concat,features_concat,features_concat))
-        #attn,_=attention(features_concat,features_concat,features_concat)
-        #print('attention shape',attn.shape)
-        #features=features_concat+attn
-        #features=torch.mean(features,dim=1,keepdim=False)
-        #print('fc features',features.shape)
-        return self.fc(self.relu(features_concat))
+        # features = features_img + features_b + features_meta
+        # features=torch.mean(features,dim=1,keepdim=False)
+        # print('fc features',features.shape)
+
+        if self.self_attn:
+            features_img.unsqueeze_(-1)
+            features_b.unsqueeze_(-1)
+            features_meta.unsqueeze_(-1)
+            features_concat = torch.cat([features_img, features_b, features_meta], dim=-1)
+            features_concat = features_concat.transpose(-2, -1)
+        # print('features shape together :', features_concat.shape)
+        # attn=self.dropout(self.self_attn(features_concat,features_concat,features_concat))
+            attn, _ = attention(features_concat, features_concat, features_concat)
+        # print('attention shape',attn.shape)
+            features = features_concat + attn
+            return self.fc(self.relu(features))
+        else:
+            features_concat = torch.cat([features_img, features_b, ], dim=-1)
+            return self.fc(self.relu(features_concat))
 
 
 def attention(query, key, value, dropout=None):
@@ -116,6 +121,7 @@ class MultiHeadedAttention(nn.Module):
         x = x.transpose(1, 2).contiguous().view(
             nbatches, -1, self.h * self.d_k)  # bs , n , d_model
         return self.linears[-1](x)  # bs , n , d_model
+
 
 def clones(module, N):
     "Produce N identical layers."

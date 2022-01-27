@@ -17,7 +17,7 @@ from torch import nn
 import tensorflow as tf
 import batchers
 from batchers.dataset import Batcher
-from models.model_generator import get_model
+from models.model_generator import get_model, Encoder
 from configs import args
 from utils.utils import save_results, get_paths, load_from_checkpoint
 
@@ -41,17 +41,17 @@ DHS_MODELS = [
 #'DHS_OOC_D_nl_custom_b90_fc01_conv01_lr0001',
 #'DHS_OOC_E_nl_custom_b90_fc01_conv01_lr0001',
 
-    #'DHS_OOC_A_ms_samescaled_b32_fc1_conv1_lr0001',
-    #  'DHS_OOC_B_ms_samescaled_b32_fc1_conv1_lr0001',
-    #  'DHS_OOC_C_ms_samescaled_b32_fc1_conv1_lr0001',
-   # 'DHS_OOC_D_ms_samescaled_b32_fc1_conv1_lr0001',
-  #  'DHS_OOC_E_ms_samescaled_b32_fc1_conv1_lr0001',
+    'DHS_OOC_A_encoder_b_nl_geo_b64_fc1_conv1_lr0001',
+          'DHS_OOC_B_encoder_b_nl_geo_b64_fc1_conv1_lr0001',
+      'DHS_OOC_C_encoder_b_nl_geo_b64_fc1_conv1_lr0001',
+    'DHS_OOC_D_encoder_b_nl_geo_b64_fc1_conv1_lr0001',
+    'DHS_OOC_E_encoder_b_nl_geo_b64_fc1_conv1_lr0001',
 
-     'DHS_OOC_A_ms_samescaled_b64_fc01_conv01_lr0001',
-     'DHS_OOC_B_ms_samescaled_b64_fc001_conv001_lr0001',
-     'DHS_OOC_C_ms_samescaled_b64_fc001_conv001_lr001',
-     'DHS_OOC_D_ms_samescaled_b64_fc001_conv001_lr01',
-     'DHS_OOC_E_ms_samescaled_b64_fc01_conv01_lr001',
+   #  'DHS_OOC_A_ms_samescaled_b64_fc01_conv01_lr0001',
+    # 'DHS_OOC_B_ms_samescaled_b64_fc001_conv001_lr0001',
+    # 'DHS_OOC_C_ms_samescaled_b64_fc001_conv001_lr001',
+    # 'DHS_OOC_D_ms_samescaled_b64_fc001_conv001_lr01',
+    # 'DHS_OOC_E_ms_samescaled_b64_fc01_conv01_lr001',
    # 'DHS_OOC_A_nl_random_b32_fc1.0_conv1.0_lr0001',
    # 'DHS_OOC_B_nl_random_b32_fc1.0_conv1.0_lr0001',
   #  'DHS_OOC_c_nl_random_b32_fc1.0_conv1.0_lr0001',
@@ -75,6 +75,7 @@ DHS_MODELS = [
 def run_extraction_on_models(model_dir: str,
                              model_params: Mapping,
                              data_params,
+
                              batcher,
                              out_root_dir: str,
                              save_filename: str,
@@ -96,23 +97,30 @@ def run_extraction_on_models(model_dir: str,
     '''
 
     print(f'Building model from {model_dir} checkpoint')
-
-    model = get_model(**model_params)
+    encoder_params=defaultdict()
+    for key,value in model_params.items()[::-1]:             #don't include self attention for now
+        encoder_params[key]=get_model(**value)
+    #model = get_model(**model_params)
+    encoder=Encoder(**encoder_params)
     # redefine the model according to num_outputs
-    fc = nn.Linear(model.fc.in_features, args.num_outputs)
-    model.fc = fc
-
+    fc = nn.Linear(encoder.fc.in_features, args.num_outputs)
+    #model.fc = fc
+    encoder.fc=fc
     checkpoint_pattern = os.path.join(out_root_dir, model_dir, 'best.ckpt')
     checkpoint_path = glob(checkpoint_pattern)
     print(checkpoint_path)
-    model = load_from_checkpoint(path=checkpoint_path[-1], model=model)
+    #model = load_from_checkpoint(path=checkpoint_path[-1], model=model)
     # freeze the last layer for feature extraction
-    model.fc = nn.Sequential()
-    model.to(args.gpus)
+    #model.fc = nn.Sequential()
+    #model.to(args.gpus)
+
+    encoder = load_from_checkpoint(path=checkpoint_path[-1], model=encoder)
+    # freeze the last layer for feature extraction
+    encoder.fc = nn.Sequential()
+    encoder.to(args.gpus)
 
     # model.freeze()
-    for p in model.parameters():
-        p.requires_grad=False
+
     with torch.no_grad():
         # initalizating
         np_dict = defaultdict()
@@ -161,12 +169,12 @@ def run_extraction_on_models(model_dir: str,
                 if args.metadata:
                     for meta in args.metadata:
                         x[meta] = torch.tensor(record[meta], )
-            x = {key: value.type_as(model.fc.weight) for key, value in x.items()}
+            x = {key: value.type_as(encoder.fc.weight) for key, value in x.items()}
             x = {key: value.reshape(-1, value.shape[-1], value.shape[-3], value.shape[-2]) for key, value in x.items()
                  if
                  value.dim() >= 3}
 
-            output = model(x)
+            output = encoder(x)
 
             for key in batch_keys:
                 if i == 0:
@@ -193,20 +201,22 @@ def run_extraction_on_models(model_dir: str,
     save_results(save_dir, np_dict, save_filename)
 
 
-# best at Epoch 177 loss 0.3836648819908019.ckpt  B
-# best at Epoch 117 loss 0.38881643032354696.ckpt C
-# best at Epoch 160 loss 0.4024718254804611.ckpt D
-# best at Epoch 149 loss 0.4684090583074477.ckpt E
 def main(args):
     for model_dir in DHS_MODELS:
         # TODO check existing
+        '''
         json_path = os.path.join(OUTPUTS_ROOT_DIR, model_dir, 'params.json')
         with open(json_path, 'r') as f:
             model_params = json.load(f)
-
+        '''
         json_data_path = os.path.join(OUTPUTS_ROOT_DIR, model_dir, 'data_params.json')
         with open(json_data_path, 'r') as f:
             data_params = json.load(f)
+
+        json_path = os.path.join(OUTPUTS_ROOT_DIR, model_dir, 'encoder_params.json')
+        with open(json_path, 'r') as f:
+            model_params = json.load(f)
+
         paths = get_paths(data_params['dataset'], 'all', 'A', args.data_path)
         if data_params['include_buildings']:
            paths_b = get_paths(data_params['dataset'], 'all', data_params['fold'], args.buildings_records)
