@@ -92,6 +92,8 @@ def attention(query, key, value, dropout=None):
     output = torch.matmul(p_attn, value)  # bs, n , embed_dim
     return output, p_attn
 
+def intersample_attention():
+    return
 
 class MultiHeadedAttention(nn.Module):
     def __init__(self, h, d_model, dropout=0.1):

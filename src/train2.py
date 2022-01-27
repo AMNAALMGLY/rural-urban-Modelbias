@@ -197,7 +197,7 @@ def main(args):
     # saving encoder params
     encoder_params_filepath = os.path.join(dirpath, 'encoder_params.json')
     with open(encoder_params_filepath, 'w') as config_file:
-            json.dump(encoder_params | dict(self_attn=args.self_attn), config_file, indent=4)
+            json.dump(encoder_params.update(dict(self_attn=args.self_attn)), config_file, indent=4)
 
     #model_dict['self_attn']= MultiHeadedAttention(1,   d_model=512,  dropout=0.1)
     # save the encoder_params

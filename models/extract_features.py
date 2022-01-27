@@ -145,7 +145,7 @@ def run_extraction_on_models(model_dir: str,
             x = defaultdict()
             if data_params['include_buildings']:
                 if data_params['ls_bands'] and data_params['nl_band']:
-                    # 2 bands split them inot seperate inputs
+                    # 2 bands split them into separate inputs
                     # assumes for now it is only merged nl_bands
                     x[data_params['ls_bands']] = torch.tensor(record[0]['images'][:, :, :-1], device=args.gpus)
                     x[data_params['nl_band']] = torch.tensor(record[0]['images'][:, :, -1], device=args.gpus)
