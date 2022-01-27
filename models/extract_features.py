@@ -41,11 +41,11 @@ DHS_MODELS = [
 #'DHS_OOC_D_nl_custom_b90_fc01_conv01_lr0001',
 #'DHS_OOC_E_nl_custom_b90_fc01_conv01_lr0001',
 
-    'DHS_OOC_A_encoder_b_nl_geo_b64_fc1_conv1_lr0001',
-          'DHS_OOC_B_encoder_b_nl_geo_b64_fc1_conv1_lr0001',
-      'DHS_OOC_C_encoder_b_nl_geo_b64_fc1_conv1_lr0001',
-    'DHS_OOC_D_encoder_b_nl_geo_b64_fc1_conv1_lr0001',
-    'DHS_OOC_E_encoder_b_nl_geo_b64_fc1_conv1_lr0001',
+    'DHS_OOC_A_encoder_b_nl_concat_b64_fc1_conv1_lr0001',
+          'DHS_OOC_B_encoder_b_nl_concat_b64_fc1_conv1_lr0001',
+      'DHS_OOC_C_encoder_b_nl_concat_b64_fc1_conv1_lr0001',
+    'DHS_OOC_D_encoder_b_nl_concat_b64_fc1_conv1_lr0001',
+    'DHS_OOC_E_encoder_b_nl_concat_b64_fc1_conv1_lr0001',
      #DHS_OOC_A_encoder_b_nl_concat
    #  'DHS_OOC_A_ms_samescaled_b64_fc01_conv01_lr0001',
     # 'DHS_OOC_B_ms_samescaled_b64_fc001_conv001_lr0001',
