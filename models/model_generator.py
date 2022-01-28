@@ -70,7 +70,7 @@ class Encoder(nn.Module):
         # print('features shape together :', features_concat.shape)
         # attn=self.dropout(self.self_attn(features_concat,features_concat,features_concat))
             attn, _ = intersample_attention(features_concat, features_concat, features_concat)  #bx3xd
-        # print('attention shape',attn.shape)
+            print('attention shape',attn.shape)
             #features = features_concat + attn
             return self.fc(self.relu(attn))
         else:
