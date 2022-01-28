@@ -332,7 +332,7 @@ def main(args):
         best_loss, best_path, score = setup_experiment(encoder, batcher_train, batcher_valid, args.resume, args,config,
                                                        batcher_test)
         #return best_loss, best_path, score
-    config={"lr":args.lr,"wd":args.conv_reg}
+    #config={"lr":args.lr,"wd":args.conv_reg}
     #best_loss, best_path ,score= setup_experiment(encoder,batcher_train, batcher_valid, args.resume,args,config,batcher_test)
 
    # best_loss, best_path = setup_experiment(model,batcher_train, batcher_test, args.resume, args)
@@ -344,8 +344,8 @@ def main(args):
         ray_train,
         config={
             'args': args,
-            "lr":  tune.loguniform(1e-4, 1e1),
-            "wd":  tune.loguniform(1e-5, 1e-3)
+            "lr":  tune.choice([1e-5,1e-4,1e-3]),
+            "wd":  tune.choice([1e-4,1e-3,1e-2, 1e-1,1])
         })
     print("Best config: ", analysis.get_best_config(
         metric="mean_loss", mode="min"))
