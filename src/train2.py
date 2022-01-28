@@ -89,6 +89,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
 
 
 def main(args):
+    """
     seed_everything(args.seed)
     # setting experiment_path
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
@@ -204,10 +205,9 @@ def main(args):
 
 
     encoder=Encoder(**model_dict)
-
+    """
     def ray_train(config):
         # instantiating the required variables
-        args = config['args']
         seed_everything(args.seed)
         # setting experiment_path
         experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
@@ -343,7 +343,7 @@ def main(args):
     analysis = tune.run(
         ray_train,
         config={
-            'args': args,
+
             "lr":  tune.choice([1e-5,1e-4,1e-3]),
             "wd":  tune.choice([1e-4,1e-3,1e-2, 1e-1,1])
         })
