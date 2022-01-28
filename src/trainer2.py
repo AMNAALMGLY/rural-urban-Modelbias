@@ -485,7 +485,7 @@ class Trainer:
 
                 avg_valid_loss = valid_epoch_loss / valid_steps
 
-                #tune.report(mean_loss=avg_valid_loss)
+                tune.report(mean_loss=avg_valid_loss)
 
                 r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
 
