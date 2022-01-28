@@ -212,13 +212,13 @@ def main(args):
         best_loss, best_path, score = setup_experiment(encoder, batcher_train, batcher_valid, args.resume, args,config,
                                                        batcher_test)
         #return best_loss, best_path, score
-    #best_loss, best_path ,score= setup_experiment(encoder,batcher_train, batcher_valid, args.resume, args,batcher_test)
+    best_loss, best_path ,score= setup_experiment(encoder,batcher_train, batcher_valid, args.resume, args,batcher_test)
 
    # best_loss, best_path = setup_experiment(model,batcher_train, batcher_test, args.resume, args)
     #best_loss, best_path = setup_experiment(model, train_loader, test_loader, args.resume, args)
 
     #print(f'Path to best model found during training: \n{best_path}')
-
+    '''
     analysis = tune.run(
         ray_train,
         config={
@@ -227,7 +227,7 @@ def main(args):
         })
     print("Best config: ", analysis.get_best_config(
         metric="mean_loss", mode="min"))
-
+    '''
 # TODO save hyperparameters .
 #TODO Save test scores in csv file
 
