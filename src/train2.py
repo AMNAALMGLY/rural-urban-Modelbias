@@ -212,7 +212,8 @@ def main(args):
         best_loss, best_path, score = setup_experiment(encoder, batcher_train, batcher_valid, args.resume, args,config,
                                                        batcher_test)
         #return best_loss, best_path, score
-    best_loss, best_path ,score= setup_experiment(encoder,batcher_train, batcher_valid, args.resume, args,batcher_test)
+    config={"lr":args.lr,"wd":args.conv_reg}
+    best_loss, best_path ,score= setup_experiment(encoder,batcher_train, batcher_valid, args.resume,args,config,batcher_test)
 
    # best_loss, best_path = setup_experiment(model,batcher_train, batcher_test, args.resume, args)
     #best_loss, best_path = setup_experiment(model, train_loader, test_loader, args.resume, args)
