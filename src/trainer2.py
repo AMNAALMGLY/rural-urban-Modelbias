@@ -14,6 +14,7 @@ from utils.utils import Metric
 from configs import args
 import wandb
 from pl_bolts import optimizers
+from ray import  tune
 
 writer = SummaryWriter()
 patience = args.patience
@@ -483,6 +484,8 @@ class Trainer:
                         wandb.log({"valid_loss": running_loss, 'epoch': epoch})
 
                 avg_valid_loss = valid_epoch_loss / valid_steps
+
+                tune.report(mean_loss=avg_valid_loss)
 
                 r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
 

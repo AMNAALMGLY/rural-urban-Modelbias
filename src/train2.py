@@ -19,6 +19,7 @@ import wandb
 from torch.utils.tensorboard import SummaryWriter
 from wilds import get_dataset
 from wilds.common.data_loaders import get_train_loader,get_eval_loader
+from ray import tune
 import torchvision.transforms as transforms
 
 writer = SummaryWriter()
@@ -26,7 +27,7 @@ wandp = default_args.wandb_p
 entity = default_args.entity
 
 
-def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args,batcher_test=None):
+def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args,config,batcher_test=None):
     '''
    setup the experiment paramaters
    :param model: model class :PreActResnet
@@ -48,7 +49,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
 
 
     # setup Trainer params
-    params = dict(model=model, lr=args.lr, weight_decay=args.conv_reg, loss_type=args.loss_type,
+    params = dict(model=model, lr=config['lr'], weight_decay=config['wd'], loss_type=args.loss_type,
                   num_outputs=args.num_outputs, metric=args.metric)
     # logging
     wandb.config.update(params)
@@ -193,11 +194,12 @@ def main(args):
 
         params = dict(model_name=args.model_name, in_channels=args.in_channels)
         encoder_params[model_key]=params
-    encoder_params.update(dict(self_attn=args.self_attn))
+
+    model_dict.update(dict(self_attn=args.self_attn))
     # saving encoder params
     encoder_params_filepath = os.path.join(dirpath, 'encoder_params.json')
     with open(encoder_params_filepath, 'w') as config_file:
-            json.dump(encoder_params, config_file, indent=4)
+            json.dump(encoder_params.update(dict(self_attn=args.self_attn)), config_file, indent=4)
 
     #model_dict['self_attn']= MultiHeadedAttention(1,   d_model=512,  dropout=0.1)
     # save the encoder_params
@@ -206,15 +208,25 @@ def main(args):
 
     encoder=Encoder(**model_dict)
 
-    best_loss, best_path ,score= setup_experiment(encoder,batcher_train, batcher_valid, args.resume, args,batcher_test)
+    def ray_train(config):
+        best_loss, best_path, score = setup_experiment(encoder, batcher_train, batcher_valid, args.resume, args,config,
+                                                       batcher_test)
+        #return best_loss, best_path, score
+    #best_loss, best_path ,score= setup_experiment(encoder,batcher_train, batcher_valid, args.resume, args,batcher_test)
 
    # best_loss, best_path = setup_experiment(model,batcher_train, batcher_test, args.resume, args)
     #best_loss, best_path = setup_experiment(model, train_loader, test_loader, args.resume, args)
 
-    print(f'Path to best model found during training: \n{best_path}')
+    #print(f'Path to best model found during training: \n{best_path}')
 
-
-
+    analysis = tune.run(
+        ray_train,
+        config={
+            "lr":  tune.loguniform(1e-4, 1e1),
+            "wd":  tune.loguniform(1e-5, 1e-3)
+        })
+    print("Best config: ", analysis.get_best_config(
+        metric="mean_loss", mode="min"))
 
 # TODO save hyperparameters .
 #TODO Save test scores in csv file
