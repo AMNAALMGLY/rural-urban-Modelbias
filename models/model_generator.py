@@ -62,6 +62,7 @@ class Encoder(nn.Module):
         # print('fc features',features.shape)
         #TODO concatination when some outputs are none
         if self.self_attn:
+            print('in attention')
             features_img.unsqueeze_(-1)
             features_b.unsqueeze_(-1)
             features_meta.unsqueeze_(-1) #bxdx1
