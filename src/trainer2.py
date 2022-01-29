@@ -15,6 +15,7 @@ from utils.utils import Metric
 from configs import args
 import wandb
 from pl_bolts import optimizers
+import tensorflow as tf
 from ray import  tune
 
 writer = SummaryWriter()
@@ -157,6 +158,7 @@ class Trainer:
                 for meta in args.metadata:
                     if meta=='country':
                         batch[0][meta]=DHS_COUNTRIES.index(batch[0][meta])
+                        batch[0][meta] = tf.map_fn(fn=lambda t: DHS_COUNTRIES.index(t), elems=batch[0][meta])
                     x[meta] = torch.tensor(batch[0][meta], )
             target = torch.tensor(batch[0]['labels'], )
             target = target.type_as(self.model.fc.weight)
@@ -174,8 +176,8 @@ class Trainer:
             if args.metadata:
                 for meta in args.metadata:
                     if meta=='country':
-                        #tf.map_fn(fn=lambda t: tf.range(t, t + 3), elems=tf.constant([3, 5, 2]))
-                        batch[meta]=DHS_COUNTRIES.index(batch[meta])
+                        batch[meta]=tf.map_fn(fn=lambda t: DHS_COUNTRIES.index(t), elems=batch[meta])
+                        #batch[meta]=DHS_COUNTRIES.index(batch[meta])
                     x[meta] = torch.tensor(batch[meta], )
             target = torch.tensor(batch['labels'], )
             target = target.type_as(self.model.fc.weight)
