@@ -156,7 +156,7 @@ class Trainer:
             if args.metadata:
                 for meta in args.metadata:
                     if meta=='country':
-                        meta=DHS_COUNTRIES.index(batch[0][meta])
+                        batch[0][meta]=DHS_COUNTRIES.index(batch[0][meta])
                     x[meta] = torch.tensor(batch[0][meta], )
             target = torch.tensor(batch[0]['labels'], )
             target = target.type_as(self.model.fc.weight)
