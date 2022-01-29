@@ -90,7 +90,7 @@ def attention(query, key, value, dropout=None):
     scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
     print('scores shape',scores.shape)
     p_attn = F.softmax(scores, dim=-1)
-    print('softmax',p_attn)
+    print('softmax',p_attn.shape)
     if dropout is not None:
         p_attn = dropout(p_attn)  # bs , n , n
     output = torch.matmul(p_attn, value)  # bs, n , embed_dim
