@@ -44,7 +44,7 @@ class Encoder(nn.Module):
         self.fc = nn.Linear(dim * 2, num_outputs, device=args.gpus)  # combines both together
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.1)
-        self.self_attn = self_attn
+        self.self_attn = MultiHeadedAttention(h=1,d_model=512)
         self.dim = dim
 
     def forward(self, x):
@@ -70,12 +70,12 @@ class Encoder(nn.Module):
             features_concat = torch.cat([features_img, features_b], dim=-1)  # bxdx3
             features_concat = features_concat.transpose(-2, -1)  # bx3xd
             # print('features shape together :', features_concat.shape)
-            # attn=self.dropout(self.self_attn(features_concat,features_concat,features_concat))
-            attn, _ = intersample_attention(features_concat, features_concat, features_concat)  # bx3xd
+            attn=self.dropout(self.self_attn(features_concat,features_concat,features_concat))
+            #attn, _ = intersample_attention(features_concat, features_concat, features_concat)  # bx3xd
             print('attention shape', attn.shape)
-            # features = features_concat + attn
+            features = features_concat + attn
 
-            return self.fc(self.relu(attn.reshape(batch, -1)))
+            return self.fc(self.relu(features.reshape(batch, -1)))
         else:
             features_concat = torch.cat([features_img, features_b, ], dim=-1)
             return self.fc(self.relu(features_concat))
