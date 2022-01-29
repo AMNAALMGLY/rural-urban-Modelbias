@@ -44,7 +44,8 @@ class Encoder(nn.Module):
         self.fc = nn.Linear(dim * 2, num_outputs, device=args.gpus)  # combines both together
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.1)
-        self.self_attn = MultiHeadedAttention(h=1,d_model=512)
+        self.self_attn =self_attn
+            #MultiHeadedAttention(h=1,d_model=512)
         self.dim = dim
 
     def forward(self, x):
