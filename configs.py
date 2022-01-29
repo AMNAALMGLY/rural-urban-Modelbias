@@ -45,7 +45,7 @@ args = Namespace(
     nl_band='split',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     include_buildings=True,
-    scaler_features_keys=[{'urban_rural': tf.float32},{'country':tf.string}],
+    scaler_features_keys={'urban_rural': tf.float32,'country':tf.string},
     metadata=['country'],
     #['locs'],
     #countryresnet_bands=model_dict,resnet_build=,Mlp=
