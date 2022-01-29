@@ -157,7 +157,7 @@ class Trainer:
             if args.metadata:
                 for meta in args.metadata:
                     if meta=='country':
-                        batch[0][meta]=DHS_COUNTRIES.index(batch[0][meta])
+                        #batch[0][meta]=DHS_COUNTRIES.index(batch[0][meta])
                         batch[0][meta] = tf.map_fn(fn=lambda t: DHS_COUNTRIES.index(t), elems=batch[0][meta])
                     x[meta] = torch.tensor(batch[0][meta], )
             target = torch.tensor(batch[0]['labels'], )
