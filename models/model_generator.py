@@ -55,7 +55,7 @@ class Encoder(nn.Module):
                                                                                 device=args.gpus)
         features_img = self.resnet_bands(x['images'])[1] if 'images' in x else features_img
         features_b = self.resnet_build(x['buildings'])[1] if 'buildings' in x else features_b
-        print(x['country'])
+        print(x.keys())
         features_meta = self.Mlp(x[args.metadata[0]])[1] if args.metadata[0] in x else features_meta
 
         # aggergation:
