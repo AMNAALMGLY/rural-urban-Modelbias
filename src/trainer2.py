@@ -160,7 +160,7 @@ class Trainer:
                         batch[0][meta] = tf.map_fn(fn=lambda t: DHS_COUNTRIES.index(t), elems=batch[0][meta],fn_output_signature=tf.int32)
                         batch[0][meta]=tf.reshape(batch[0][meta],[-1,1])
                     x[meta] = torch.tensor(batch[0][meta].numpy(), dtype=torch.int32)
-                    print(x[meta])
+
             target = torch.tensor(batch[0]['labels'], )
             target = target.type_as(self.model.fc.weight)
             x['buildings'] = torch.tensor(batch[1]['buildings'], )
@@ -178,13 +178,14 @@ class Trainer:
                 for meta in args.metadata:
                     if meta=='country':
                         batch[meta]=tf.map_fn(fn=lambda t: DHS_COUNTRIES.index(t), elems=batch[meta])
-                        batch[0][meta] = tf.map_fn(fn=lambda t: DHS_COUNTRIES.index(t), elems=batch[0][meta],
+                        batch[meta] = tf.map_fn(fn=lambda t: DHS_COUNTRIES.index(t), elems=batch[meta],
                                                    fn_output_signature=tf.int32)
-                        batch[0][meta] = tf.reshape(batch[0][meta], [-1, 1])
+                        batch[meta] = tf.reshape(batch[meta], [-1, 1])
                     x[meta] = torch.tensor(batch[meta].numpy(),dtype=torch.int32 )
             target = torch.tensor(batch['labels'], )
             target = target.type_as(self.model.fc.weight)
 
+        print(x.keys())
         x = {key: value.type_as(self.model.fc.weight) for key, value in x.items()}
         x = {key: value.reshape(-1, value.shape[-1], value.shape[-3], value.shape[-2]) for key, value in x.items() if
              value.dim() >= 3}
