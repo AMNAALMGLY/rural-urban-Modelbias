@@ -101,15 +101,14 @@ def intersample_attention(query, key, value):
     # x , bs , n , d
 
     b, n, d = query.shape
-    h = 1  # I assume I have 1 head
     # print(query.shape,key.shape, value.shape )
-    query, key, value = query.reshape(1, b, h, n * d), \
-                        key.reshape(1, b, h, n * d), \
-                        value.reshape(1, b, h, n * d)
+    query, key, value = query.reshape(1, b, n * d), \
+                        key.reshape(1, b,  n * d), \
+                        value.reshape(1, b, n * d)
 
     output, scores = attention(query, key, value)  # 1 , b, n*d
     output = output.squeeze(0)  # b, n*d
-    output = output.reshape(b, h, n, d)  # b,n,d
+    output = output.reshape(b,  n, d)  # b,n,d
 
     output.squeeze_(1)  # squeeze the h dimension
     return output, scores

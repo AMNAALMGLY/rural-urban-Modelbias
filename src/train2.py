@@ -89,7 +89,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
 
 
 def main(args):
-    """
+
     seed_everything(args.seed)
     # setting experiment_path
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
@@ -205,6 +205,10 @@ def main(args):
 
 
     encoder=Encoder(**model_dict)
+    config = {"lr": args.lr, "wd": args.conv_reg}
+    best_loss, best_path, score = setup_experiment(encoder, batcher_train, batcher_valid, args.resume, args, config,
+                                                   batcher_test)
+
     """
     def ray_train(config):
         # instantiating the required variables
@@ -349,7 +353,7 @@ def main(args):
         })
     print("Best config: ", analysis.get_best_config(
         metric="mean_loss", mode="min"))
-
+    """
 # TODO save hyperparameters .
 #TODO Save test scores in csv file
 
