@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 
+from batchers.dataset_constants_buildings import DHS_COUNTRIES
 from utils.utils import Metric
 from configs import args
 import wandb
@@ -154,6 +155,8 @@ class Trainer:
                 x['images'] = torch.tensor(batch[0]['images'])
             if args.metadata:
                 for meta in args.metadata:
+                    if meta=='country':
+                        meta=DHS_COUNTRIES.index(batch[0][meta])
                     x[meta] = torch.tensor(batch[0][meta], )
             target = torch.tensor(batch[0]['labels'], )
             target = target.type_as(self.model.fc.weight)
@@ -170,6 +173,8 @@ class Trainer:
                 x['images'] = torch.tensor(batch['images'])
             if args.metadata:
                 for meta in args.metadata:
+                    if meta=='country':
+                        meta=DHS_COUNTRIES.index(batch[meta])
                     x[meta] = torch.tensor(batch[meta], )
             target = torch.tensor(batch['labels'], )
             target = target.type_as(self.model.fc.weight)
@@ -485,7 +490,7 @@ class Trainer:
 
                 avg_valid_loss = valid_epoch_loss / valid_steps
 
-                tune.report(mean_loss=avg_valid_loss)
+                #tune.report(mean_loss=avg_valid_loss)
 
                 r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
 

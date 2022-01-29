@@ -41,7 +41,7 @@ class Encoder(nn.Module):
         self.resnet_bands = resnet_bands  # images input
         self.resnet_build = resnet_build
         self.Mlp = Mlp  # metadata input
-        self.fc = nn.Linear(dim * 2, num_outputs, device=args.gpus)  # combines both together
+        self.fc = nn.Linear(dim * 3, num_outputs, device=args.gpus)  # combines both together
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.1)
         self.self_attn =self_attn
@@ -78,7 +78,7 @@ class Encoder(nn.Module):
 
             return self.fc(self.relu(features.reshape(batch, -1)))
         else:
-            features_concat = torch.cat([features_img, features_b, ], dim=-1)
+            features_concat = self.dropout(torch.cat([features_img, features_b,features_meta ], dim=-1))
             return self.fc(self.relu(features_concat))
 
 

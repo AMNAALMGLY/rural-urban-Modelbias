@@ -17,6 +17,7 @@ from torch import nn
 import tensorflow as tf
 import batchers
 from batchers.dataset import Batcher
+from batchers.dataset_constants_buildings import DHS_COUNTRIES
 from models.model_generator import get_model, Encoder
 from configs import args
 from utils.utils import save_results, get_paths, load_from_checkpoint
@@ -154,6 +155,8 @@ def run_extraction_on_models(model_dir: str,
                     x['images'] = torch.tensor(record[0]['images'],device=args.gpus)
                 if args.metadata: #TODO change this to data_params[metadata]
                     for meta in args.metadata:
+                        if meta == 'country':
+                            meta = DHS_COUNTRIES.index(record[0][meta])
                         x[meta] = torch.tensor(record[0][meta],device=args.gpus )
 
                 x['buildings'] = torch.tensor(record[1]['buildings'],device=args.gpus )
@@ -169,6 +172,8 @@ def run_extraction_on_models(model_dir: str,
                     x['images'] = torch.tensor(record['images'],device=args.gpus)
                 if args.metadata:
                     for meta in args.metadata:
+                        if meta == 'country':
+                            meta = DHS_COUNTRIES.index(record[meta])
                         x[meta] = torch.tensor(record[meta],device=args.gpus )
             #x = {key: value.type_as(encoder.fc.weight) for key, value in x.items()}
             x = {key: value.reshape(-1, value.shape[-1], value.shape[-3], value.shape[-2]) for key, value in x.items()
