@@ -256,6 +256,8 @@ class Batcher():
         if self.scalar_features_keys:
             for key in self.scalar_features_keys:
                 result[key] = ex[key]
+                if key=='country':
+                    result[key]=result[key].numpy().decode('utf-8')
         print('finished converting to dict')
 
         return result
