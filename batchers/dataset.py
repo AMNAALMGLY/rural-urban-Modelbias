@@ -384,7 +384,8 @@ class Batcher():
         ex['images'] = tf.cond(
             year < 2012,
             # if DMSP, then add an all-0 VIIRS band to the end
-            true_fn=lambda: tf.concat([ img,all_0,], axis=2),
+            #true_fn=lambda: tf.concat([ img,all_0,], axis=2),
+            true_fn=lambda: tf.concat([img[:, :, 0:-1], all_0, img[:, :, -1:]], axis=2),
             # if VIIRS, then insert an all-0 DMSP band before the last band
             false_fn=lambda: tf.concat([img[:, :, 0:-1], all_0, img[:, :, -1:]], axis=2)
         )
