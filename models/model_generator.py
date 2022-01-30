@@ -27,7 +27,7 @@ def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
 
 
 class Encoder(nn.Module):
-    def __init__(self, resnet_bands=None, resnet_build=None, Mlp=None, self_attn=False, dim=512, num_outputs=1):
+    def __init__(self, model_dict, self_attn=None, dim=512, num_outputs=1):
         # TODO add resnet_NL and resnet_Ms
         # TODO add multiple mlps for metadata
         """
@@ -38,17 +38,39 @@ class Encoder(nn.Module):
                 MLp (int): Number of features, this is required by LayerNorm
             """
         super(Encoder, self).__init__()
-        self.resnet_bands = resnet_bands  # images input
-        self.resnet_build = resnet_build
-        self.Mlp = Mlp  # metadata input
-        self.fc = nn.Linear(dim * 2, num_outputs, device=args.gpus)  # combines both together
+        self.models = nn.ModuleDict(model_dict)
+        self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
+        self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)  # combines both together
         self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(p=0.1)
-        self.self_attn =self_attn
-            #MultiHeadedAttention(h=1,d_model=512)
+        self.dropout = nn.Dropout(p=0.01)
+        self.self_attn = self_attn
+        # MultiHeadedAttention(h=1,d_model=512)
         self.dim = dim
 
     def forward(self, x):
+        features = []
+        for (model_name, model), input in zip(self.models.items(), x.keys()):
+            features.append(model(input)[1])
+
+        features = torch.cat(features, dim=1)
+        if self.self_attn:
+            print('in attention')
+
+            features_concat = features.transpose(-2, -1)  # bxnxd
+            if self.self_attn == 'vanilla':
+                attn, _ = attention(features_concat, features_concat, features_concat)  # bxnxd
+            elif self.self_attn == 'intersample':
+
+                attn, _ = intersample_attention(features_concat, features_concat, features_concat)  # bxnxd
+            elif self.self_attn == 'multihead':
+                attn, _ = MultiHeadedAttention(h=4, d_model=self.dim)(features_concat, features_concat, features_concat)
+
+            print('attention shape', attn.shape)
+            features = features_concat + attn  # residual connection
+            features = features.view(-1, self.fc_in_dim)
+
+        return self.fc(self.relu(self.dropout(features)))
+        """
         features_img, features_b, features_meta = torch.zeros((x['buildings'].shape[0], self.dim), device=args.gpus) \
             , torch.zeros(
             (x['buildings'].shape[0], self.dim), device=args.gpus), torch.zeros((x['buildings'].shape[0], self.dim),
@@ -57,7 +79,7 @@ class Encoder(nn.Module):
         features_b = self.resnet_build(x['buildings'])[1] if 'buildings' in x else features_b
 
         features_meta = self.Mlp(x[args.metadata[0]])[1] if args.metadata else features_meta
-
+        
         # aggergation:
         # features = features_img + features_b + features_meta
         # features=torch.mean(features,dim=1,keepdim=False)
@@ -81,6 +103,7 @@ class Encoder(nn.Module):
         else:
             features_concat = self.dropout(torch.cat([features_img, features_b, ], dim=-1))
             return self.fc(self.relu(features_concat))
+        """
 
 
 def attention(query, key, value, dropout=None):
@@ -90,9 +113,9 @@ def attention(query, key, value, dropout=None):
     # value: bs, n, embed_dim
     d_k = query.size(-1)
     scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
-    print('scores shape',scores.shape)
+    print('scores shape', scores.shape)
     p_attn = F.softmax(scores, dim=-1)
-    print('softmax',p_attn.shape)
+    print('softmax', p_attn.shape)
     if dropout is not None:
         p_attn = dropout(p_attn)  # bs , n , n
     output = torch.matmul(p_attn, value)  # bs, n , embed_dim
@@ -105,16 +128,16 @@ def intersample_attention(query, key, value):
 
     b, n, d = query.shape
     # print(query.shape,key.shape, value.shape )
-    #query, key, value = query.reshape(1, b, n * d), \
+    # query, key, value = query.reshape(1, b, n * d), \
     #                    key.reshape(1, b,  n * d), \
     #                    value.reshape(1, b, n * d)
-    query, key, value = query.reshape(n, b,  d), \
-                        key.reshape(n, b,  d), \
-                        value.reshape(n, b,  d)
+    query, key, value = query.reshape(n, b, d), \
+                        key.reshape(n, b, d), \
+                        value.reshape(n, b, d)
 
     output, scores = attention(query, key, value)  # 1 , b, n*d
-    #output = output.squeeze(0)  # b, n*d
-    output = output.reshape(b,  n, d)  # b,n,d
+    # output = output.squeeze(0)  # b, n*d
+    output = output.reshape(b, n, d)  # b,n,d
 
     return output, scores
 
