@@ -26,44 +26,44 @@ OUTPUTS_ROOT_DIR = args.out_dir
 
 DHS_MODELS = [
     # put paths to DHS models here (relative to OUTPUTS_ROOT_DIR)
-    #'DHS_OOC_A_nl_random_weighted_b32_fc01_conv01_lr0001',
-   # 'DHS_OOC_B_nl_random_weighted_b32_fc01_conv01_lr0001',
-  # 'DHS_OOC_C_nl_random_weighted_b32_fc01_conv01_lr0001',
-  # 'DHS_OOC_D_nl_random_weighted_b32_fc01_conv01_lr0001',
-  #  'DHS_OOC_E_nl_random_weighted_b32_fc01_conv01_lr0001',
-#'DHS_OOC_A_building_random_b32_fc01_conv01_lr0001',
-#'DHS_OOC_B_building_random_b32_fc01_conv01_lr0001',
-#'DHS_OOC_C_building_random_b32_fc01_conv01_lr0001',
-#'DHS_OOC_D_building_random_b32_fc01_conv01_lr0001',
-#'DHS_OOC_E_building_random_b32_fc01_conv01_lr0001',
-#'DHS_OOC_A_nl_custom_b90_fc001_conv001_lr0001',
-#'DHS_OOC_B_nl_custom_b90_fc001_conv001_lr0001',
-#'DHS_OOC_C_nl_custom_b90_fc001_conv001_lr0001',
-#'DHS_OOC_D_nl_custom_b90_fc01_conv01_lr0001',
-#'DHS_OOC_E_nl_custom_b90_fc01_conv01_lr0001',
+    # 'DHS_OOC_A_nl_random_weighted_b32_fc01_conv01_lr0001',
+    # 'DHS_OOC_B_nl_random_weighted_b32_fc01_conv01_lr0001',
+    # 'DHS_OOC_C_nl_random_weighted_b32_fc01_conv01_lr0001',
+    # 'DHS_OOC_D_nl_random_weighted_b32_fc01_conv01_lr0001',
+    #  'DHS_OOC_E_nl_random_weighted_b32_fc01_conv01_lr0001',
+    # 'DHS_OOC_A_building_random_b32_fc01_conv01_lr0001',
+    # 'DHS_OOC_B_building_random_b32_fc01_conv01_lr0001',
+    # 'DHS_OOC_C_building_random_b32_fc01_conv01_lr0001',
+    # 'DHS_OOC_D_building_random_b32_fc01_conv01_lr0001',
+    # 'DHS_OOC_E_building_random_b32_fc01_conv01_lr0001',
+    # 'DHS_OOC_A_nl_custom_b90_fc001_conv001_lr0001',
+    # 'DHS_OOC_B_nl_custom_b90_fc001_conv001_lr0001',
+    # 'DHS_OOC_C_nl_custom_b90_fc001_conv001_lr0001',
+    # 'DHS_OOC_D_nl_custom_b90_fc01_conv01_lr0001',
+    # 'DHS_OOC_E_nl_custom_b90_fc01_conv01_lr0001',
 
-    'DHS_OOC_A_encoder_b_nl_concat_b64_fc1_conv1_lr0001',
-          'DHS_OOC_B_encoder_b_nl_concat_b64_fc1_conv1_lr0001',
-      'DHS_OOC_C_encoder_b_nl_concat_b64_fc1_conv1_lr0001',
-    'DHS_OOC_D_encoder_b_nl_concat_b64_fc1_conv1_lr0001',
-    'DHS_OOC_E_encoder_b_nl_concat_b64_fc1_conv1_lr0001',
-     #DHS_OOC_A_encoder_b_nl_concat
-   #  'DHS_OOC_A_ms_samescaled_b64_fc01_conv01_lr0001',
+    'DHS_OOC_A_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
+    'DHS_OOC_B_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
+    'DHS_OOC_C_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
+    'DHS_OOC_D_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
+    'DHS_OOC_E_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
+    # DHS_OOC_A_encoder_b_nl_concat
+    #  'DHS_OOC_A_ms_samescaled_b64_fc01_conv01_lr0001',
     # 'DHS_OOC_B_ms_samescaled_b64_fc001_conv001_lr0001',
     # 'DHS_OOC_C_ms_samescaled_b64_fc001_conv001_lr001',
     # 'DHS_OOC_D_ms_samescaled_b64_fc001_conv001_lr01',
     # 'DHS_OOC_E_ms_samescaled_b64_fc01_conv01_lr001',
-   # 'DHS_OOC_A_nl_random_b32_fc1.0_conv1.0_lr0001',
-   # 'DHS_OOC_B_nl_random_b32_fc1.0_conv1.0_lr0001',
-  #  'DHS_OOC_c_nl_random_b32_fc1.0_conv1.0_lr0001',
-   # 'DHS_OOC_D_nl_random_b32_fc1.0_conv1.0_lr0001',
- #  '/DHS_OOC_E_nl_random_b32_fc1.0_conv1.0_lr0001',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
-#'DHS_OOC_A_nl_random_b_b32_fc1.0_conv1.0_lr0001',
-#'DHS_OOC_B_nl_random_b_b32_fc1.0_conv1.0_lr0001',
-#'DHS_OOC_C_nl_random_b_b32_fc1.0_conv1.0_lr0001',
-#'DHS_OOC_D_nl_random_b_b32_fc1.0_conv1.0_lr0001',
-#'DHS_OOC_E_nl_random_b_b32_fc1.0_conv1.0_lr0001',
-#'DHS_OOC_E_nl_random_b32_fc1.0_conv1.0_lr0001'
+    # 'DHS_OOC_A_nl_random_b32_fc1.0_conv1.0_lr0001',
+    # 'DHS_OOC_B_nl_random_b32_fc1.0_conv1.0_lr0001',
+    #  'DHS_OOC_c_nl_random_b32_fc1.0_conv1.0_lr0001',
+    # 'DHS_OOC_D_nl_random_b32_fc1.0_conv1.0_lr0001',
+    #  '/DHS_OOC_E_nl_random_b32_fc1.0_conv1.0_lr0001',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
+    # 'DHS_OOC_A_nl_random_b_b32_fc1.0_conv1.0_lr0001',
+    # 'DHS_OOC_B_nl_random_b_b32_fc1.0_conv1.0_lr0001',
+    # 'DHS_OOC_C_nl_random_b_b32_fc1.0_conv1.0_lr0001',
+    # 'DHS_OOC_D_nl_random_b_b32_fc1.0_conv1.0_lr0001',
+    # 'DHS_OOC_E_nl_random_b_b32_fc1.0_conv1.0_lr0001',
+    # 'DHS_OOC_E_nl_random_b32_fc1.0_conv1.0_lr0001'
 
     # 'dhs_ooc/DHS_OOC_A_rgb_same_b64_fc0001_conv0001_lr001',
     # 'dhs_ooc/DHS_OOC_B_rgb_same_b64_fc001_conv001_lr0001',
@@ -98,23 +98,26 @@ def run_extraction_on_models(model_dir: str,
     '''
 
     print(f'Building model from {model_dir} checkpoint')
-    encoder_params=defaultdict()
-    for key,value in model_params.items():             #don't include self attention for now
-        encoder_params[key]=get_model(**value)
-    #model = get_model(**model_params)
-    encoder=Encoder(**encoder_params)
+    encoder_params = defaultdict()
+    for key, value in model_params.items():
+        if key == 'self_attn':  # self attention is just string representing type of attention and not a nn module
+            encoder_params['self_attn'] = value
+        else:
+            encoder_params[key] = get_model(**value)
+    # model = get_model(**model_params)
+    encoder = Encoder(**encoder_params)
     # redefine the model according to num_outputs
     fc = nn.Linear(encoder.fc.in_features, args.num_outputs)
-    print('fc shape',encoder.fc.in_features)
-    #model.fc = fc
-    encoder.fc=fc
+    print('fc shape', encoder.fc.in_features)
+    # model.fc = fc
+    encoder.fc = fc
     checkpoint_pattern = os.path.join(out_root_dir, model_dir, 'best.ckpt')
     checkpoint_path = glob(checkpoint_pattern)
     print(checkpoint_path)
-    #model = load_from_checkpoint(path=checkpoint_path[-1], model=model)
+    # model = load_from_checkpoint(path=checkpoint_path[-1], model=model)
     # freeze the last layer for feature extraction
-    #model.fc = nn.Sequential()
-    #model.to(args.gpus)
+    # model.fc = nn.Sequential()
+    # model.to(args.gpus)
 
     encoder = load_from_checkpoint(path=checkpoint_path[-1], model=encoder)
     # freeze the last layer for feature extraction
@@ -152,40 +155,40 @@ def run_extraction_on_models(model_dir: str,
                     x[data_params['nl_band']] = torch.tensor(record[0]['images'][:, :, -1], device=args.gpus)
                 elif data_params['ls_bands'] or data_params['nl_band']:
                     # only one type of band
-                    x['images'] = torch.tensor(record[0]['images'],device=args.gpus)
-                if args.metadata: #TODO change this to data_params[metadata]
+                    x['images'] = torch.tensor(record[0]['images'], device=args.gpus)
+                if args.metadata:  # TODO change this to data_params[metadata]
                     for meta in args.metadata:
                         if meta == 'country':
                             meta = DHS_COUNTRIES.index(record[0][meta])
-                        x[meta] = torch.tensor(record[0][meta],device=args.gpus )
+                        x[meta] = torch.tensor(record[0][meta], device=args.gpus)
 
-                x['buildings'] = torch.tensor(record[1]['buildings'],device=args.gpus )
+                x['buildings'] = torch.tensor(record[1]['buildings'], device=args.gpus)
 
             else:
                 if args.ls_bands and args.nl_band:
                     # 2 bands split them inot seperate inputs
                     # assumes for now it is only merged nl_bands
-                    x[data_params['ls_bands']] = torch.tensor(record['images'][:, :, :-1],device=args.gpus )
+                    x[data_params['ls_bands']] = torch.tensor(record['images'][:, :, :-1], device=args.gpus)
                     x[data_params['nl_band']] = torch.tensor(record['images'][:, :, -1], device=args.gpus)
                 elif data_params['ls_bands'] or data_params['nl_band']:
                     # only one type of band
-                    x['images'] = torch.tensor(record['images'],device=args.gpus)
+                    x['images'] = torch.tensor(record['images'], device=args.gpus)
                 if args.metadata:
                     for meta in args.metadata:
                         if meta == 'country':
                             meta = DHS_COUNTRIES.index(record[meta])
-                        x[meta] = torch.tensor(record[meta],device=args.gpus )
-            #x = {key: value.type_as(encoder.fc.weight) for key, value in x.items()}
-            x = {key: value.reshape(-1, value.shape[-1], value.shape[-3], value.shape[-2]) for key, value in x.items()
-                 if
-                 value.dim() >= 3}
+                        x[meta] = torch.tensor(record[meta], device=args.gpus)
+            # x = {key: value.type_as(encoder.fc.weight) for key, value in x.items()}
+            for key, value in x.items():
+                x[key] = value.reshape(-1, value.shape[-1], value.shape[-3],
+                                       value.shape[-2]) if value.dim() >= 3 else value
 
             output = encoder(x)
 
             for key in batch_keys:
                 if i == 0:
                     if data_params['include_buildings']:
-                            np_dict[key] = record[0][key]
+                        np_dict[key] = record[0][key]
                     else:
                         np_dict[key] = record[key]
                 else:
@@ -225,13 +228,14 @@ def main(args):
 
         paths = get_paths(data_params['dataset'], 'all', 'A', args.data_path)
         if data_params['include_buildings']:
-           paths_b = get_paths(data_params['dataset'], 'all', data_params['fold'], args.buildings_records)
+            paths_b = get_paths(data_params['dataset'], 'all', data_params['fold'], args.buildings_records)
         else:
-            paths_b=None
-        #TODO save path of building_reocrds or make it doesn't imply any thing in the dataset class
+            paths_b = None
+        # TODO save path of building_reocrds or make it doesn't imply any thing in the dataset class
         batcher = Batcher(paths, None, data_params['ls_bands'], data_params['nl_band'],
                           data_params['label_name'],
-                          data_params['nl_label'],data_params['include_buildings'],paths_b,normalize='DHS', augment=False, clipn=True,
+                          data_params['nl_label'], data_params['include_buildings'], paths_b, normalize='DHS',
+                          augment=False, clipn=True,
                           batch_size=128, groupby=data_params['groupby'],
                           cache=False, shuffle=False)  # assumes no scalar features are present
 
