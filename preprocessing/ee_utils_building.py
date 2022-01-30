@@ -207,7 +207,7 @@ def wait_on_tasks(tasks: Mapping[Any, ee.batch.Task],
         time.sleep(poll_interval)
     progbar.close()
 
-
+"""
 class AfricaBuildings:
      def __init__(self,prop) -> None:
         '''
@@ -228,7 +228,7 @@ class AfricaBuildings:
                                                                                    maxPixels=900)
          c_img_rescaled=c_img_rescaled.rename(['buildings_conf'])
          self.t_img.addBands(c_img_rescaled)
-
+"""
 
 class AfricaBuildings:
     def __init__(self, prop) -> None:
