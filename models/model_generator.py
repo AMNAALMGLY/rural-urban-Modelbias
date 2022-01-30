@@ -2,7 +2,7 @@ import copy
 import math
 
 import torch
-from torch import nn,einsum
+from torch import nn, einsum
 from einops import rearrange
 from configs import args
 from models.preact_resnet import PreActResNet18, PreActResNet34, PreActResNet50
@@ -50,17 +50,17 @@ class Encoder(nn.Module):
     def forward(self, x):
         features = []
         for (model_name, model), input in zip(self.models.items(), x.values()):
-            print(f'appending {model_name} features',type(model))
-            feature=torch.tensor(model(input)[1],device=args.gpus)
+            print(f'appending {model_name} features', type(model))
+            feature = torch.tensor(model(input)[1], device=args.gpus)
             features.append(feature)
 
         features = torch.stack((features), dim=1)
 
-        print('features_concat_shape',features.shape)
+        print('features_concat_shape', features.shape)
         if self.self_attn:
             print('in attention')
 
-            #features_concat = features.transpose(-2, -1)  # bxnxd
+            # features_concat = features.transpose(-2, -1)  # bxnxd
 
             if self.self_attn == 'vanilla':
                 attn, _ = attention(features, features, features)  # bxnxd
@@ -68,7 +68,7 @@ class Encoder(nn.Module):
 
                 attn, _ = intersample_attention(features, features, features)  # bxnxd
             elif self.self_attn == 'multihead':
-                mutlihead=MultiHeadedAttention(h=4, d_model=self.dim).to(args.gpus)
+                mutlihead = MultiHeadedAttention(h=4, d_model=self.dim).to(args.gpus)
                 attn, _ = mutlihead(features, features, features)
 
             print('attention shape', attn.shape)
@@ -128,32 +128,34 @@ def attention(query, key, value, dropout=None):
     output = torch.matmul(p_attn, value)  # bs, n , embed_dim
     return output, p_attn
     '''
-    b,h, n ,d = query.shape
-    scores=einsum('b h i d, b h j d -> b h i j',query,key)/math.sqrt(d)
+    b, h, n, d = query.shape
+    scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
     print('scores shape', scores.shape)
     p_attn = F.softmax(scores, dim=-1)
-    out=einsum('b h i j, b h i d -> b h i d',p_attn,value)
+    out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
     print('output before rearrange ', out.shape)
-    out=rearrange(out,'b h n d -> b n (h d)',h=h)
-    print('output of attn ',out.shape)
-    return out,p_attn
+
+    return out, p_attn
+
 
 def intersample_attention(query, key, value):
     "Calculate the intersample of a given query batch"
     # x , bs , n , d
 
-    b, h,n, d = query.shape
+    b, h, n, d = query.shape
     # print(query.shape,key.shape, value.shape )
-    query, key, value = query.reshape(1,h, b, n * d), \
-                        key.reshape(1,h, b,  n * d), \
-                        value.reshape(1,h, b, n * d)
-    #query, key, value = query.reshape(h,n, b, d), \
+    query, key, value = query.reshape(1, h, b, n * d), \
+                        key.reshape(1, h, b, n * d), \
+                        value.reshape(1, h, b, n * d)
+    # query, key, value = query.reshape(h,n, b, d), \
     #                    key.reshape(h,n, b, d), \
     #                    value.reshape(h,n, b, d)
 
-    output, scores = attention(query, key, value)  # 1 , b, n*d
-    output = output.squeeze(0)  # b, n*d
-    #output = output.reshape(b, n, d)  # b,n,d
+    output, scores = attention(query, key, value)  # 1 , h,b, n*d
+    output = output.squeeze(0)  # h, b,n*d
+    output = output.view(b, h, n, d)  # b,h,n,d
+    # output = output.squeeze(0)  # b, n*d
+    # output = output.reshape(b, n, d)  # b,n,d
 
     return output, scores
 
@@ -173,7 +175,7 @@ class MultiHeadedAttention(nn.Module):
 
     def forward(self, query, key, value):
         nbatches = query.size(0)
-
+        n = query.size(1)
         # 1) Do all the linear projections in batch from d_model => h x d_k
         print((self.linears[0](query)).shape)
         query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
@@ -181,13 +183,14 @@ class MultiHeadedAttention(nn.Module):
 
         # 2) Apply attention on all the projected vectors in batch.
         x, self.attn = intersample_attention(query, key, value,
-                                 )
+                                             )
 
         # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
-
-        #x = x.transpose(1, 2).contiguous().view(
-         #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
-        #x=x.reshape(b,n,h*d)
+        x = rearrange(x, 'b h n d -> b n (h d)', h=self.h)
+        print('output of attn ', x.shape)
+        # x = x.transpose(1, 2).contiguous().view(
+        #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
+        # x=x.reshape(b,n,h*d)
         return self.linears[-1](x)  # bs , n , d_model
 
 
