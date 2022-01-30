@@ -289,6 +289,7 @@ class Trainer:
                     print('inLoader:', x.shape)
                     x = x.type_as(self.model.fc.weight)
                     y = y.type_as(self.model.fc.weight)
+                    x = dict(images=x)
                     outputs = self.model(x)
                     outputs = outputs.squeeze(dim=-1)
                     y = y.squeeze(dim=-1)
@@ -329,6 +330,7 @@ class Trainer:
                 for x, y, _ in validloader:
                     x = x.type_as(self.model.fc.weight)
                     y = y.type_as(self.model.fc.weight)
+                    x=dict(images=x)
                     outputs = self.model(x)
                     outputs = outputs.squeeze(dim=-1)
                     y = y.squeeze(dim=-1)
