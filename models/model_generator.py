@@ -61,7 +61,7 @@ class Encoder(nn.Module):
             print('in attention')
 
             features_concat = features.transpose(-2, -1)  # bxnxd
-            print(features_concat.device())
+            print(features_concat.device)
             if self.self_attn == 'vanilla':
                 attn, _ = attention(features_concat, features_concat, features_concat)  # bxnxd
             elif self.self_attn == 'intersample':
