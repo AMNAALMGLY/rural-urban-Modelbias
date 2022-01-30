@@ -53,8 +53,8 @@ class Encoder(nn.Module):
             print(f'appending {model_name} features',type(model))
             features.append(model(input)[1])
 
-        features = torch.cat((features), dim=1)
-        features.device=args.gpus
+        features = torch.stack((features), dim=1,device=args.gpus)
+
         print('features_concat_shape',features.shape)
         if self.self_attn:
             print('in attention')
