@@ -193,7 +193,6 @@ def main(args):
         params = dict(model_name=args.model_name, in_channels=args.in_channels)
         encoder_params[model_key]=params
 
-    model_dict.update(dict(self_attn=args.self_attn))
     # saving encoder params
     encoder_params_filepath = os.path.join(dirpath, 'encoder_params.json')
     with open(encoder_params_filepath, 'w') as config_file:
@@ -204,7 +203,7 @@ def main(args):
 
 
 
-    encoder=Encoder(model_dict)
+    encoder=Encoder(model_dict,self_attn=args.self_attn)
     config = {"lr": args.lr, "wd": args.conv_reg}
     best_loss, best_path, score = setup_experiment(encoder, batcher_train, batcher_valid, args.resume, args, config,
                                                    batcher_test)

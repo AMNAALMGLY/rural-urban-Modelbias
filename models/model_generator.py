@@ -50,6 +50,7 @@ class Encoder(nn.Module):
     def forward(self, x):
         features = []
         for (model_name, model), input in zip(self.models.items(), x.keys()):
+            print(f'appending {model_name} features',type(model))
             features.append(model(input)[1])
 
         features = torch.cat(features, dim=1)
