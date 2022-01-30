@@ -191,7 +191,7 @@ class MultiHeadedAttention(nn.Module):
         # x = x.transpose(1, 2).contiguous().view(
         #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
         # x=x.reshape(b,n,h*d)
-        return self.linears[-1](x)  # bs , n , d_model
+        return self.linears[-1](x),self.attn  # bs , n , d_model
 
 
 def clones(module, N):
