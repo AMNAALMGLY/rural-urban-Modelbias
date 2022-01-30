@@ -134,6 +134,7 @@ def attention(query, key, value, dropout=None):
     p_attn = F.softmax(scores, dim=-1)
     out=einsum('b h i j, b h i d -> b h  d',p_attn,value)
     out=rearrange(out,'b h n d -> b n (h d)',h=h)
+    print('output of attn ',out.shape)
     return out,p_attn
 
 def intersample_attention(query, key, value):
