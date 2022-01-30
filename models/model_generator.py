@@ -60,19 +60,19 @@ class Encoder(nn.Module):
         if self.self_attn:
             print('in attention')
 
-            features_concat = features.transpose(-2, -1)  # bxnxd
-            print(features_concat.device)
+            #features_concat = features.transpose(-2, -1)  # bxnxd
+
             if self.self_attn == 'vanilla':
-                attn, _ = attention(features_concat, features_concat, features_concat)  # bxnxd
+                attn, _ = attention(features, features, features)  # bxnxd
             elif self.self_attn == 'intersample':
 
-                attn, _ = intersample_attention(features_concat, features_concat, features_concat)  # bxnxd
+                attn, _ = intersample_attention(features, features, features)  # bxnxd
             elif self.self_attn == 'multihead':
                 mutlihead=MultiHeadedAttention(h=4, d_model=self.dim).to(args.gpus)
-                attn, _ = mutlihead(features_concat, features_concat, features_concat)
+                attn, _ = mutlihead(features, features, features)
 
             print('attention shape', attn.shape)
-            features = features_concat + attn  # residual connection
+            features = features + attn  # residual connection
             features = features.view(-1, self.fc_in_dim)
 
         return self.fc(self.relu(self.dropout(features)))
@@ -174,7 +174,7 @@ class MultiHeadedAttention(nn.Module):
         nbatches = query.size(0)
 
         # 1) Do all the linear projections in batch from d_model => h x d_k
-        print(self.linears[0](query).shape)
+        print((self.linears[0](query)).shape)
         query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
                              for l, x in zip(self.linears, (query, key, value))]
 
