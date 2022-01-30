@@ -11,7 +11,7 @@ args = Namespace(
     # Model
 
     model_name=defaultdict(resnet_bands='resnet18',resnet_build='resnet18',Mlp='mlp'),
-        self_attn=False,
+        self_attn='multihead', #choices : [vanilla, intersample , multihead]
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet','imagenet',None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
@@ -26,9 +26,9 @@ args = Namespace(
     patience=20,
 
     lr=.00001,  # lr0001         #0.0001 nl,ms
-    fc_reg=.1,
+    fc_reg=.01,
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=.1,
+    conv_reg=.01,
 
     # data
 
@@ -40,7 +40,7 @@ args = Namespace(
     clipn=True,
     normalize='DHS',
     dataset='DHS_OOC',
-    fold='A',
+    fold='D',
     ls_bands=None,
     nl_band='split',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
@@ -56,7 +56,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_A_encoder_b_nl_geo',
+    experiment_name='DHS_OOC_D_encoder_b_multihead',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
