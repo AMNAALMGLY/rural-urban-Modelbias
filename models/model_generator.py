@@ -2,8 +2,8 @@ import copy
 import math
 
 import torch
-from torch import nn
-
+from torch import nn,einsum
+from einops import rearrange
 from configs import args
 from models.preact_resnet import PreActResNet18, PreActResNet34, PreActResNet50
 from models.resnet import resnet18, resnet34, resnet50, mlp
@@ -114,9 +114,10 @@ class Encoder(nn.Module):
 
 def attention(query, key, value, dropout=None):
     "Compute 'Scaled Dot Product Attention'"
-    # query: bs, n, embed_dim
-    # key: bs, n, embed_dim
-    # value: bs, n, embed_dim
+    # query: bs, h,n, embed_dim
+    # key: bs, h,n, embed_dim
+    # value: bs, h, n,embed_dim
+    '''
     d_k = query.size(-1)
     scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
     print('scores shape', scores.shape)
@@ -126,24 +127,31 @@ def attention(query, key, value, dropout=None):
         p_attn = dropout(p_attn)  # bs , n , n
     output = torch.matmul(p_attn, value)  # bs, n , embed_dim
     return output, p_attn
-
+    '''
+    b,h, n ,d = query.shape
+    scores=einsum('b h i d, b h j d -> b h i j',query,key)/math.sqrt(d)
+    print('scores shape', scores.shape)
+    p_attn = F.softmax(scores, dim=-1)
+    out=einsum('b h i j, b h i d -> b h  d',p_attn,value)
+    out=rearrange(out,'b h n d -> b n (h d)',h=h)
+    return out,p_attn
 
 def intersample_attention(query, key, value):
     "Calculate the intersample of a given query batch"
     # x , bs , n , d
 
-    b, n, d = query.shape
+    b, h,n, d = query.shape
     # print(query.shape,key.shape, value.shape )
-    # query, key, value = query.reshape(1, b, n * d), \
-    #                    key.reshape(1, b,  n * d), \
-    #                    value.reshape(1, b, n * d)
-    query, key, value = query.reshape(n, b, d), \
-                        key.reshape(n, b, d), \
-                        value.reshape(n, b, d)
+    query, key, value = query.reshape(1,h, b, n * d), \
+                        key.reshape(1,h, b,  n * d), \
+                        value.reshape(1,h, b, n * d)
+    #query, key, value = query.reshape(h,n, b, d), \
+    #                    key.reshape(h,n, b, d), \
+    #                    value.reshape(h,n, b, d)
 
     output, scores = attention(query, key, value)  # 1 , b, n*d
-    # output = output.squeeze(0)  # b, n*d
-    output = output.reshape(b, n, d)  # b,n,d
+    output = output.squeeze(0)  # b, n*d
+    #output = output.reshape(b, n, d)  # b,n,d
 
     return output, scores
 
@@ -173,8 +181,10 @@ class MultiHeadedAttention(nn.Module):
                                  )
 
         # 3) "Concat" using a view and apply a final linear.
-        x = x.transpose(1, 2).contiguous().view(
-            nbatches, -1, self.h * self.d_k)  # bs , n , d_model
+
+        #x = x.transpose(1, 2).contiguous().view(
+         #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
+        #x=x.reshape(b,n,h*d)
         return self.linears[-1](x)  # bs , n , d_model
 
 
