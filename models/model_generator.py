@@ -49,7 +49,7 @@ class Encoder(nn.Module):
 
     def forward(self, x):
         features = []
-        for (model_name, model), input in zip(self.models.items(), x.keys()):
+        for (model_name, model), input in zip(self.models.items(), x.values()):
             print(f'appending {model_name} features',type(model))
             features.append(model(input)[1])
 
