@@ -105,12 +105,15 @@ def intersample_attention(query, key, value):
 
     b, n, d = query.shape
     # print(query.shape,key.shape, value.shape )
-    query, key, value = query.reshape(1, b, n * d), \
-                        key.reshape(1, b,  n * d), \
-                        value.reshape(1, b, n * d)
+    #query, key, value = query.reshape(1, b, n * d), \
+    #                    key.reshape(1, b,  n * d), \
+    #                    value.reshape(1, b, n * d)
+    query, key, value = query.reshape(n, b,  d), \
+                        key.reshape(n, b,  d), \
+                        value.reshape(n, b,  d)
 
     output, scores = attention(query, key, value)  # 1 , b, n*d
-    output = output.squeeze(0)  # b, n*d
+    #output = output.squeeze(0)  # b, n*d
     output = output.reshape(b,  n, d)  # b,n,d
 
     return output, scores
