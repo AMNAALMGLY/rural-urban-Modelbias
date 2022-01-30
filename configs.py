@@ -19,13 +19,13 @@ args = Namespace(
     # Training
 
     lr_decay=0.96,
-    batch_size=64,
+    batch_size=128,
     gpu=-1,
-    max_epochs=200,
+    max_epochs=300,
     epoch_thresh=150,
     patience=20,
 
-    lr=.0001,  # lr0001         #0.0001 nl,ms
+    lr=.00001,  # lr0001         #0.0001 nl,ms
     fc_reg=.1,
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
     conv_reg=.1,
@@ -46,7 +46,8 @@ args = Namespace(
     nl_label=None,  # [center, mean,None]
     include_buildings=True,
     scaler_features_keys={'urban_rural': tf.float32,'country':tf.string},
-    metadata=['country'],
+    metadata=None,
+    #['country'],
     #['locs'],
     #countryresnet_bands=model_dict,resnet_build=,Mlp=
 

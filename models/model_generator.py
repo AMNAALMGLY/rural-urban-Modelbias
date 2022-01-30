@@ -79,7 +79,7 @@ class Encoder(nn.Module):
 
             return self.fc(self.relu(features.reshape(batch, -1)))
         else:
-            features_concat = self.dropout(torch.cat([features_img, features_b,features_meta ], dim=-1))
+            features_concat = self.dropout(torch.cat([features_img, features_b, ], dim=-1))
             return self.fc(self.relu(features_concat))
 
 
