@@ -68,7 +68,7 @@ class Encoder(nn.Module):
 
                 attn, _ = intersample_attention(features, features, features)  # bxnxd
             elif self.self_attn == 'multihead':
-                mutlihead = MultiHeadedAttention(h=4, d_model=self.dim).to(args.gpus)
+                mutlihead = MultiHeadedAttention(h=1, d_model=self.dim).to(args.gpus)
                 attn, _ = mutlihead(features, features, features)
 
             print('attention shape', attn.shape)
@@ -182,7 +182,7 @@ class MultiHeadedAttention(nn.Module):
                              for l, x in zip(self.linears, (query, key, value))]
 
         # 2) Apply attention on all the projected vectors in batch.
-        x, self.attn = intersample_attention(query, key, value,
+        x, self.attn = attention(query, key, value,
                                              )
 
         # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)

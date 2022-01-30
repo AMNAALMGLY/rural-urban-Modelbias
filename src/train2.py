@@ -159,7 +159,7 @@ def main(args):
                         cache=True, shuffle=False)
     ##############################################################WILDS dataset############################################################
     else:
-        dataset = get_dataset(dataset="poverty", download=True)
+        dataset = get_dataset(dataset="poverty", download=True,unlabeled=True)
 
         # Get the training set
         train_data = dataset.get_subset(
@@ -170,7 +170,7 @@ def main(args):
         )
 
         # Prepare the standard data loader
-        train_loader = get_train_loader("standard", train_data, batch_size=64)
+        batcher_train = get_train_loader("standard", train_data, batch_size=64)
         # Get the test set
         test_data = dataset.get_subset(
             "val",
@@ -180,7 +180,8 @@ def main(args):
         )
 
         # Prepare the data loader
-        test_loader = get_eval_loader("standard", test_data, batch_size=64)
+        batcher_valid = get_eval_loader("standard", test_data, batch_size=64)
+        batcher_test=None
 
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model_dict=defaultdict()
@@ -204,7 +205,7 @@ def main(args):
 
 
     encoder=Encoder(model_dict,self_attn=args.self_attn)
-    config = {"lr": args.lr, "wd": args.conv_reg}
+    config = {"lr": args.lr, "wd": args.conv_reg}     #you can remove this now it is for raytune
     best_loss, best_path, score = setup_experiment(encoder, batcher_train, batcher_valid, args.resume, args, config,
                                                    batcher_test)
 
