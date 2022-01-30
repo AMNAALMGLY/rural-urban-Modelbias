@@ -133,6 +133,7 @@ def attention(query, key, value, dropout=None):
     print('scores shape', scores.shape)
     p_attn = F.softmax(scores, dim=-1)
     out=einsum('b h i j, b h i d -> b h i d',p_attn,value)
+    print('output before rearrange ', out.shape)
     out=rearrange(out,'b h n d -> b n (h d)',h=h)
     print('output of attn ',out.shape)
     return out,p_attn
