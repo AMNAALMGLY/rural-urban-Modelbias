@@ -174,6 +174,7 @@ class MultiHeadedAttention(nn.Module):
         nbatches = query.size(0)
 
         # 1) Do all the linear projections in batch from d_model => h x d_k
+        print(self.linears[0](query).shape)
         query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
                              for l, x in zip(self.linears, (query, key, value))]
 
@@ -181,7 +182,7 @@ class MultiHeadedAttention(nn.Module):
         x, self.attn = intersample_attention(query, key, value,
                                  )
 
-        # 3) "Concat" using a view and apply a final linear.
+        # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
 
         #x = x.transpose(1, 2).contiguous().view(
          #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
