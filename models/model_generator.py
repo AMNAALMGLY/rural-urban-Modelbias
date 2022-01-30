@@ -68,7 +68,8 @@ class Encoder(nn.Module):
 
                 attn, _ = intersample_attention(features_concat, features_concat, features_concat)  # bxnxd
             elif self.self_attn == 'multihead':
-                attn, _ = MultiHeadedAttention(h=4, d_model=self.dim)(features_concat, features_concat, features_concat)
+                mutlihead=MultiHeadedAttention(h=4, d_model=self.dim).to(args.gpus)
+                attn, _ = mutlihead(features_concat, features_concat, features_concat)
 
             print('attention shape', attn.shape)
             features = features_concat + attn  # residual connection
