@@ -72,8 +72,8 @@ class Encoder(nn.Module):
             features_concat = torch.cat([features_img, features_b], dim=-1)  # bxdx3
             features_concat = features_concat.transpose(-2, -1)  # bx3xd
             # print('features shape together :', features_concat.shape)
-            attn=self.dropout(self.self_attn(features_concat,features_concat,features_concat))
-            #attn, _ = intersample_attention(features_concat, features_concat, features_concat)  # bx3xd
+            #attn=self.dropout(self.self_attn(features_concat,features_concat,features_concat))
+            attn, _ = intersample_attention(features_concat, features_concat, features_concat)  # bx3xd
             print('attention shape', attn.shape)
             features = features_concat + attn
 
@@ -113,7 +113,6 @@ def intersample_attention(query, key, value):
     output = output.squeeze(0)  # b, n*d
     output = output.reshape(b,  n, d)  # b,n,d
 
-    output.squeeze_(1)  # squeeze the h dimension
     return output, scores
 
 
