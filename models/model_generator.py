@@ -51,9 +51,10 @@ class Encoder(nn.Module):
         features = []
         for (model_name, model), input in zip(self.models.items(), x.values()):
             print(f'appending {model_name} features',type(model))
-            features.append(model(input)[1])
+            feature=torch.tensor(model(input)[1],device=args.gpus)
+            features.append(feature)
 
-        features = torch.stack((features), dim=1,device=args.gpus)
+        features = torch.stack((features), dim=1)
 
         print('features_concat_shape',features.shape)
         if self.self_attn:
