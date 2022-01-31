@@ -194,12 +194,13 @@ def main(args):
 
         params = dict(model_name=model_name, in_channels=in_channels)
         encoder_params[model_key]=params
-    encoder_params['self_attn']=args.self_attn
     # saving encoder params
+    saved_encoder_params=dict(model_dict=encoder_params,self_attn=args.self_attn)
+    
     encoder_params_filepath = os.path.join(dirpath, 'encoder_params.json')
     print('encoder_params',encoder_params)
     with open(encoder_params_filepath, 'w') as config_file:
-            json.dump(encoder_params, config_file, indent=4)
+            json.dump(saved_encoder_params, config_file, indent=4)
 
     # save the encoder_params
 
