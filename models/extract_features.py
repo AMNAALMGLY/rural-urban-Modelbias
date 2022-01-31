@@ -99,13 +99,12 @@ def run_extraction_on_models(model_dir: str,
 
     print(f'Building model from {model_dir} checkpoint')
     encoder_params = defaultdict()
-    for key, value in model_params.items():
-        if key == 'self_attn':  # self attention is just string representing type of attention and not a nn module
-            encoder_params['self_attn'] = value
-        else:
-            encoder_params[key] = get_model(**value)
+    # model params is a dictionary of dictionary that have 2 main keys(
+    # model_dict(which is a dict of models itself) and self_attn)
+    for key, value in model_params['model_dict'].items():
+             encoder_params[key] = get_model(**value)
     # model = get_model(**model_params)
-    encoder = Encoder(**encoder_params)
+    encoder = Encoder(encoder_params,model_params['self_attn'])
     # redefine the model according to num_outputs
     fc = nn.Linear(encoder.fc.in_features, args.num_outputs)
     print('fc shape', encoder.fc.in_features)
