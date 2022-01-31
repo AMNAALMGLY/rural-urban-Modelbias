@@ -49,7 +49,6 @@ args = Namespace(
     metadata=None,
     #['country'],
     #['locs'],
-    #countryresnet_bands=model_dict,resnet_build=,Mlp=
 
     # keep_frac {keep_frac}
 
