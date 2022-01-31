@@ -51,6 +51,7 @@ class Encoder(nn.Module):
         features = []
         for (model_name, model), input in zip(self.models.items(), x.values()):
             print(f'appending {model_name} features', type(model))
+            model.to(args.gpus)
             feature = torch.tensor(model(input)[1], device=args.gpus)
             features.append(feature)
 
