@@ -194,7 +194,7 @@ def main(args):
 
         params = dict(model_name=model_name, in_channels=in_channels)
         encoder_params[model_key]=params
-
+    encoder_params['self_attn']=args.self_attn
     # saving encoder params
     encoder_params_filepath = os.path.join(dirpath, 'encoder_params.json')
     print('encoder_params',encoder_params)
