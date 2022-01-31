@@ -138,7 +138,7 @@ class BasicBlock(nn.Module):
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
         self.stride = stride
-        self.se = SE_Block(c=planes)
+        #self.se = SE_Block(c=planes)
 
     def forward(self, x: Tensor) -> Tensor:
         identity = x
@@ -261,7 +261,7 @@ class ResNet(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
         # Attention
-        #self.attn = SE_Block(c=512)
+        self.attn = SE_Block(c=512)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
