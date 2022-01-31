@@ -51,8 +51,8 @@ class Encoder(nn.Module):
         features = []
         for (model_name, model), key in zip(self.models.items(), x.keys()):
             print(f'appending {model_name} features', type(model),x[key].requires_grad)
-            model.to(args.gpus)
-            feature = torch.tensor(model(x[key])[1], device=args.gpus)
+            self.models[model_name].to(args.gpus)
+            feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
             features.append(feature)
 
         features = torch.stack((features), dim=1)
