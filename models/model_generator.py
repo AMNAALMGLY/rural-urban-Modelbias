@@ -41,7 +41,7 @@ class Encoder(nn.Module):
         self.models = nn.ModuleDict({key:value for key, value in model_dict.items()})
         print('Module dict ',self.models)
         self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
-        self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)  # combines both together
+        self.fc = nn.ModuleDict({'linear':nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)} ) # combines both together
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.01)
         self.self_attn = self_attn
@@ -77,7 +77,7 @@ class Encoder(nn.Module):
             features = features + attn  # residual connection
         features = features.view(-1, self.fc_in_dim)
 
-        return self.fc(self.relu(self.dropout(features)))
+        return self.fc['linear'](self.relu(self.dropout(features)))
         """
         features_img, features_b, features_meta = torch.zeros((x['buildings'].shape[0], self.dim), device=args.gpus) \
             , torch.zeros(
