@@ -73,7 +73,7 @@ class Encoder(nn.Module):
 
             print('attention shape', attn.shape)
             features = features + attn  # residual connection
-            features = features.view(-1, self.fc_in_dim)
+        features = features.view(-1, self.fc_in_dim)
 
         return self.fc(self.relu(self.dropout(features)))
         """
