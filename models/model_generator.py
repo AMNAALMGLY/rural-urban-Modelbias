@@ -85,7 +85,7 @@ class Encoder(nn.Module):
             features = features + attn  # residual connection
         features = features.view(-1, self.fc_in_dim)
 
-        return self.fc.linear(self.relu(self.dropout(features)))
+        return self.fc(self.relu(self.dropout(features)))
         """
         features_img, features_b, features_meta = torch.zeros((x['buildings'].shape[0], self.dim), device=args.gpus) \
             , torch.zeros(
