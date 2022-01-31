@@ -198,8 +198,7 @@ def main(args):
     encoder_params_filepath = os.path.join(dirpath, 'encoder_params.json')
     print('encoder_params',encoder_params)
     with open(encoder_params_filepath, 'w') as config_file:
-            json.dump(encoder_params.update(dict(self_attn=args.self_attn)), config_file, indent=4)
-
+            json.dump(encoder_params, config_file, indent=4)
 
     # save the encoder_params
 
