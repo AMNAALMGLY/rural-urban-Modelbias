@@ -88,7 +88,7 @@ class Self_Attn(nn.Module):
         return out, attention
 '''
 
-
+"""
 class SE_Block(nn.Module):
     "credits: https://github.com/moskomule/senet.pytorch/blob/master/senet/se_module.py#L4"
 
@@ -107,7 +107,7 @@ class SE_Block(nn.Module):
         y = self.squeeze(x).view(bs, c)
         y = self.excitation(y).view(bs, c, 1, 1)
         return x * y.expand_as(x)
-
+"""
 
 class BasicBlock(nn.Module):
     expansion: int = 1
@@ -261,7 +261,7 @@ class ResNet(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
         # Attention
-        self.attn = SE_Block(c=512)
+        #self.attn = SE_Block(c=512)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
