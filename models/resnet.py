@@ -88,7 +88,7 @@ class Self_Attn(nn.Module):
         return out, attention
 '''
 
-"""
+
 class SE_Block(nn.Module):
     "credits: https://github.com/moskomule/senet.pytorch/blob/master/senet/se_module.py#L4"
 
@@ -107,7 +107,7 @@ class SE_Block(nn.Module):
         y = self.squeeze(x).view(bs, c)
         y = self.excitation(y).view(bs, c, 1, 1)
         return x * y.expand_as(x)
-"""
+
 
 class BasicBlock(nn.Module):
     expansion: int = 1
@@ -335,7 +335,7 @@ class ResNet(nn.Module):
         x = self.layer3(x)
         x = self.layer4(x)
         # print('before attention',x.shape)
-        #x=self.attn(x)
+        x=self.attn(x)
 
         # print('after attention',x.shape)
         x = self.avgpool(x)
