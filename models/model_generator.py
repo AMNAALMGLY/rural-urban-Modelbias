@@ -27,7 +27,7 @@ def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
 
 
 class Encoder(nn.Module):
-    def __init__(self, model_dict, self_attn=None, dim=512, num_outputs=1):
+    def __init__(self, resnet_build=None,resnet_bands=None,Mlp=None,model_dict=None, self_attn=None, dim=512, num_outputs=1):
         # TODO add resnet_NL and resnet_Ms
         # TODO add multiple mlps for metadata
         """
@@ -41,22 +41,28 @@ class Encoder(nn.Module):
         self.models = nn.ModuleDict({key:value for key, value in model_dict.items()})
         print('Module dict ',self.models)
         self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
-        self.fc = nn.ModuleDict({"linear":nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)} ) # combines both together
+        self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus) # combines both together
         print(self.fc)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.01)
         self.self_attn = self_attn
         # MultiHeadedAttention(h=1,d_model=512)
         self.dim = dim
+        self.resnet_bands=resnet_bands
+        self.resnet_build=resnet_build
+        self.Mlp=Mlp
 
     def forward(self, x):
         features = []
-        for (model_name, model), key in zip(self.models.items(), x.keys()):
+        #for  key in  x.keys():
             #print(f'appending {model_name} features', type(model),x[key].requires_grad)
-            self.models[model_name].to(args.gpus)
-            feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
-            features.append(feature)
-
+            #self.models[model_name].to(args.gpus)
+            #feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
+            #features.append(feature)
+        features.append(self.resnet_bands(x['images'])[1])
+        features.append(self.resnet_build(x['buildings'])[1])
+        if self.Mlp:
+            features.append(self.Mlp(x[args.metadata[0]])[1])
         features = torch.stack((features), dim=1)
 
         print('features_concat_shape', features.shape)
@@ -78,7 +84,7 @@ class Encoder(nn.Module):
             features = features + attn  # residual connection
         features = features.view(-1, self.fc_in_dim)
 
-        return self.fc(self.relu(self.dropout(features)))
+        return self.fc.linear(self.relu(self.dropout(features)))
         """
         features_img, features_b, features_meta = torch.zeros((x['buildings'].shape[0], self.dim), device=args.gpus) \
             , torch.zeros(
