@@ -38,7 +38,7 @@ class Encoder(nn.Module):
                 MLp (int): Number of features, this is required by LayerNorm
             """
         super(Encoder, self).__init__()
-        self.models = nn.ModuleDict(model_dict)
+        self.models = model_dict
         self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
         self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)  # combines both together
         self.relu = nn.ReLU()
@@ -197,3 +197,4 @@ class MultiHeadedAttention(nn.Module):
 def clones(module, N):
     "Produce N identical layers."
     return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
+
