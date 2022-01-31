@@ -41,7 +41,8 @@ class Encoder(nn.Module):
         self.models = nn.ModuleDict({key:value for key, value in model_dict.items()})
         print('Module dict ',self.models)
         self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
-        self.fc = nn.ModuleDict({'linear':nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)} ) # combines both together
+        self.fc = nn.ModuleDict({"linear":nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)} ) # combines both together
+        print(self.fc)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.01)
         self.self_attn = self_attn
@@ -51,7 +52,7 @@ class Encoder(nn.Module):
     def forward(self, x):
         features = []
         for (model_name, model), key in zip(self.models.items(), x.keys()):
-            print(f'appending {model_name} features', type(model),x[key].requires_grad)
+            #print(f'appending {model_name} features', type(model),x[key].requires_grad)
             self.models[model_name].to(args.gpus)
             feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
             features.append(feature)
