@@ -38,7 +38,7 @@ class Encoder(nn.Module):
                 MLp (int): Number of features, this is required by LayerNorm
             """
         super(Encoder, self).__init__()
-        self.models =nn.ModuleList(model_dict.values())
+        self.models = nn.ModuleDict({key:value for key, value in model_dict.items()})
         print('Module dict ',self.models)
         self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
         self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)  # combines both together
@@ -50,13 +50,13 @@ class Encoder(nn.Module):
 
     def forward(self, x):
         features = []
-        for (model), key in zip(self.models, x.keys()):
-            #print(f'appending {model_name} features', type(model),x[key].requires_grad)
-            model.to(args.gpus)
-            feature = torch.tensor(model(x[key])[1], device=args.gpus)
+        for (model_name, model), key in zip(self.models.items(), x.keys()):
+            print(f'appending {model_name} features', type(model),x[key].requires_grad)
+            self.models[model_name].to(args.gpus)
+            feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
             features.append(feature)
 
-        features = torch.stack(features, dim=1)
+        features = torch.stack((features), dim=1)
 
         print('features_concat_shape', features.shape)
         if self.self_attn:
