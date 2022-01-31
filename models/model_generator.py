@@ -80,6 +80,7 @@ class Encoder(nn.Module):
             elif self.self_attn == 'multihead':
                 #multihead = MultiHeadedAttention(h=1, d_model=self.dim).to(args.gpus)
                 multihead = nn.MultiheadAttention(self.dim, 2)
+                multihead.to(args.gpus)
                 attn, _ = multihead(features, features, features)
 
             print('attention shape', attn.shape)
