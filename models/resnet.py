@@ -88,7 +88,7 @@ class Self_Attn(nn.Module):
         return out, attention
 '''
 
-"""
+
 class SE_Block(nn.Module):
     "credits: https://github.com/moskomule/senet.pytorch/blob/master/senet/se_module.py#L4"
 
@@ -107,7 +107,7 @@ class SE_Block(nn.Module):
         y = self.squeeze(x).view(bs, c)
         y = self.excitation(y).view(bs, c, 1, 1)
         return x * y.expand_as(x)
-"""
+
 
 class BasicBlock(nn.Module):
     expansion: int = 1
@@ -138,7 +138,7 @@ class BasicBlock(nn.Module):
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
         self.stride = stride
-        #self.se = SE_Block(c=planes)
+        self.se = SE_Block(c=planes)
 
     def forward(self, x: Tensor) -> Tensor:
         identity = x
