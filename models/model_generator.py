@@ -38,11 +38,12 @@ class Encoder(nn.Module):
                 MLp (int): Number of features, this is required by LayerNorm
             """
         super(Encoder, self).__init__()
-        self.models = nn.ModuleDict({key:value for key, value in model_dict.items()})
-        print('Module dict ',self.models)
-        self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
+        #self.models = nn.ModuleDict({key:value for key, value in model_dict.items()})
+        #print('Module dict ',self.models)
+        #self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
+        self.fc_in_dim=dim*2
         self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus) # combines both together
-        print(self.fc)
+
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.01)
         self.self_attn = self_attn
