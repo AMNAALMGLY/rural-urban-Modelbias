@@ -188,10 +188,11 @@ def main(args):
     encoder_params=defaultdict()
 
     for (model_key,model_name),in_channels,model_init in zip(args.model_name.items(),args.in_channels,args.model_init):
+
         ckpt, pretrained = init_model(model_init, args.init_ckpt_dir, )
         model_dict[model_key] = get_model(model_name=model_name, in_channels=in_channels, pretrained=pretrained, ckpt_path=ckpt)
 
-        params = dict(model_name=args.model_name, in_channels=args.in_channels)
+        params = dict(model_name=model_name, in_channels=in_channels)
         encoder_params[model_key]=params
 
     # saving encoder params
