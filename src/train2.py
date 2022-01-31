@@ -196,17 +196,19 @@ def main(args):
         encoder_params[model_key]=params
     # saving encoder params
     saved_encoder_params=dict(model_dict=encoder_params,self_attn=args.self_attn)
-    
+    encoder_params['self_attn']=args.self_attn  #comment if not necessary
     encoder_params_filepath = os.path.join(dirpath, 'encoder_params.json')
     print('encoder_params',encoder_params)
     with open(encoder_params_filepath, 'w') as config_file:
-            json.dump(saved_encoder_params, config_file, indent=4)
+            #json.dump(saved_encoder_params, config_file, indent=4)
+            json.dump(encoder_params, config_file, indent=4)
 
     # save the encoder_params
 
 
 
-    encoder=Encoder(model_dict,self_attn=args.self_attn)
+    #encoder=Encoder(model_dict,self_attn=args.self_attn)
+    encoder=Encoder(**encoder_params)
     config = {"lr": args.lr, "wd": args.conv_reg}     #you can remove this now it is for raytune
     best_loss, best_path, score = setup_experiment(encoder, batcher_train, batcher_valid, args.resume, args, config,
                                                    batcher_test)
