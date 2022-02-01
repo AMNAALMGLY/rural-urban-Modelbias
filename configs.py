@@ -5,15 +5,16 @@ import torch
 import multiprocessing
 import os
 import tensorflow as tf
+
 ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
 args = Namespace(
 
     # Model
 
-    model_name=dict(resnet_bands='resnet18',resnet_build='resnet18',Mlp='mlp'),
-        self_attn='multihead', #choices : [vanilla, intersample , multihead]
+    model_name=dict(resnet_bands='resnet18', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
+    self_attn='multihead',  # choices : [vanilla, intersample , multihead]
     hs_weight_init='random',  # [same, samescaled,random]
-    model_init=['imagenet','imagenet',None],
+    model_init=['imagenet', 'imagenet','imagenet', None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
 
     # Training
@@ -41,21 +42,20 @@ args = Namespace(
     normalize='DHS',
     dataset='DHS_OOC',
     fold='D',
-    ls_bands=None,
+    ls_bands='ms',
     nl_band='split',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     include_buildings=True,
-    scaler_features_keys={'urban_rural': tf.float32,'country':tf.string},
-    metadata=None,
-    #['country'],
-    #['locs'],
+    scaler_features_keys={'urban_rural': tf.float32, 'country': tf.string},
+    metadata=['urban_rural', 'country'],
+    # ['locs'],
 
     # keep_frac {keep_frac}
 
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_D_encoder_b_multihead',
+    experiment_name='DHS_OOC_D_encoder_b_msnl',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
@@ -79,7 +79,7 @@ args = Namespace(
 args.num_workers = multiprocessing.cpu_count()
 args.no_of_gpus = torch.cuda.device_count()
 args.gpus = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-args.bands_channels = {'rgb': 3, 'ms': 7, 'split': 2, 'merge': 1,'locs':2 ,'country':1,'buildings':1}
+args.bands_channels = {'rgb': 3, 'ms': 7, 'split': 2, 'merge': 1, 'locs': 2, 'country': 1,'urban_rural':1 ,'buildings': 1}
 '''
 if not args.include_buildings:
     args.in_channels = args.bands_channels.get(args.ls_bands, 0) + args.bands_channels.get(args.nl_band, 0)
@@ -89,9 +89,9 @@ else:
 if args.input == 'locs':
     args.in_channels = 2
 '''
-args.in_channels=[]
-args.in_channels.append( args.bands_channels.get(args.ls_bands, 0) + args.bands_channels.get(args.nl_band, 0))
+args.in_channels = []
+args.in_channels.append(args.bands_channels.get(args.ls_bands, 0) + args.bands_channels.get(args.nl_band, 0))
 if args.include_buildings:
     args.in_channels.append(args.bands_channels['buildings'])
 if args.metadata:
-    args.in_channels.append(args.bands_channels[args.metadata[0]])
+    args.in_channels.append(args.bands_channels[args.metadata[0]]+args.bands_channels[args.metadata[1]])

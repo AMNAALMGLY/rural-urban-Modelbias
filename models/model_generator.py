@@ -27,7 +27,7 @@ def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
 
 
 class Encoder(nn.Module):
-    def __init__(self, resnet_build=None,resnet_bands=None,Mlp=None,model_dict=None, self_attn=None, dim=512, num_outputs=1):
+    def __init__(self, resnet_build=None,resnet_bands=None,resnet_ms=None,Mlp=None,model_dict=None, self_attn=None, dim=512, num_outputs=1):
         # TODO add resnet_NL and resnet_Ms
         # TODO add multiple mlps for metadata
         """
@@ -41,15 +41,16 @@ class Encoder(nn.Module):
         #self.models = nn.ModuleDict({key:value for key, value in model_dict.items()})
         #print('Module dict ',self.models)
         #self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
-        self.fc_in_dim=dim*2
+        self.fc_in_dim=dim*4
         self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus) # combines both together
 
         self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(p=0.01)
+        self.dropout = nn.Dropout(p=0.1)
         self.self_attn = self_attn
         # MultiHeadedAttention(h=1,d_model=512)
         self.dim = dim
         self.resnet_bands=resnet_bands
+        self.resnet_ms=resnet_ms
         self.resnet_build=resnet_build
         self.Mlp=Mlp
 
@@ -60,10 +61,11 @@ class Encoder(nn.Module):
             #self.models[model_name].to(args.gpus)
             #feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
             #features.append(feature)
-        features.append(self.resnet_bands(x['images'])[1])
+        features.append(self.resnet_bands(x['nl'])[1])
+        features.append(self.resnet_bands(x['ms'])[1])
         features.append(self.resnet_build(x['buildings'])[1])
         if self.Mlp:
-            features.append(self.Mlp(x[args.metadata[0]])[1])
+            features.append(self.Mlp(torch.cat([x[args.metadata[0]],x[args.metadata[1]]]))[1])
         features = torch.stack((features), dim=1)
 
         print('features_concat_shape', features.shape)
@@ -79,7 +81,7 @@ class Encoder(nn.Module):
                 attn, _ = intersample_attention(features, features, features)  # bxnxd
             elif self.self_attn == 'multihead':
                 #multihead = MultiHeadedAttention(h=1, d_model=self.dim).to(args.gpus)
-                multihead = nn.MultiheadAttention(self.dim, 2)
+                multihead = nn.MultiheadAttention(self.dim, 1)
                 multihead.to(args.gpus)
                 attn, _ = multihead(features, features, features)
 
