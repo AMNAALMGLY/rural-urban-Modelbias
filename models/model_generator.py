@@ -62,7 +62,7 @@ class Encoder(nn.Module):
             #feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
             #features.append(feature)
         features.append(self.resnet_bands(x['merge'])[1])
-        features.append(self.resnet_bands(x['ms'])[1])
+        features.append(self.resnet_ms(x['ms'])[1])
         features.append(self.resnet_build(x['buildings'])[1])
         if self.Mlp:
             features.append(self.Mlp(torch.cat([x[args.metadata[0]],x[args.metadata[1]]]))[1])
