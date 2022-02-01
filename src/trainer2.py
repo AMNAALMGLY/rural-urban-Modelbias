@@ -161,7 +161,11 @@ class Trainer:
                     if meta=='country':
                         batch[0][meta] = tf.map_fn(fn=lambda t: DHS_COUNTRIES.index(t), elems=batch[0][meta],fn_output_signature=tf.int32)
                         batch[0][meta]=(tf.reshape(batch[0][meta],[-1,1])).numpy()
+
+
                     x[meta] = torch.tensor(batch[0][meta], dtype=torch.int32)
+                    if meta.dim() < 2:  # squeeze the last dimension if I have only one dimension
+                        x[meta].unsqueeze_(-1)
 
             target = torch.tensor(batch[0]['labels'], )
             target = target.type_as(self.model.fc.weight)
