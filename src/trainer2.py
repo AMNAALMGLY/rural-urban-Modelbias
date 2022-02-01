@@ -167,7 +167,7 @@ class Trainer:
 
         else:
             if args.ls_bands and args.nl_band:
-                # 2 bands split them inot seperate inputs
+                # 2 bands split them to seperate inputs
                 # assumes for now it is only merged nl_bands
                 x[args.ls_bands] = torch.tensor(batch['images'][:, :, :-1], )
                 x[args.nl_band] = torch.tensor(batch['images'][:, :, -1], )
