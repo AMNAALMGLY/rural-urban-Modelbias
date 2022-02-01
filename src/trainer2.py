@@ -151,7 +151,7 @@ class Trainer:
                 # assumes for now it is only merged nl_bands
                 x[args.ls_bands] = torch.tensor(batch[0]['images'][:, :,:, :-1], )
 
-                x[args.nl_band] = torch.tensor(batch[0]['images'][:, :,:, -1], )
+                x[args.nl_band] = torch.tensor(batch[0]['images'][:, :,:, -1]).unsqueeze(-1)
                 print('ls_band shape', x[args.nl_band].shape)
             elif args.ls_bands or args.nl_band:
                 # only one type of band
