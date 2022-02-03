@@ -207,8 +207,8 @@ def main(args):
 
 
 
-    #encoder=Encoder(model_dict,self_attn=args.self_attn)
-    encoder=Encoder(self_attn=args.self_attn,**model_dict)
+    encoder=Encoder(model_dict,self_attn=args.self_attn)
+    #encoder=Encoder(self_attn=args.self_attn,**model_dict)
     config = {"lr": args.lr, "wd": args.conv_reg}     #you can remove this now it is for raytune
     best_loss, best_path, score = setup_experiment(encoder, batcher_train, batcher_valid, args.resume, args, config,
                                                    batcher_test)
