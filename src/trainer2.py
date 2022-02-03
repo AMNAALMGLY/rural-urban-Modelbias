@@ -149,19 +149,19 @@ class Trainer:
             if args.ls_bands and args.nl_band:
                 # 2 bands split them inot seperate inputs
                 # assumes for now it is only merged nl_bands
-                x[args.ls_bands] = torch.tensor(batch[0]['images'][:, :,:, :-1], )
+                x[args.ls_bands] = torch.tensor(batch[0]['images'][:, :, :, :-1], )
 
-                x[args.nl_band] = torch.tensor(batch[0]['images'][:, :,:, -1]).unsqueeze(-1)
+                x[args.nl_band] = torch.tensor(batch[0]['images'][:, :, :, -1]).unsqueeze(-1)
                 print('ls_band shape', x[args.nl_band].shape)
             elif args.ls_bands or args.nl_band:
                 # only one type of band
                 x['images'] = torch.tensor(batch[0]['images'])
             if args.metadata:
                 for meta in args.metadata:
-                    if meta=='country':
-                        batch[0][meta] = tf.map_fn(fn=lambda t: DHS_COUNTRIES.index(t), elems=batch[0][meta],fn_output_signature=tf.int32)
-                        batch[0][meta]=(tf.reshape(batch[0][meta],[-1,1])).numpy()
-
+                    if meta == 'country':
+                        batch[0][meta] = tf.map_fn(fn=lambda t: DHS_COUNTRIES.index(t), elems=batch[0][meta],
+                                                   fn_output_signature=tf.int32)
+                        batch[0][meta] = (tf.reshape(batch[0][meta], [-1, 1])).numpy()
 
                     x[meta] = torch.tensor(batch[0][meta], dtype=torch.int32)
                     if x[meta].dim() < 2:  # squeeze the last dimension if I have only one dimension
@@ -175,28 +175,28 @@ class Trainer:
             if args.ls_bands and args.nl_band:
                 # 2 bands split them to seperate inputs
                 # assumes for now it is only merged nl_bands
-                x[args.ls_bands] = torch.tensor(batch['images'][:, :,:, :-1] )
-                x[args.nl_band] = torch.tensor(batch['images'][:, :,:, :-1] )
+                x[args.ls_bands] = torch.tensor(batch['images'][:, :, :, :-1])
+                x[args.nl_band] = torch.tensor(batch['images'][:, :, :, :-1])
             elif args.ls_bands or args.nl_band:
                 # only one type of band
                 x['images'] = torch.tensor(batch['images'])
             if args.metadata:
                 for meta in args.metadata:
-                    if meta=='country':
-                        batch[meta]=tf.map_fn(fn=lambda t: DHS_COUNTRIES.index(t), elems=batch[meta])
+                    if meta == 'country':
+                        batch[meta] = tf.map_fn(fn=lambda t: DHS_COUNTRIES.index(t), elems=batch[meta])
                         batch[meta] = tf.map_fn(fn=lambda t: DHS_COUNTRIES.index(t), elems=batch[meta],
-                                                   fn_output_signature=tf.int32)
+                                                fn_output_signature=tf.int32)
                         batch[meta] = tf.reshape(batch[meta], [-1, 1])
-                    x[meta] = torch.tensor(batch[meta].numpy(),dtype=torch.int32 )
+                    x[meta] = torch.tensor(batch[meta].numpy(), dtype=torch.int32)
             target = torch.tensor(batch['labels'], )
             target = target.type_as(self.model.fc.weight)
 
-
         x = {key: value.type_as(self.model.fc.weight) for key, value in x.items()}
-        for key,value in x.items():
-            x[key]= value.reshape(-1, value.shape[-1], value.shape[-3], value.shape[-2]) if value.dim() >= 3 else value
-        #x = {key: value.reshape(-1, value.shape[-1], value.shape[-3], value.shape[-2]) for key, value in x.items() if
-        #     value.dim() >= 3 else key:value}
+
+        for key, value in x.items():
+            x[key] = value.reshape(-1, value.shape[-1], value.shape[-3], value.shape[-2]) if value.dim() >= 3 else value
+            # x = {key: value.reshape(-1, value.shape[-1], value.shape[-3], value.shape[-2]) for key, value in x.items() if
+            #     value.dim() >= 3 else key:value}
 
         outputs = self.model(x)
 

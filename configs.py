@@ -42,12 +42,13 @@ args = Namespace(
     normalize='DHS',
     dataset='DHS_OOC',
     fold='D',
-    ls_bands='ms',
-    nl_band='merge',  # [None , merge , split]
+    ls_bands=None,
+    nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     include_buildings=True,
     scaler_features_keys={'urban_rural': tf.float32, 'country': tf.string},
-    metadata=['urban_rural', 'country'],
+    metadata=None,
+    #['urban_rural', 'country'],
     # ['locs'],
 
     # keep_frac {keep_frac}
@@ -55,7 +56,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_D_encoder_b_msnl',
+    experiment_name='DHS_OOC_D_encoder_b_patches',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
@@ -89,10 +90,12 @@ else:
 if args.input == 'locs':
     args.in_channels = 2
 '''
-args.in_channels = []
 
-args.in_channels.append(args.bands_channels.get(args.nl_band, 0))
-args.in_channels.append(args.bands_channels.get(args.ls_bands, 0) )
+args.in_channels = []
+if args.ls_bands:
+  args.in_channels.append(args.bands_channels.get(args.nl_band, 0))
+if args.nl_band:
+  args.in_channels.append(args.bands_channels.get(args.ls_bands, 0) )
 if args.include_buildings:
     args.in_channels.append(args.bands_channels['buildings'])
 if args.metadata:

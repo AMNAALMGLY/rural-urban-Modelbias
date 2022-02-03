@@ -27,7 +27,8 @@ def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
 
 
 class Encoder(nn.Module):
-    def __init__(self, resnet_build=None,resnet_bands=None,resnet_ms=None,Mlp=None,model_dict=None, self_attn=None, dim=512, num_outputs=1):
+    def __init__(self, resnet_build, resnet_bands, resnet_ms, Mlp, self_attn=None, dim=512, num_outputs=1,
+                 model_dict=None, ):
         # TODO add resnet_NL and resnet_Ms
         # TODO add multiple mlps for metadata
         """
@@ -38,34 +39,41 @@ class Encoder(nn.Module):
                 MLp (int): Number of features, this is required by LayerNorm
             """
         super(Encoder, self).__init__()
-        #self.models = nn.ModuleDict({key:value for key, value in model_dict.items()})
-        #print('Module dict ',self.models)
-        #self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
-        self.fc_in_dim=dim*4
-        self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus) # combines both together
+        # self.models = nn.ModuleDict({key:value for key, value in model_dict.items()})
+        # print('Module dict ',self.models)
+        # self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
+        self.fc_in_dim = dim * 2
+        self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)  # combines both together
 
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.1)
         self.self_attn = self_attn
         # MultiHeadedAttention(h=1,d_model=512)
         self.dim = dim
-        self.resnet_bands=resnet_bands
-        self.resnet_ms=resnet_ms
-        self.resnet_build=resnet_build
-        self.Mlp=Mlp
+        self.resnet_bands = resnet_bands
+        self.resnet_ms = resnet_ms
+        self.resnet_build = resnet_build
+        self.Mlp = Mlp
+
+        self.multi_head = nn.MultiheadAttention(self.dim, 1)
 
     def forward(self, x):
         features = []
-        #for  key in  x.keys():
-            #print(f'appending {model_name} features', type(model),x[key].requires_grad)
-            #self.models[model_name].to(args.gpus)
-            #feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
-            #features.append(feature)
-        features.append(self.resnet_bands(x['merge'])[1])
-        features.append(self.resnet_ms(x['ms'])[1])
-        features.append(self.resnet_build(x['buildings'])[1])
+        # for  key in  x.keys():
+        # print(f'appending {model_name} features', type(model),x[key].requires_grad)
+        # self.models[model_name].to(args.gpus)
+        # feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
+        # features.append(feature)
+        # features.append(self.resnet_bands(x['images'])[1])
+        # features.append(self.resnet_ms(x['ms'])[1])
+        x_p = img_to_patch(x['buildings'], p=16)
+        print('patches shape :', x_p.shape)
+        b, num_patches, c, h, w = x.shape[1]
+        for p in range(1, num_patches + 1):
+            features.append(self.resnet_build(x_p[:, p, ...].view(-1,c,h,w)))
+        #features.append(self.resnet_build(x['buildings'])[1])
         if self.Mlp:
-            features.append(self.Mlp(torch.cat([x[args.metadata[0]],x[args.metadata[1]]]))[1])
+            features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
         features = torch.stack((features), dim=1)
 
         print('features_concat_shape', features.shape)
@@ -80,17 +88,18 @@ class Encoder(nn.Module):
 
                 attn, _ = intersample_attention(features, features, features)  # bxnxd
             elif self.self_attn == 'multihead':
-                #multihead = MultiHeadedAttention(h=1, d_model=self.dim).to(args.gpus)
-                multihead = nn.MultiheadAttention(self.dim, 1)
-                multihead.to(args.gpus)
-                attn, _ = multihead(features, features, features)
+                # multihead = MultiHeadedAttention(h=1, d_model=self.dim).to(args.gpus)
+                # multihead = nn.MultiheadAttention(self.dim, 1)
+                self.multihead.to(args.gpus)
+                attn, _ = self.multihead(features, features, features)
 
             print('attention shape', attn.shape)
             features = features + attn  # residual connection
         features = features.view(-1, self.fc_in_dim)
 
         return self.fc(self.relu(self.dropout(features)))
-        """
+
+    """
         features_img, features_b, features_meta = torch.zeros((x['buildings'].shape[0], self.dim), device=args.gpus) \
             , torch.zeros(
             (x['buildings'].shape[0], self.dim), device=args.gpus), torch.zeros((x['buildings'].shape[0], self.dim),
@@ -197,7 +206,7 @@ class MultiHeadedAttention(nn.Module):
 
         # 2) Apply attention on all the projected vectors in batch.
         x, self.attn = attention(query, key, value,
-                                             )
+                                 )
 
         # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
         x = rearrange(x, 'b h n d -> b n (h d)', h=self.h)
@@ -205,10 +214,16 @@ class MultiHeadedAttention(nn.Module):
         # x = x.transpose(1, 2).contiguous().view(
         #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
         # x=x.reshape(b,n,h*d)
-        return self.linears[-1](x),self.attn  # bs , n , d_model
+        return self.linears[-1](x), self.attn  # bs , n , d_model
 
 
 def clones(module, N):
     "Produce N identical layers."
     return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
 
+
+def img_to_patch(img, p):
+    # p is patch_size  # P in maths
+
+    x_p = rearrange(img, 'b c (h p1) (w p2) -> b (h w) c p1 p2 ', p1=p, p2=p)
+    return x_p
