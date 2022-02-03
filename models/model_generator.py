@@ -92,7 +92,7 @@ class Encoder(nn.Module):
                 # multihead = MultiHeadedAttention(h=1, d_model=self.dim).to(args.gpus)
                 # multihead = nn.MultiheadAttention(self.dim, 1)
                 self.multihead.to(args.gpus)
-                attn, _ = self.multihead(features, features, features)
+                attn, _ = self.multi_head(features, features, features)
 
             print('attention shape', attn.shape)
             features = features + attn  # residual connection
