@@ -70,7 +70,7 @@ class Encoder(nn.Module):
         print(type(x_p))
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
-        for p in range(1, num_patches + 1):
+        for p in range( num_patches ):
             features.append(self.resnet_bands(x_p[:, p,...].view(-1,c,h,w))[1])
         #features.append(self.resnet_build(x['buildings'])[1])
         if self.Mlp:
