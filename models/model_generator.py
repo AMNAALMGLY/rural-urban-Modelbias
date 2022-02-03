@@ -27,7 +27,7 @@ def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
 
 
 class Encoder(nn.Module):
-    def __init__(self, resnet_build, resnet_bands, resnet_ms, Mlp, self_attn=None, dim=512, num_outputs=1,
+    def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, dim=512, num_outputs=1,
                  model_dict=None, ):
         # TODO add resnet_NL and resnet_Ms
         # TODO add multiple mlps for metadata
