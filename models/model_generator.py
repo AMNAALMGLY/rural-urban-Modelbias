@@ -67,10 +67,11 @@ class Encoder(nn.Module):
         # features.append(self.resnet_bands(x['images'])[1])
         # features.append(self.resnet_ms(x['ms'])[1])
         x_p = img_to_patch(x['buildings'], p=16)
+        print(type(x_p))
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
         for p in range(1, num_patches + 1):
-            features.append(self.resnet_build(x_p[:, p, ...].view(-1,c,h,w))[1])
+            features.append(self.resnet_build(x_p[:, p,...].view(-1,c,h,w))[1])
         #features.append(self.resnet_build(x['buildings'])[1])
         if self.Mlp:
             features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
