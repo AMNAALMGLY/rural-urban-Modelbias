@@ -42,7 +42,7 @@ class Encoder(nn.Module):
         # self.models = nn.ModuleDict({key:value for key, value in model_dict.items()})
         # print('Module dict ',self.models)
         # self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
-        self.fc_in_dim = dim * 2
+        self.fc_in_dim = dim
         self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)  # combines both together
 
         self.relu = nn.ReLU()
