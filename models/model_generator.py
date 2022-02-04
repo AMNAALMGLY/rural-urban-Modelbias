@@ -67,7 +67,7 @@ class Encoder(nn.Module):
         # features.append(feature)
         # features.append(self.resnet_bands(x['images'])[1])
         # features.append(self.resnet_ms(x['ms'])[1])
-        x_p = img_to_patch(x['buildings'], p=16)
+        x_p = img_to_patch(x['buildings'], p=32)
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
         for p in range( num_patches ):
