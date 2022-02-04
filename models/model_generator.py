@@ -55,7 +55,8 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-        self.multi_head = nn.MultiheadAttention(self.dim, 1)
+        self.multi_head = MultiHeadedAttention(h=1,d_model=512)
+            #nn.MultiheadAttention(self.dim, 1)
 
     def forward(self, x):
         features = []
@@ -67,7 +68,6 @@ class Encoder(nn.Module):
         # features.append(self.resnet_bands(x['images'])[1])
         # features.append(self.resnet_ms(x['ms'])[1])
         x_p = img_to_patch(x['buildings'], p=16)
-        print(type(x_p))
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
         for p in range( num_patches ):
@@ -96,7 +96,7 @@ class Encoder(nn.Module):
 
             print('attention shape', attn.shape)
             features = features + attn  # residual connection
-        features=torch.sum(features,dim=1,keepdim=False)
+        features=torch.max(features,dim=1,keepdim=False)
         #features = features.view(-1, self.fc_in_dim)
 
         return self.fc(self.relu(self.dropout(features)))
