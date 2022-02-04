@@ -28,7 +28,7 @@ def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
 
 class Encoder(nn.Module):
     def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, dim=512, num_outputs=1,
-                 model_dict=None, ):
+                 model_dict=None, freeze_encoder=False):
         # TODO add resnet_NL and resnet_Ms
         # TODO add multiple mlps for metadata
         """
@@ -56,7 +56,11 @@ class Encoder(nn.Module):
         self.Mlp = Mlp
 
         self.multi_head = MultiHeadedAttention(h=1,d_model=512)
+
             #nn.MultiheadAttention(self.dim, 1)
+        if freeze_encoder:
+            for p in self.resnet_bands.parameters():         #TODO change this depending on which model I have
+                p.requires_grad=False
 
     def forward(self, x):
         features = []
@@ -67,7 +71,8 @@ class Encoder(nn.Module):
         # features.append(feature)
         # features.append(self.resnet_bands(x['images'])[1])
         # features.append(self.resnet_ms(x['ms'])[1])
-        x_p = img_to_patch(x['buildings'], p=112)
+
+        x_p = img_to_patch(x['buildings'], p=224)
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
         for p in range( num_patches ):
