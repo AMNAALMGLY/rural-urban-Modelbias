@@ -293,6 +293,7 @@ class Trainer:
                 for x, y, in tepoch:
                     tepoch.set_description(f"Epoch {epoch}")
                     print('inLoader:', x.shape)
+        
                     x = x.type_as(self.model.fc.weight)
                     y = y.type_as(self.model.fc.weight)
                     #x = dict(images=x)
