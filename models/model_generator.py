@@ -71,7 +71,7 @@ class EncoderLayer(nn.Module):
         self.size = size  # d_model or embed_dim
 
     def forward(self, x):
-        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x))  # bs, n ,
+        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x))  # bs, n ,d
 
         return self.sublayer[1](x, self.feed_forward)  # bs, n , d_model
 
@@ -89,6 +89,7 @@ class Layers(nn.Module):
         for layer in self.layers:
             x = layer(x)
         return self.norm(x)  # bs , n , d_model
+
 class Encoder(nn.Module):
     def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, dim=512, num_outputs=1,
                  model_dict=None, freeze_encoder=False):
@@ -118,7 +119,7 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-        self.multi_head = MultiHeadedAttention(h=1,d_model=512)
+        self.multi_head = MultiHeadedAttention(h=1,d_model=dim)
         self.ff = nn.Linear(self.fc_in_dim,self.fc_in_dim)
         self.layer=EncoderLayer(size=self.fc_in_dim,self_attn=self.multi_head,feed_forward=self.ff)
         self.layers=Layers(self.layer,3)
@@ -174,7 +175,6 @@ class Encoder(nn.Module):
             print('attention shape', attn.shape)
            # features = features + attn  # residual connection
         features=torch.max(features,dim=1,keepdim=False)[0]
-        #features = features.view(-1, self.fc_in_dim)
 
         return self.fc(self.relu(self.dropout(features)))
 
@@ -319,7 +319,7 @@ class MultiHeadedAttention(nn.Module):
         super(MultiHeadedAttention, self).__init__()
         assert d_model % h == 0
         # We assume d_v always equals d_k
-
+        print('in multiheadedAttention')
         self.d_k = d_model // h
         self.h = h
         self.linears = clones(nn.Linear(d_model, d_model), 4)
@@ -328,9 +328,9 @@ class MultiHeadedAttention(nn.Module):
 
     def forward(self, query, key, value):
         nbatches = query.size(0)
-        print(nbatches)
+
         # 1) Do all the linear projections in batch from d_model => h x d_k
-        print((self.linears[0](query)).shape)
+
         query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
                              for l, x in zip(self.linears, (query, key, value))]
 
@@ -344,7 +344,7 @@ class MultiHeadedAttention(nn.Module):
         # x = x.transpose(1, 2).contiguous().view(
         #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
         # x=x.reshape(b,n,h*d)
-        return self.linears[-1](x),  # bs , n , d_model
+        return self.linears[-1](x)  # bs , n , d_model
 
 
 def clones(module, N):
