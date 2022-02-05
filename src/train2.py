@@ -49,7 +49,8 @@ def geo_attn_exp(model_name, MODEL_DIRS, ):
     npz_path = os.path.join('outputs', 'dhs_ooc', model_dir, 'features.npz')
     npz = load_npz(npz_path, check={'labels': labels})
     features = torch.tensor(npz['features'])
-
+    labels=torch.tensor(labels)
+    print('features,labels',features.shape,labels.shape)
     #Sorting idx according to lat, lon
     countries_train_idx=(df[df['country'].isin(dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['train'])].index).to_numpy()
     countries_valid_idx = (
@@ -63,7 +64,7 @@ def geo_attn_exp(model_name, MODEL_DIRS, ):
     sorted_idx = (df.sort_values(['lat', 'lon']).index).to_numpy()
     print('sorted_idx',sorted_idx)
     train_idx = sorted_idx[np.isin(sorted_idx, countries_train_idx)]
-    print('train_idx', train_idx)
+    print('train_idx', len(train_idx))
     valid_idx = sorted_idx[np.isin(sorted_idx, countries_valid_idx)]
     test_idx = sorted_idx[np.isin(sorted_idx, countries_test_idx)]
 
