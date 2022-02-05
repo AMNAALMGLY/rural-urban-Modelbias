@@ -172,7 +172,7 @@ class Encoder(nn.Module):
                 #self.multi_head.to(args.gpus)
                 #attn = self.multi_head(features, features, features)
 
-            print('attention shape', attn.shape)
+            #print('attention shape', attn.shape)
            # features = features + attn  # residual connection
         features=torch.max(features,dim=1,keepdim=False)[0]
 
