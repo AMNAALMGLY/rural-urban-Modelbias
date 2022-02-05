@@ -5,29 +5,79 @@ import json
 import os
 from collections import defaultdict
 
+import numpy as np
+import pandas as pd
 import torch
 from torch import nn
 
+from batchers import dataset_constants_buildings
 from batchers.dataset import Batcher
-from models.model_generator import get_model, Encoder, MultiHeadedAttention
+
+from models.model_generator import get_model, Encoder, MultiHeadedAttention, geoAttention
 from src.trainer2 import Trainer
-from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name, load_from_checkpoint
+from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name, load_from_checkpoint, \
+    load_npz
 from configs import args as default_args
 from utils.utils import seed_everything
-import  tensorflow as tf
+import tensorflow as tf
 import wandb
 from torch.utils.tensorboard import SummaryWriter
 from wilds import get_dataset
-from wilds.common.data_loaders import get_train_loader,get_eval_loader
+from wilds.common.data_loaders import get_train_loader, get_eval_loader
 from ray import tune
 import torchvision.transforms as transforms
 
-writer = SummaryWriter()
+
 wandp = default_args.wandb_p
 entity = default_args.entity
 
 
-def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args,config,batcher_test=None):
+def geo_attn_exp(model_name, MODEL_DIRS, ):
+    COUNTRIES=dataset_constants_buildings.DHS_COUNTRIES
+    df = pd.read_csv('data/dhs_clusters.csv', float_precision='high', index_col=False)
+    labels = df[df['country'].isin(COUNTRIES)]['wealthpooled'].to_numpy(dtype=np.float32)
+    #locs = df[df['country'].isin(COUNTRIES)][['lat', 'lon']].to_numpy(dtype=np.float32)
+    #urban = df[df['country'].isin(COUNTRIES)]['urban_rural'].to_numpy(dtype=np.float32)
+    #country_labels = df[df['country'].isin(COUNTRIES)]['country'].map(COUNTRIES.index).to_numpy()
+    #num_examples = len(labels)
+    #years = df[df['country'].isin(COUNTRIES)]['year'].to_numpy(dtype=np.float32)
+
+    #Load features from pretrained Model
+    f = args.fold
+    model_fold_name = f'{model_name}_{f}'
+    model_dir = MODEL_DIRS[model_fold_name]
+    npz_path = os.path.join('outputs', 'dhs_ooc', model_dir, 'features.npz')
+    npz = load_npz(npz_path, check={'labels': labels})
+    features = torch.tensor(npz['features'])
+
+    #Sorting idx according to lat, lon
+    countries_train_idx = dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['train'].map(
+        COUNTRIES.index).to_numpy()
+    countries_valid_idx = dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['valid'].map(
+        COUNTRIES.index).to_numpy()
+    countries_test_idx = dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['test'].map(
+        COUNTRIES.index).to_numpy()
+
+    #idx = np.array(range(num_examples))
+
+    sorted_idx = (df.sort_values(['lat', 'lon']).index).to_numpy()
+    print('sorted_idx',sorted_idx)
+    train_idx = sorted_idx[np.isin(sorted_idx, countries_train_idx)]
+    print('train_idx', train_idx)
+    valid_idx = sorted_idx[np.isin(sorted_idx, countries_valid_idx)]
+    test_idx = sorted_idx[np.isin(sorted_idx, countries_test_idx)]
+
+    # Dataloader
+    dataset = torch.utils.data.TensorDataset(features, labels)
+    train, test, valid = dataset[train_idx], dataset[test_idx], dataset[valid_idx]
+    trainloader, validloader, testloader = torch.utils.data.DataLoader(train,
+                                                                       batch_size=64), torch.utils.data.DataLoader(
+        valid, batch_size=64), torch.utils.data.DataLoader(test, batch_size=64)
+    attn_layer= geoAttention()
+    best_loss,path,score=setup_experiment(attn_layer, trainloader, validloader, None, args, testloader)
+    return best_loss,path,score
+
+def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args, batcher_test=None):
     '''
    setup the experiment paramaters
    :param model: model class :PreActResnet
@@ -45,11 +95,8 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
         model.fc = fc
         model = load_from_checkpoint(resume_checkpoints, model)
 
-
-
-
     # setup Trainer params
-    params = dict(model=model, lr=config['lr'], weight_decay=config['wd'], loss_type=args.loss_type,
+    params = dict(model=model, lr=args.lr, weight_decay=args.wd, loss_type=args.loss_type,
                   num_outputs=args.num_outputs, metric=args.metric)
     # logging
     wandb.config.update(params)
@@ -63,33 +110,30 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
         fc = nn.Linear(class_model.fc.in_features, args.num_outputs)
         class_model.fc = fc
         class_model = load_from_checkpoint(path=args.weight_model, model=class_model)
-        experiment=experiment+'_weighted'
+        experiment = experiment + '_weighted'
     else:
-        class_model=None
+        class_model = None
     # output directory
     dirpath = os.path.join(args.out_dir, experiment)
     print(f'checkpoints directory: {dirpath}')
     os.makedirs(dirpath, exist_ok=True)
 
-
-
     # Trainer
     trainer = Trainer(save_dir=dirpath, **params)
 
     # Fitting...
-    if args.dataset=='wilds':
-        best_loss, path,= trainer.fit_wilds(train_loader, valid_loader, max_epochs=args.max_epochs, gpus=args.gpus,class_model=class_model)
+    if args.dataset == 'wilds' or 'features':        #attention layer also use this function
+        best_loss, path, = trainer.fit_wilds(train_loader, valid_loader, max_epochs=args.max_epochs, gpus=args.gpus,
+                                             class_model=class_model)
     else:
         best_loss, path, = trainer.fit(train_loader, valid_loader, max_epochs=args.max_epochs, gpus=args.gpus,
-                                             class_model=class_model)
-    score=trainer.test(batcher_test)
+                                       class_model=class_model)
+    score = trainer.test(batcher_test)
 
-
-    return best_loss, path,score
+    return best_loss, path, score
 
 
 def main(args):
-
     seed_everything(args.seed)
     # setting experiment_path
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
@@ -102,7 +146,8 @@ def main(args):
     # save data_params for later use
     data_params = dict(dataset=args.dataset, fold=args.fold, ls_bands=args.ls_bands, nl_band=args.nl_band,
                        label_name=args.label_name,
-                       nl_label=args.nl_label, include_buildings=args.include_buildings, batch_size=args.batch_size, groupby=args.group)
+                       nl_label=args.nl_label, include_buildings=args.include_buildings, batch_size=args.batch_size,
+                       groupby=args.group)
 
     params_filepath = os.path.join(dirpath, 'data_params.json')
     with open(params_filepath, 'w') as config_file:
@@ -116,57 +161,60 @@ def main(args):
         json.dump(params, config_file, indent=4)
     '''
 
-
     wandb.config.update(data_params)
-
-
+    if args.dataset== 'features':
+        MODEL_DIRS={'resnet_nl_A': 'DHS_OOC_A_encoder_b_nl_geo_b128_fc001_conv001_lre-05'}
+        best_loss, best_path, score= geo_attn_exp('resnet_nl', MODEL_DIRS, )
+        return
     # dataloader
-    if args.dataset=='DHS_OOC':
+    elif args.dataset == 'DHS_OOC':
         paths_train = get_paths(args.dataset, 'train', args.fold, args.data_path)
 
         paths_valid = get_paths(args.dataset, 'val', args.fold, args.data_path)
 
-        paths_test=get_paths(args.dataset, 'test', args.fold, args.data_path)
-        print('num_train',len(paths_train))
-        print('num_valid',len(paths_valid))
+        paths_test = get_paths(args.dataset, 'test', args.fold, args.data_path)
+        print('num_train', len(paths_train))
+        print('num_valid', len(paths_valid))
         print('num_valid', len(paths_test))
 
-        paths_train_b=None
-        paths_valid_b=None
-        paths_test_b=None
+        paths_train_b = None
+        paths_valid_b = None
+        paths_test_b = None
         if args.include_buildings:
             paths_train_b = get_paths(args.dataset, 'train', args.fold, args.buildings_records)
             paths_valid_b = get_paths(args.dataset, 'val', args.fold, args.buildings_records)
             paths_test_b = get_paths(args.dataset, 'test', args.fold, args.buildings_records)
-            print('b_train',len(paths_train_b))
-            print('b_valid',len(paths_valid_b))
-            print('b_test',len(paths_test_b))
+            print('b_train', len(paths_train_b))
+            print('b_valid', len(paths_valid_b))
+            print('b_test', len(paths_test_b))
 
         # valid=list(paths_train[0:400])+list(paths_train[855:1155])+list(paths_train[1601:2000])
         # train=list(paths_train[400:855])+list(paths_train[1155:1601])+list(paths_train[2000:5000])
 
-        batcher_train = Batcher(paths_train,args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                                args.nl_label,args.include_buildings,paths_train_b,args.normalize, args.augment ,args.clipn, args.batch_size, groupby=args.group,
+        batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
+                                args.nl_label, args.include_buildings, paths_train_b, args.normalize, args.augment,
+                                args.clipn, args.batch_size, groupby=args.group,
                                 cache=True, shuffle=True)
 
         batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                                args.nl_label,args.include_buildings, paths_valid_b,args.normalize,False, args.clipn, args.batch_size, groupby=args.group,
+                                args.nl_label, args.include_buildings, paths_valid_b, args.normalize, False, args.clipn,
+                                args.batch_size, groupby=args.group,
+                                cache=True, shuffle=False)
+
+        batcher_test = Batcher(paths_test, {'urban_rural': tf.float32}, args.ls_bands, args.nl_band, args.label_name,
+                               args.nl_label, args.include_buildings, paths_test_b, args.normalize, False, args.clipn,
+                               args.batch_size, groupby='urban',
                                cache=True, shuffle=False)
-
-
-        batcher_test = Batcher(paths_test, {'urban_rural':tf.float32}, args.ls_bands, args.nl_band, args.label_name,
-                         args.nl_label, args.include_buildings, paths_test_b,args.normalize, False, args.clipn, args.batch_size, groupby='urban',
-                        cache=True, shuffle=False)
     ##############################################################WILDS dataset############################################################
-    else:
-        dataset = get_dataset(dataset="poverty", download=True,unlabeled=True)
+    elif args.dataset=='wilds':
+        dataset = get_dataset(dataset="poverty", download=True, unlabeled=True)
 
         # Get the training set
         train_data = dataset.get_subset(
             "train",
-           # transform=transforms.Compose(
-           #     [transforms.Resize((224, 224)), transforms.ToTensor()]
-            #),
+            # transform=transforms.Compose(
+            #     [transforms.Resize((224, 224)), transforms.ToTensor()]
+            # ),
         )
 
         # Prepare the standard data loader
@@ -174,43 +222,42 @@ def main(args):
         # Get the test set
         test_data = dataset.get_subset(
             "val",
-           # transform=transforms.Compose(
+            # transform=transforms.Compose(
             #    [transforms.Resize((224, 224)), transforms.ToTensor()]
-            #),
+            # ),
         )
 
         # Prepare the data loader
         batcher_valid = get_eval_loader("standard", test_data, batch_size=64)
-        batcher_test=None
+        batcher_test = None
 
     ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
-    model_dict=defaultdict()
-    encoder_params=defaultdict()
+    model_dict = defaultdict()
+    encoder_params = defaultdict()
 
-    for (model_key,model_name),in_channels,model_init in zip(args.model_name.items(),args.in_channels,args.model_init):
-
+    for (model_key, model_name), in_channels, model_init in zip(args.model_name.items(), args.in_channels,
+                                                                args.model_init):
         ckpt, pretrained = init_model(model_init, args.init_ckpt_dir, )
-        model_dict[model_key] = get_model(model_name=model_name, in_channels=in_channels, pretrained=pretrained, ckpt_path=ckpt)
+        model_dict[model_key] = get_model(model_name=model_name, in_channels=in_channels, pretrained=pretrained,
+                                          ckpt_path=ckpt)
 
         params = dict(model_name=model_name, in_channels=in_channels)
-        encoder_params[model_key]=params
+        encoder_params[model_key] = params
     # saving encoder params
-    saved_encoder_params=dict(model_dict=encoder_params,self_attn=args.self_attn)
-    encoder_params['self_attn']=args.self_attn  #comment if not necessary
+    saved_encoder_params = dict(model_dict=encoder_params, self_attn=args.self_attn)
+    encoder_params['self_attn'] = args.self_attn  # comment if not necessary
     encoder_params_filepath = os.path.join(dirpath, 'encoder_params.json')
-    print('encoder_params',encoder_params)
+    print('encoder_params', encoder_params)
     with open(encoder_params_filepath, 'w') as config_file:
-            #json.dump(saved_encoder_params, config_file, indent=4)
-            json.dump(encoder_params, config_file, indent=4)
+        # json.dump(saved_encoder_params, config_file, indent=4)
+        json.dump(encoder_params, config_file, indent=4)
 
     # save the encoder_params
 
-
-
-    encoder=Encoder(**model_dict,self_attn=args.self_attn)
-    #encoder=Encoder(self_attn=args.self_attn,**model_dict)
-    config = {"lr": args.lr, "wd": args.conv_reg}     #you can remove this now it is for raytune
-    best_loss, best_path, score = setup_experiment(encoder, batcher_train, batcher_valid, args.resume, args, config,
+    encoder = Encoder(**model_dict, self_attn=args.self_attn)
+    # encoder=Encoder(self_attn=args.self_attn,**model_dict)
+    #config = {"lr": args.lr, "wd": args.conv_reg}  # you can remove this now it is for raytune
+    best_loss, best_path, score = setup_experiment(encoder, batcher_train, batcher_valid, args.resume, args,
                                                    batcher_test)
 
     """
@@ -358,8 +405,10 @@ def main(args):
     print("Best config: ", analysis.get_best_config(
         metric="mean_loss", mode="min"))
     """
+
+
 # TODO save hyperparameters .
-#TODO Save test scores in csv file
+# TODO Save test scores in csv file
 
 if __name__ == "__main__":
     wandb.init(project=wandp, entity=entity, config={})

@@ -22,7 +22,7 @@ args = Namespace(
     lr_decay=0.96,
     batch_size=64,
     gpu=-1,
-    max_epochs=300,
+    max_epochs=500,
     epoch_thresh=150,
     patience=20,
 
@@ -40,10 +40,10 @@ args = Namespace(
     augment=True,
     clipn=True,
     normalize='DHS',
-    dataset='DHS_OOC',
-    fold='D',
+    dataset='features',
+    fold='A',
     ls_bands=None,
-    nl_band=None,  # [None , merge , split]
+    nl_band='split',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     include_buildings=True,
     scaler_features_keys={'urban_rural': tf.float32, 'country': tf.string},
@@ -56,7 +56,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_D_encoder_b_patches',
+    experiment_name='DHS_OOC_D_features_attnLayer',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,

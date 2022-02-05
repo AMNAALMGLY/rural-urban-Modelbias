@@ -69,14 +69,17 @@ class Encoder(nn.Module):
         # self.models[model_name].to(args.gpus)
         # feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
         # features.append(feature)
-        # features.append(self.resnet_bands(x['images'])[1])
+        #features.append(self.resnet_bands(x['images'])[1])
         # features.append(self.resnet_ms(x['ms'])[1])
 
+        #patches Experiments 
         x_p = img_to_patch(x['buildings'], p=224)
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
         for p in range( num_patches ):
             features.append(self.resnet_bands(x_p[:, p,...].view(-1,c,h,w))[1])
+        #
+
         #features.append(self.resnet_build(x['buildings'])[1])
         if self.Mlp:
             features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
@@ -141,6 +144,51 @@ class Encoder(nn.Module):
             return self.fc(self.relu(features_concat))
         """
 
+class geoAttention(nn.Module):
+    def __init__(self,  dim=512,
+                 num_outputs=1,
+                 ):
+        # TODO add resnet_NL and resnet_Ms
+        # TODO add multiple mlps for metadata
+        """
+            Args:
+
+                resnet_bands (nn.Module): Encoder layer of the self attention
+                resnet_build (nn.Module): Encoder layer of intersample attention
+                MLp (int): Number of features, this is required by LayerNorm
+            """
+        super(geoAttention, self).__init__()
+
+        self.fc_in_dim = dim
+        self.fc = nn.Linear(self.fc_in_dim//2, num_outputs, device=args.gpus)  # combines both together
+
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(p=0.1)
+        self.linear=nn.Linear(dim,dim//2)
+        # MultiHeadedAttention(h=1,d_model=512)
+        self.dim = dim
+
+        self.multi_head = MultiHeadedAttention(h=1, d_model=512)
+
+        # nn.MultiheadAttention(self.dim, 1)
+
+    def forward(self, x):
+
+        features = torch.stack((x),dim=1)
+
+        print('features_concat_shape', features.shape)
+
+        print('in attention')
+
+        self.multi_head.to(args.gpus)
+        attn, _ = self.multi_head(features, features, features)
+
+        print('attention shape', attn.shape)
+        features = features + attn  # residual connection
+        features = torch.max(features, dim=1, keepdim=False)[0]
+        # features = features.view(-1, self.fc_in_dim)
+        features=features+attn
+        return self.fc(self.relu(self.dropout(self.linear(features))))
 
 def attention(query, key, value, dropout=None):
     "Compute 'Scaled Dot Product Attention'"
