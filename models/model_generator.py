@@ -174,7 +174,9 @@ class geoAttention(nn.Module):
 
     def forward(self, x):
 
-        features = torch.stack((x),dim=1)
+        #features = torch.stack((x),dim=1)
+        b,d=x.shape
+        features=x.reshape(b,1,d)
 
         print('features_concat_shape', features.shape)
 
