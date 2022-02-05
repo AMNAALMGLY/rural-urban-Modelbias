@@ -293,7 +293,7 @@ class Trainer:
                 for x, y, in tepoch:
                     tepoch.set_description(f"Epoch {epoch}")
                     print('inLoader:', x.shape)
-        
+
                     x = x.type_as(self.model.fc.weight)
                     y = y.type_as(self.model.fc.weight)
                     #x = dict(images=x)
@@ -320,6 +320,7 @@ class Trainer:
 
                     preds = torch.tensor(outputs, device=args.gpus)
                     self.metric[0].to(args.gpus)
+                    print('shapes:',y.shape,preds.shape)
                     self.metric[0].update(preds, y)
 
             # Metric calulation and average loss
