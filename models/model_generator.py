@@ -197,11 +197,10 @@ class Encoder(nn.Module):
 
         print('features_concat_shape', features.shape)
         # postitional Encoding for tiles
-        print(features.requires_grad)
         features=rearrange(features,'b (p1 p2) d -> b p1 p2 d',p1=int(num_patches**0.5),p2=int(num_patches**0.5))
         features=self.positionalE(features)
         features=rearrange(features,'b p1 p2 d -> b (p1 p2) d',p1=int(num_patches**0.5),p2=int(num_patches**0.5))
-        print(features.requires_grad)
+         # print(features.requires_grad)
         if self.self_attn:
             print('in attention')
 
