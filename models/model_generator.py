@@ -160,7 +160,7 @@ class geoAttention(nn.Module):
         super(geoAttention, self).__init__()
 
         self.fc_in_dim = dim
-        self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)  # combines both together
+        self.fc = nn.Linear(dim, num_outputs, device=args.gpus)  # combines both together
 
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.1)
@@ -187,9 +187,10 @@ class geoAttention(nn.Module):
 
         print('attention shape', attn.shape)
         features = features + attn  # residual connection
-        features = torch.max(features, dim=1, keepdim=False)[0]
+        features = torch.sum(features, dim=1, keepdim=False)
         # features = features.view(-1, self.fc_in_dim)
         features=features+attn
+        print('features shape',features.shape)
         print('shape of fc',self.relu(self.dropout(self.linear(features))).shape)
         return self.fc(self.relu(self.dropout(self.linear(features))))
 
