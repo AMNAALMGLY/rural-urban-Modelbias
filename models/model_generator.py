@@ -26,6 +26,69 @@ def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
     return model
 
 
+class LayerNorm(nn.Module):
+    "Construct a layernorm module (See citation for details)."
+
+    def __init__(self, features, eps=1e-6):
+        super(LayerNorm, self).__init__()
+        self.a_2 = nn.Parameter(torch.ones(features))
+        self.b_2 = nn.Parameter(torch.zeros(features))
+        self.eps = eps
+
+    def forward(self, x):
+        # x: bs, n, d_model
+
+        mean = x.mean(-1, keepdim=True)
+        std = x.std(-1, keepdim=True)
+
+        return self.a_2 * (x - mean) / (std + self.eps) + self.b_2  # bs, n, d_model
+
+class SublayerConnection(nn.Module):
+    """
+    A residual connection followed by a layer norm.
+    Note for code simplicity the norm is first as opposed to last.
+    """
+    def __init__(self, size, dropout):
+        super(SublayerConnection, self).__init__()
+        self.norm = LayerNorm(size)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x, sublayer):
+        "Apply residual connection to any sublayer with the same size."
+        # x: bs, n, d_model
+
+        return x + self.dropout(sublayer(self.norm(x))) # x: bs, n, d_model
+
+
+class EncoderLayer(nn.Module):
+    "Encoder is made up of self-attn and feed forward (defined below)"
+
+    def __init__(self, size, self_attn, feed_forward, dropout):
+        super(EncoderLayer, self).__init__()
+        self.self_attn = self_attn
+        self.feed_forward = feed_forward
+        self.sublayer = clones(SublayerConnection(size, dropout), 2)
+        self.size = size  # d_model or embed_dim
+
+    def forward(self, x):
+        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x))  # bs, n ,
+
+        return self.sublayer[1](x, self.feed_forward)  # bs, n , d_model
+
+
+class Layers(nn.Module):
+    "Core encoder is a stack of N layers"
+
+    def __init__(self, layer, N):
+        super(Layers, self).__init__()
+        self.layers = clones(layer, N)
+        self.norm = LayerNorm(layer.size)
+
+    def forward(self, x):
+        "Pass the input through each layer in turn."
+        for layer in self.layers:
+            x = layer(x)
+        return self.norm(x)  # bs , n , d_model
 class Encoder(nn.Module):
     def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, dim=512, num_outputs=1,
                  model_dict=None, freeze_encoder=False):
@@ -56,11 +119,10 @@ class Encoder(nn.Module):
         self.Mlp = Mlp
 
         self.multi_head = MultiHeadedAttention(h=1,d_model=512)
-
+        self.ff = nn.Linear(self.fc_in_dim,self.fc_in_dim)
+        self.layer=EncoderLayer(size=self.fc_in_dim,self_attn=self.multi_head,feed_forward=self.ff,dropout=0.1)
+        self.layers=Layers(self.layer,3)
             #nn.MultiheadAttention(self.dim, 1)
-        if freeze_encoder:
-            for p in self.resnet_bands.parameters():         #TODO change this depending on which model I have
-                p.requires_grad=False
 
     def forward(self, x):
         features = []
@@ -73,7 +135,7 @@ class Encoder(nn.Module):
         # features.append(self.resnet_ms(x['ms'])[1])
 
         #patches Experiments 
-        x_p = img_to_patch(x['buildings'], p=224)
+        x_p = img_to_patch(x['buildings'], p=112)
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
         for p in range(num_patches):
@@ -82,11 +144,11 @@ class Encoder(nn.Module):
 
         #features.append(self.resnet_build(x['buildings'])[1])
 
-        if self.Mlp:
-            assert len(list(x[args.metadata[0]].shape)) == 2, 'the number of dimension should be 2'
-            number_of_fts = x[args.metadata[0]].shape[-1]
-            assert 2 >= number_of_fts >= 1, 'number of features should be at least one'
-            features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
+        #if self.Mlp:
+        #    assert len(list(x[args.metadata[0]].shape)) == 2, 'the number of dimension should be 2'
+        #    number_of_fts = x[args.metadata[0]].shape[-1]
+        #    assert 2 >= number_of_fts >= 1, 'number of features should be at least one'
+        #    features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
         features = torch.stack((features), dim=1)
 
         assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
@@ -95,7 +157,7 @@ class Encoder(nn.Module):
         if self.self_attn:
             print('in attention')
 
-            # features_concat = features.transpose(-2, -1)  # bxnxd
+
 
             if self.self_attn == 'vanilla':
                 attn, _ = attention(features, features, features)  # bxnxd
@@ -103,14 +165,14 @@ class Encoder(nn.Module):
 
                 attn, _ = intersample_attention(features, features, features)  # bxnxd
             elif self.self_attn == 'multihead':
-                print('model generator line 106: inside multi head attention')
-                # multihead = MultiHeadedAttention(h=1, d_model=self.dim).to(args.gpus)
-                # multihead = nn.MultiheadAttention(self.dim, 1)
-                self.multi_head.to(args.gpus)
-                attn, _ = self.multi_head(features, features, features)
+                print(' inside multi head attention')
+                features=self.layers(features)
+
+                #self.multi_head.to(args.gpus)
+                #attn, _ = self.multi_head(features, features, features)
 
             print('attention shape', attn.shape)
-            features = features + attn  # residual connection
+           # features = features + attn  # residual connection
         features=torch.max(features,dim=1,keepdim=False)[0]
         #features = features.view(-1, self.fc_in_dim)
 
@@ -273,7 +335,7 @@ class MultiHeadedAttention(nn.Module):
                              for l, x in zip(self.linears, (query, key, value))]
 
         # 2) Apply attention on all the projected vectors in batch.
-        x, self.attn = intersample_attention(query, key, value,
+        x, self.attn = attention(query, key, value,
                                  )
 
         # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
