@@ -40,10 +40,10 @@ args = Namespace(
     augment=True,
     clipn=True,
     normalize='DHS',
-    dataset='features',
+    dataset='DHS_OOC',            #Features, #Wilds
     fold='A',
     ls_bands=None,
-    nl_band='split',  # [None , merge , split]
+    nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     include_buildings=True,
     scaler_features_keys={'urban_rural': tf.float32, 'country': tf.string},
@@ -56,7 +56,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_D_features_attnLayer',
+    experiment_name='DHS_OOC_A_features_attnLayer',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=None,
