@@ -35,7 +35,9 @@ entity = default_args.entity
 def geo_attn_exp(model_name, MODEL_DIRS, ):
     COUNTRIES=dataset_constants_buildings.DHS_COUNTRIES
     df = pd.read_csv('data/dhs_clusters.csv', float_precision='high', index_col=False)
-    labels = df[df['country'].isin(COUNTRIES)]['wealthpooled'].to_numpy(dtype=np.float32)
+    df=df[[df['country'].isin(COUNTRIES)]].reset_index(drop=True)
+    labels=df['wealthpooled'].to_numpy(dtype=np.float32)
+    #labels = df[df['country'].isin(COUNTRIES)]['wealthpooled'].to_numpy(dtype=np.float32)
     #locs = df[df['country'].isin(COUNTRIES)][['lat', 'lon']].to_numpy(dtype=np.float32)
     #urban = df[df['country'].isin(COUNTRIES)]['urban_rural'].to_numpy(dtype=np.float32)
     #country_labels = df[df['country'].isin(COUNTRIES)]['country'].map(COUNTRIES.index).to_numpy()
