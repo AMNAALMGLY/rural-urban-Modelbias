@@ -48,7 +48,7 @@ class SublayerConnection(nn.Module):
     A residual connection followed by a layer norm.
     Note for code simplicity the norm is first as opposed to last.
     """
-    def __init__(self, size, dropout):
+    def __init__(self, size, dropout=0.1):
         super(SublayerConnection, self).__init__()
         self.norm = LayerNorm(size)
         self.dropout = nn.Dropout(dropout)
@@ -63,7 +63,7 @@ class SublayerConnection(nn.Module):
 class EncoderLayer(nn.Module):
     "Encoder is made up of self-attn and feed forward (defined below)"
 
-    def __init__(self, size, self_attn, feed_forward, dropout):
+    def __init__(self, size, self_attn, feed_forward, dropout=0.1):
         super(EncoderLayer, self).__init__()
         self.self_attn = self_attn
         self.feed_forward = feed_forward
@@ -120,7 +120,7 @@ class Encoder(nn.Module):
 
         self.multi_head = MultiHeadedAttention(h=1,d_model=512)
         self.ff = nn.Linear(self.fc_in_dim,self.fc_in_dim)
-        self.layer=EncoderLayer(size=self.fc_in_dim,self_attn=self.multi_head,feed_forward=self.ff,dropout=0.1)
+        self.layer=EncoderLayer(size=self.fc_in_dim,self_attn=self.multi_head,feed_forward=self.ff)
         self.layers=Layers(self.layer,3)
             #nn.MultiheadAttention(self.dim, 1)
 
