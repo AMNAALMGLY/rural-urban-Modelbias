@@ -54,7 +54,6 @@ def geo_attn_exp(model_name, MODEL_DIRS, ):
     countries_test_idx = (
         df[df['country'].isin(dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['test'])].index).to_numpy()
 
-
     #idx = np.array(range(num_examples))
 
     sorted_idx = (df.sort_values(['lat', 'lon']).index).to_numpy()
@@ -66,10 +65,14 @@ def geo_attn_exp(model_name, MODEL_DIRS, ):
 
     # Dataloader
     dataset = torch.utils.data.TensorDataset(features, labels)
+
     train, test, valid = dataset[train_idx], dataset[test_idx], dataset[valid_idx]
     trainloader, validloader, testloader = torch.utils.data.DataLoader(train,
                                                                        batch_size=64), torch.utils.data.DataLoader(
         valid, batch_size=64), torch.utils.data.DataLoader(test, batch_size=64)
+    for x, y in trainloader:
+        print(x,y)
+        break
     attn_layer= geoAttention()
     best_loss,path,score=setup_experiment(attn_layer, trainloader, validloader, None, args, testloader)
     return best_loss,path,score
