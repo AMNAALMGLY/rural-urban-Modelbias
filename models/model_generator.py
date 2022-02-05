@@ -94,7 +94,7 @@ class PositionalEncoding2D(nn.Module):
         )
         emb[:, :, : self.channels] = emb_x
         emb[:, :, self.channels: 2 * self.channels] = emb_y
-
+        print(emb.device)
         return emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1)
 
 
