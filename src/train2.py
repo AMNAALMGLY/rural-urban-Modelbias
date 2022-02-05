@@ -37,12 +37,6 @@ def geo_attn_exp(model_name, MODEL_DIRS, ):
     df = pd.read_csv('data/dhs_clusters.csv', float_precision='high', index_col=False)
     df=df[df['country'].isin(COUNTRIES)].reset_index(drop=True)
     labels=df['wealthpooled'].to_numpy(dtype=np.float32)
-    #labels = df[df['country'].isin(COUNTRIES)]['wealthpooled'].to_numpy(dtype=np.float32)
-    #locs = df[df['country'].isin(COUNTRIES)][['lat', 'lon']].to_numpy(dtype=np.float32)
-    #urban = df[df['country'].isin(COUNTRIES)]['urban_rural'].to_numpy(dtype=np.float32)
-    #country_labels = df[df['country'].isin(COUNTRIES)]['country'].map(COUNTRIES.index).to_numpy()
-    #num_examples = len(labels)
-    #years = df[df['country'].isin(COUNTRIES)]['year'].to_numpy(dtype=np.float32)
 
     #Load features from pretrained Model
     f = args.fold
@@ -99,7 +93,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
         model = load_from_checkpoint(resume_checkpoints, model)
 
     # setup Trainer params
-    params = dict(model=model, lr=args.lr, weight_decay=args.wd, loss_type=args.loss_type,
+    params = dict(model=model, lr=args.lr, weight_decay=args.conv_reg, loss_type=args.loss_type,
                   num_outputs=args.num_outputs, metric=args.metric)
     # logging
     wandb.config.update(params)
