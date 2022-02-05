@@ -1,6 +1,7 @@
 import copy
 import math
 
+import numpy as np
 import torch
 from torch import nn, einsum
 from einops import rearrange
@@ -69,7 +70,7 @@ class PositionalEncoding2D(nn.Module):
         """
         super(PositionalEncoding2D, self).__init__()
         self.org_channels = channels
-        channels = int(torch.ceil(channels / 4) * 2)
+        channels = int(np.ceil(channels / 4) * 2)
         self.channels = channels
         inv_freq = 1.0 / (10000 ** (torch.arange(0, channels, 2).float() / channels))
         self.register_buffer("inv_freq", inv_freq)
