@@ -51,9 +51,12 @@ def geo_attn_exp(model_name, MODEL_DIRS, ):
     features = torch.tensor(npz['features'])
 
     #Sorting idx according to lat, lon
-    countries_train_idx =np.array(map(lambda  x:COUNTRIES.index(), dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['train']))
-    countries_valid_idx =np.array(map(lambda  x:COUNTRIES.index(), dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['val']))
-    countries_test_idx = np.array(map(lambda  x:COUNTRIES.index(), dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['test']))
+    countries_train_idx=(df[df['country'].isin(dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['train'])].index).to_numpy()
+    countries_valid_idx = (
+        df[df['country'].isin(dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['val'])].index).to_numpy()
+    countries_test_idx = (
+        df[df['country'].isin(dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['test'])].index).to_numpy()
+
 
     #idx = np.array(range(num_examples))
 
