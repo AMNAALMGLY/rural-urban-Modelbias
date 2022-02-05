@@ -64,9 +64,9 @@ def geo_attn_exp(model_name, MODEL_DIRS, ):
     test_idx = sorted_idx[np.isin(sorted_idx, countries_test_idx)]
 
     # Dataloader
-    dataset = torch.utils.data.TensorDataset(features, labels)
+    train,valid,test = torch.utils.data.TensorDataset(features[train_idx], labels[train_idx]),torch.utils.data.TensorDataset(features[valid_idx], labels[valid_idx]),torch.utils.data.TensorDataset(features[test_idx], labels[test_idx])
 
-    train, test, valid = dataset[train_idx], dataset[test_idx], dataset[valid_idx]
+    #train, test, valid = dataset[train_idx], dataset[test_idx], dataset[valid_idx]
     trainloader, validloader, testloader = torch.utils.data.DataLoader(train,
                                                                        batch_size=64), torch.utils.data.DataLoader(
         valid, batch_size=64), torch.utils.data.DataLoader(test, batch_size=64)
