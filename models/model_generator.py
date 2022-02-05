@@ -187,10 +187,11 @@ class geoAttention(nn.Module):
 
         print('attention shape', attn.shape)
         features = features + attn  # residual connection
+        print('features shape', features.shape)
         features = torch.sum(features, dim=1, keepdim=False)
         # features = features.view(-1, self.fc_in_dim)
-        features=features+attn
-        print('features shape',features.shape)
+        print('features shape after sum', features.shape)
+
         print('shape of fc',self.relu(self.dropout(self.linear(features))).shape)
         return self.fc(self.relu(self.dropout(self.linear(features))))
 
