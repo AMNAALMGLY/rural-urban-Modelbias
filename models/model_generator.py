@@ -76,14 +76,20 @@ class Encoder(nn.Module):
         x_p = img_to_patch(x['buildings'], p=224)
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
-        for p in range( num_patches ):
+        for p in range(num_patches):
             features.append(self.resnet_bands(x_p[:, p,...].view(-1,c,h,w))[1])
         #
 
         #features.append(self.resnet_build(x['buildings'])[1])
+
         if self.Mlp:
+            assert len(list(x[args.metadata[0]].shape)) == 2, 'the number of dimension should be 2'
+            number_of_fts = x[args.metadata[0]].shape[-1]
+            assert 2 >= number_of_fts >= 1, 'number of features should be at least one'
             features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
         features = torch.stack((features), dim=1)
+
+        assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
 
         print('features_concat_shape', features.shape)
         if self.self_attn:
@@ -97,6 +103,7 @@ class Encoder(nn.Module):
 
                 attn, _ = intersample_attention(features, features, features)  # bxnxd
             elif self.self_attn == 'multihead':
+                print('model generator line 106: inside multi head attention')
                 # multihead = MultiHeadedAttention(h=1, d_model=self.dim).to(args.gpus)
                 # multihead = nn.MultiheadAttention(self.dim, 1)
                 self.multi_head.to(args.gpus)
@@ -214,6 +221,7 @@ def attention(query, key, value, dropout=None):
     b, h, n, d = query.shape
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
     print('scores shape', scores.shape)
+    assert scores.shape == (b, h, n, n), 'the shape is not as expected'
     p_attn = F.softmax(scores, dim=-1)
     out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
     print('output before rearrange ', out.shape)
