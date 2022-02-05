@@ -290,12 +290,12 @@ class Trainer:
                 print('-----------------------Training--------------------------------')
                 self.model.train()
                 self.opt.zero_grad()
-                for x, y, _ in tepoch:
+                for x, y, in tepoch:
                     tepoch.set_description(f"Epoch {epoch}")
                     print('inLoader:', x.shape)
                     x = x.type_as(self.model.fc.weight)
                     y = y.type_as(self.model.fc.weight)
-                    x = dict(images=x)
+                    #x = dict(images=x)
                     outputs = self.model(x)
                     outputs = outputs.squeeze(dim=-1)
                     y = y.squeeze(dim=-1)
@@ -322,21 +322,21 @@ class Trainer:
                     self.metric[0].update(preds, y)
 
             # Metric calulation and average loss
-            r2 = (self.metric[0].compute()) ** 2 if self.metric_str == 'r2' else self.metric[0].compute()
+            r2 = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
             wandb.log({f'{self.metric_str} train': r2, 'epoch': epoch})
             avgloss = epoch_loss / train_steps
             wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
-            print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str} is {r2:.2f}')
+            print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str[0]} is {r2:.2f}')
             self.metric[0].reset()
             with torch.no_grad():
                 valid_step = 0
                 valid_epoch_loss = 0
                 print('--------------------------Validation-------------------- ')
                 self.model.eval()
-                for x, y, _ in validloader:
+                for x, y,  in validloader:
                     x = x.type_as(self.model.fc.weight)
                     y = y.type_as(self.model.fc.weight)
-                    x=dict(images=x)
+                    #x=dict(images=x)
                     outputs = self.model(x)
                     outputs = outputs.squeeze(dim=-1)
                     y = y.squeeze(dim=-1)
@@ -355,10 +355,10 @@ class Trainer:
 
                 avg_valid_loss = valid_epoch_loss / valid_steps
 
-                r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str == 'r2' else self.metric[0].compute()
+                r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
 
-                print(f'Validation {self.metric_str}is {r2_valid:.2f} and loss {avg_valid_loss}')
-                wandb.log({f'{self.metric_str} valid': r2_valid, 'epoch': epoch})
+                print(f'Validation {self.metric_str[0]}is {r2_valid:.2f} and loss {avg_valid_loss}')
+                wandb.log({f'{self.metric_str[0]} valid': r2_valid, 'epoch': epoch})
                 wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
 
                 # early stopping with loss
@@ -412,7 +412,7 @@ class Trainer:
 
         elif len(r2_dict.keys()) > 0:
             best_path = r2_dict[max(r2_dict.keys())]
-            print(f'{self.metric_str} of best model saved is {max(r2_dict.keys())} , path {best_path}')
+            print(f'{self.metric_str[0]} of best model saved is {max(r2_dict.keys())} , path {best_path}')
 
             shutil.move(best_path,
                         os.path.join(self.save_dir, 'best.ckpt'))
