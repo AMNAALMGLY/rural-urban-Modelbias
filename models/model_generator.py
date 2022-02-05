@@ -168,7 +168,7 @@ class geoAttention(nn.Module):
         # MultiHeadedAttention(h=1,d_model=512)
         self.dim = dim
 
-        self.multi_head = MultiHeadedAttention(h=1, d_model=512)
+        self.multi_head = MultiHeadedAttention(h=1, d_model=dim*2)
 
         # nn.MultiheadAttention(self.dim, 1)
 
