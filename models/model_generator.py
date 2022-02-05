@@ -190,6 +190,7 @@ class geoAttention(nn.Module):
         features = torch.max(features, dim=1, keepdim=False)[0]
         # features = features.view(-1, self.fc_in_dim)
         features=features+attn
+        print('shape of fc',self.relu(self.dropout(self.linear(features))).shape)
         return self.fc(self.relu(self.dropout(self.linear(features))))
 
 def attention(query, key, value, dropout=None):
