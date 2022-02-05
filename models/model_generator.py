@@ -43,11 +43,13 @@ class LayerNorm(nn.Module):
 
         return self.a_2 * (x - mean) / (std + self.eps) + self.b_2  # bs, n, d_model
 
+
 class SublayerConnection(nn.Module):
     """
     A residual connection followed by a layer norm.
     Note for code simplicity the norm is first as opposed to last.
     """
+
     def __init__(self, size, dropout=0.1):
         super(SublayerConnection, self).__init__()
         self.norm = LayerNorm(size)
@@ -57,7 +59,42 @@ class SublayerConnection(nn.Module):
         "Apply residual connection to any sublayer with the same size."
         # x: bs, n, d_model
 
-        return x + self.dropout(sublayer(self.norm(x))) # x: bs, n, d_model
+        return x + self.dropout(sublayer(self.norm(x)))  # x: bs, n, d_model
+
+
+class PositionalEncoding2D(nn.Module):
+    def __init__(self, channels):
+        """
+        :param channels: The last dimension of the tensor you want to apply pos emb to.
+        """
+        super(PositionalEncoding2D, self).__init__()
+        self.org_channels = channels
+        channels = int(torch.ceil(channels / 4) * 2)
+        self.channels = channels
+        inv_freq = 1.0 / (10000 ** (torch.arange(0, channels, 2).float() / channels))
+        self.register_buffer("inv_freq", inv_freq)
+
+    def forward(self, tensor):
+        """
+        :param tensor: A 4d tensor of size (batch_size, x, y, ch)
+        :return: Positional Encoding Matrix of size (batch_size, x, y, ch)
+        """
+        if len(tensor.shape) != 4:
+            raise RuntimeError("The input tensor has to be 4d!")
+        batch_size, x, y, orig_ch = tensor.shape
+        pos_x = torch.arange(x, device=tensor.device).type(self.inv_freq.type())
+        pos_y = torch.arange(y, device=tensor.device).type(self.inv_freq.type())
+        sin_inp_x = torch.einsum("i,j->ij", pos_x, self.inv_freq)
+        sin_inp_y = torch.einsum("i,j->ij", pos_y, self.inv_freq)
+        emb_x = torch.cat((sin_inp_x.sin(), sin_inp_x.cos()), dim=-1).unsqueeze(1)
+        emb_y = torch.cat((sin_inp_y.sin(), sin_inp_y.cos()), dim=-1)
+        emb = torch.zeros((x, y, self.channels * 2), device=tensor.device).type(
+            tensor.type()
+        )
+        emb[:, :, : self.channels] = emb_x
+        emb[:, :, self.channels: 2 * self.channels] = emb_y
+
+        return emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1)
 
 
 class EncoderLayer(nn.Module):
@@ -90,8 +127,10 @@ class Layers(nn.Module):
             x = layer(x)
         return self.norm(x)  # bs , n , d_model
 
+
 class Encoder(nn.Module):
-    def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, dim=512, num_outputs=1,
+    def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, dim=512,
+                 num_outputs=1,
                  model_dict=None, freeze_encoder=False):
         # TODO add resnet_NL and resnet_Ms
         # TODO add multiple mlps for metadata
@@ -119,11 +158,12 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-        self.multi_head = MultiHeadedAttention(h=1,d_model=dim)
-        self.ff = nn.Linear(self.fc_in_dim,self.fc_in_dim)
-        self.layer=EncoderLayer(size=self.fc_in_dim,self_attn=self.multi_head,feed_forward=self.ff)
-        self.layers=Layers(self.layer,3)
-            #nn.MultiheadAttention(self.dim, 1)
+        self.positionalE = PositionalEncoding2D(dim)
+        self.multi_head = MultiHeadedAttention(h=1, d_model=dim)
+        self.ff = nn.Linear(self.fc_in_dim, self.fc_in_dim)
+        self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
+        self.layers = Layers(self.layer, 3)
+        # nn.MultiheadAttention(self.dim, 1)
 
     def forward(self, x):
         features = []
@@ -132,20 +172,20 @@ class Encoder(nn.Module):
         # self.models[model_name].to(args.gpus)
         # feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
         # features.append(feature)
-        #features.append(self.resnet_bands(x['images'])[1])
+        # features.append(self.resnet_bands(x['images'])[1])
         # features.append(self.resnet_ms(x['ms'])[1])
 
-        #patches Experiments 
+        # patches Experiments
         x_p = img_to_patch(x['buildings'], p=112)
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
         for p in range(num_patches):
-            features.append(self.resnet_bands(x_p[:, p,...].view(-1,c,h,w))[1])
+            features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
         #
 
-        #features.append(self.resnet_build(x['buildings'])[1])
+        # features.append(self.resnet_build(x['buildings'])[1])
 
-        #if self.Mlp:
+        # if self.Mlp:
         #    assert len(list(x[args.metadata[0]].shape)) == 2, 'the number of dimension should be 2'
         #    number_of_fts = x[args.metadata[0]].shape[-1]
         #    assert 2 >= number_of_fts >= 1, 'number of features should be at least one'
@@ -155,10 +195,13 @@ class Encoder(nn.Module):
         assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
 
         print('features_concat_shape', features.shape)
+        # postitional Encoding for tiles
+        features=rearrange(features,'b (p1 p2) d -> b p1 p2 d',p1=num_patches**0.5,p2=num_patches**0.5)
+        features=self.positionalE(features)
+        features=rearrange(features,'b p1 p2 d -> b (p1 p2) d',p1=num_patches**0.5,p2=num_patches**0.5)
+
         if self.self_attn:
             print('in attention')
-
-
 
             if self.self_attn == 'vanilla':
                 attn, _ = attention(features, features, features)  # bxnxd
@@ -167,14 +210,14 @@ class Encoder(nn.Module):
                 attn, _ = intersample_attention(features, features, features)  # bxnxd
             elif self.self_attn == 'multihead':
                 print(' inside multi head attention')
-                features=self.layers(features)
+                features = self.layers(features)
 
-                #self.multi_head.to(args.gpus)
-                #attn = self.multi_head(features, features, features)
+                # self.multi_head.to(args.gpus)
+                # attn = self.multi_head(features, features, features)
 
-            #print('attention shape', attn.shape)
-           # features = features + attn  # residual connection
-        features=torch.max(features,dim=1,keepdim=False)[0]
+            # print('attention shape', attn.shape)
+        # features = features + attn  # residual connection
+        features = torch.max(features, dim=1, keepdim=False)[0]
 
         return self.fc(self.relu(self.dropout(features)))
 
@@ -213,8 +256,9 @@ class Encoder(nn.Module):
             return self.fc(self.relu(features_concat))
         """
 
+
 class geoAttention(nn.Module):
-    def __init__(self,  dim=512,
+    def __init__(self, dim=512,
                  num_outputs=1,
                  ):
         # TODO add resnet_NL and resnet_Ms
@@ -233,19 +277,18 @@ class geoAttention(nn.Module):
 
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.1)
-        self.linear=nn.Linear(dim*2,dim)
+        self.linear = nn.Linear(dim * 2, dim)
         # MultiHeadedAttention(h=1,d_model=512)
         self.dim = dim
 
-        self.multi_head = MultiHeadedAttention(h=1, d_model=dim*2)
+        self.multi_head = MultiHeadedAttention(h=1, d_model=dim * 2)
 
         # nn.MultiheadAttention(self.dim, 1)
 
     def forward(self, x):
-
-        #features = torch.stack((x),dim=1)
-        b,d=x.shape
-        features=x.reshape(b,1,d)
+        # features = torch.stack((x),dim=1)
+        b, d = x.shape
+        features = x.reshape(b, 1, d)
 
         print('features_concat_shape', features.shape)
 
@@ -261,8 +304,9 @@ class geoAttention(nn.Module):
         # features = features.view(-1, self.fc_in_dim)
         print('features shape after sum', features.shape)
 
-        print('shape of fc',self.relu(self.dropout(self.linear(features))).shape)
+        print('shape of fc', self.relu(self.dropout(self.linear(features))).shape)
         return self.fc(self.relu(self.dropout(self.linear(features))))
+
 
 def attention(query, key, value, dropout=None):
     "Compute 'Scaled Dot Product Attention'"

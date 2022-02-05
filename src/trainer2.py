@@ -325,7 +325,7 @@ class Trainer:
 
             # Metric calulation and average loss
             r2 = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
-            wandb.log({f'{self.metric_str} train': r2, 'epoch': epoch})
+            wandb.log({f'{self.metric_str[0]} train': r2, 'epoch': epoch})
             avgloss = epoch_loss / train_steps
             wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
             print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str[0]} is {r2:.2f}')
