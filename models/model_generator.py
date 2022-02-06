@@ -177,7 +177,7 @@ class Encoder(nn.Module):
         # self.models[model_name].to(args.gpus)
         # feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
         # features.append(feature)
-        features.append(self.resnet_bands(x['images'])[1])
+        features.append(self.resnet_bands(x['buildings'])[1])
         # features.append(self.resnet_ms(x['ms'])[1])
 
         # patches Experiments
