@@ -163,6 +163,7 @@ class Encoder(nn.Module):
         self.Mlp = Mlp
 
         self.positionalE = PositionalEncoding2D(channels=112*112*1)
+        self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
         self.ff = nn.Linear(self.fc_in_dim, self.fc_in_dim)
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
@@ -208,6 +209,12 @@ class Encoder(nn.Module):
 
         print('features_concat_shape', features.shape)
 
+        features=rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
+                             p2=int(num_patches ** 0.5))
+        self.pe=self.positionalE(features)
+        features=self.pe
+        features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
+                             p2=int(num_patches ** 0.5))
 
 
         print(features.requires_grad)
