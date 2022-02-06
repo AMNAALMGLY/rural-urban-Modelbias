@@ -177,10 +177,11 @@ class Encoder(nn.Module):
         # self.models[model_name].to(args.gpus)
         # feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
         # features.append(feature)
-        # features.append(self.resnet_bands(x['images'])[1])
+        features.append(self.resnet_bands(x['images'])[1])
         # features.append(self.resnet_ms(x['ms'])[1])
 
         # patches Experiments
+        '''
         x_p = img_to_patch(x['buildings'], p=224)
 
         print('patches shape :', x_p.shape)
@@ -215,9 +216,10 @@ class Encoder(nn.Module):
 
         self.pe = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
                              p2=int(num_patches ** 0.5))
-
-
         print(self.pe.requires_grad)
+        '''
+
+
         if self.self_attn:
             print('in attention')
 
@@ -232,12 +234,12 @@ class Encoder(nn.Module):
 
                 # self.multi_head.to(args.gpus)
                 # attn = self.multi_head(features, features, features)
-
+            self.pe = torch.max(self.pe, dim=1, keepdim=False)[0]
             # print('attention shape', attn.shape)
         # features = features + attn  # residual connection
-        self.pe = torch.max(self.pe, dim=1, keepdim=False)[0]
 
-        return self.fc(self.relu(self.dropout(self.pe)))
+        return self.fc(self.relu(self.dropout(features)))
+        #return self.fc(self.relu(self.dropout(self.pe)))
 
     """
         features_img, features_b, features_meta = torch.zeros((x['buildings'].shape[0], self.dim), device=args.gpus) \
