@@ -131,7 +131,7 @@ class Layers(nn.Module):
 
 
 class Encoder(nn.Module):
-    def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, dim=512,
+    def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, dim,
                  num_outputs=1,
                  model_dict=None, freeze_encoder=False):
         # TODO add resnet_NL and resnet_Ms
@@ -147,14 +147,14 @@ class Encoder(nn.Module):
         # self.models = nn.ModuleDict({key:value for key, value in model_dict.items()})
         # print('Module dict ',self.models)
         # self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
-        self.fc_in_dim = dim
+        self.fc_in_dim = self.resnet_bands.fc.in_features
         self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)  # combines both together
 
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.1)
         self.self_attn = self_attn
         # MultiHeadedAttention(h=1,d_model=512)
-        self.dim = dim
+        self.dim =self.fc_in_dim
         self.resnet_bands = resnet_bands
         self.resnet_ms = resnet_ms
         self.resnet_build = resnet_build
@@ -182,11 +182,13 @@ class Encoder(nn.Module):
 
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
-        x_p = rearrange(x_p, 'b (p1 p2) c h w -> b p1 p2 (c h w)', p1=int(num_patches ** 0.5),
-                             p2=int(num_patches ** 0.5),h =h , w=w)
-        x_p = self.positionalE(x_p)
-        x_p = rearrange(x_p, 'b p1 p2 (c h w) -> b (p1 p2) c h w', p1=int(num_patches ** 0.5),
-                             p2=int(num_patches ** 0.5),h =h , w=w)
+        # postitional Encoding for tiles
+
+        #x_p = rearrange(x_p, 'b (p1 p2) c h w -> b p1 p2 (c h w)', p1=int(num_patches ** 0.5),
+         #                    p2=int(num_patches ** 0.5),h =h , w=w)
+        #x_p = self.positionalE(x_p)
+        #x_p = rearrange(x_p, 'b p1 p2 (c h w) -> b (p1 p2) c h w', p1=int(num_patches ** 0.5),
+         #                    p2=int(num_patches ** 0.5),h =h , w=w)
         for p in range(num_patches):
             features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
         #
@@ -203,7 +205,7 @@ class Encoder(nn.Module):
         assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
 
         print('features_concat_shape', features.shape)
-        # postitional Encoding for tiles
+
 
 
         print(features.requires_grad)
