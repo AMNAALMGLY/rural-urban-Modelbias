@@ -238,7 +238,7 @@ class Encoder(nn.Module):
             # print('attention shape', attn.shape)
         # features = features + attn  # residual connection
 
-        return self.fc(self.relu(self.dropout(features)))
+        return self.fc(self.relu(self.dropout(torch.cat(features))))
         #return self.fc(self.relu(self.dropout(self.pe)))
 
     """
