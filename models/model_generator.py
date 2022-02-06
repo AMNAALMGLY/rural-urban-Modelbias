@@ -83,8 +83,8 @@ class PositionalEncoding2D(nn.Module):
         if len(tensor.shape) != 4:
             raise RuntimeError("The input tensor has to be 4d!")
         batch_size, x, y, orig_ch = tensor.shape
-        pos_x = torch.arange(x, device=tensor.device,requires_grad=True).type(self.inv_freq.type())
-        pos_y = torch.arange(y, device=tensor.device,requires_grad=True).type(self.inv_freq.type())
+        pos_x = torch.arange(x.float(), device=tensor.device,requires_grad=True).type(self.inv_freq.type())
+        pos_y = torch.arange(y.float(), device=tensor.device,requires_grad=True).type(self.inv_freq.type())
         sin_inp_x = torch.einsum("i,j->ij", pos_x, self.inv_freq)
         sin_inp_y = torch.einsum("i,j->ij", pos_y, self.inv_freq)
         emb_x = torch.cat((sin_inp_x.sin(), sin_inp_x.cos()), dim=-1).unsqueeze(1)
