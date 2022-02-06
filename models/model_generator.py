@@ -162,8 +162,8 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-        self.positionalE = PositionalEncoding2D(channels=224*224*1)
-        self.pe=torch.empty((args.batch_size,1,self.dim),requires_grad=True)
+        #self.positionalE = PositionalEncoding2D(channels=112*112*1)
+        self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
         self.ff = nn.Linear(self.fc_in_dim, self.fc_in_dim)
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
@@ -177,12 +177,12 @@ class Encoder(nn.Module):
         # self.models[model_name].to(args.gpus)
         # feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
         # features.append(feature)
-        features.append(self.resnet_bands(x['buildings'])[1])
+        features.append(self.resnet_bands(x['images'])[1])
         # features.append(self.resnet_ms(x['ms'])[1])
 
         # patches Experiments
-        '''
-        x_p = img_to_patch(x['buildings'], p=224)
+
+        x_p = img_to_patch(x['images'], p=112)
 
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
@@ -209,13 +209,15 @@ class Encoder(nn.Module):
         assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
 
         print('features_concat_shape', features.shape)
-
+        '''
         features=rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
                              p2=int(num_patches ** 0.5))
+        
         self.pe=self.positionalE(features)
-
+        assert tuple(self.pe.shape) == (b, int(num_patches**0.5),int(num_patches**0.5), self.fc_in_dim), 'positional encoding shape is not as expected'
         self.pe = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
                              p2=int(num_patches ** 0.5))
+        assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
         print(self.pe.requires_grad)
         '''
 
@@ -230,6 +232,7 @@ class Encoder(nn.Module):
                 attn, _ = intersample_attention(features, features, features)  # bxnxd
             elif self.self_attn == 'multihead':
                 print(' inside multi head attention')
+                self.pe=features
                 self.pe = self.layers(self.pe)
 
                 # self.multi_head.to(args.gpus)
@@ -238,8 +241,8 @@ class Encoder(nn.Module):
             # print('attention shape', attn.shape)
         # features = features + attn  # residual connection
 
-        return self.fc(self.relu(self.dropout(torch.cat(features))))
-        #return self.fc(self.relu(self.dropout(self.pe)))
+        #return self.fc(self.relu(self.dropout(torch.cat(features))))
+        return self.fc(self.relu(self.dropout(self.pe)))
 
     """
         features_img, features_b, features_meta = torch.zeros((x['buildings'].shape[0], self.dim), device=args.gpus) \
