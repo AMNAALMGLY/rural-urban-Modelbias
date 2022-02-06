@@ -162,8 +162,8 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-        self.positionalE = PositionalEncoding2D(channels=112*112*1)
-        self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
+        self.positionalE = PositionalEncoding2D(channels=224*224*1)
+        self.pe=torch.empty((args.batch_size,1,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
         self.ff = nn.Linear(self.fc_in_dim, self.fc_in_dim)
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
@@ -181,7 +181,7 @@ class Encoder(nn.Module):
         # features.append(self.resnet_ms(x['ms'])[1])
 
         # patches Experiments
-        x_p = img_to_patch(x['buildings'], p=112)
+        x_p = img_to_patch(x['buildings'], p=224)
 
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
