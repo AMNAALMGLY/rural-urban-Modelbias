@@ -35,7 +35,8 @@ args = Namespace(
 
     data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    buildings_records='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
+    buildings_records=None,
+    #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
     label_name='wealthpooled',  # urban_rural
     cache=['train', 'train_eval', 'val'],
     augment=True,
@@ -43,10 +44,10 @@ args = Namespace(
     normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
     fold='A',
-    ls_bands=None,
+    ls_bands='ms',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    include_buildings=True,
+    include_buildings=False,
     scaler_features_keys={'urban_rural': tf.float32, 'country': tf.string},
     metadata=None,
     #['urban_rural', 'country'],
@@ -94,9 +95,9 @@ if args.input == 'locs':
 
 args.in_channels = []
 if args.ls_bands:
-  args.in_channels.append(args.bands_channels.get(args.nl_band, 0))
+  args.in_channels.append(args.bands_channels.get(args.ls_bands, 0))
 if args.nl_band:
-  args.in_channels.append(args.bands_channels.get(args.ls_bands, 0) )
+  args.in_channels.append(args.bands_channels.get(args.nl_band, 0) )
 if args.include_buildings:
     args.in_channels.append(args.bands_channels['buildings'])
 if args.metadata:
