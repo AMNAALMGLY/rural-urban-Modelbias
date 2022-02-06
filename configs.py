@@ -35,8 +35,7 @@ args = Namespace(
 
     data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    buildings_records=None,
-    #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
+    buildings_records='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
     label_name='wealthpooled',  # urban_rural
     cache=['train', 'train_eval', 'val'],
     augment=True,
@@ -44,10 +43,10 @@ args = Namespace(
     normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
     fold='A',
-    ls_bands='ms',
+    ls_bands=None,
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    include_buildings=False,
+    include_buildings=True,
     scaler_features_keys={'urban_rural': tf.float32, 'country': tf.string},
     metadata=None,
     #['urban_rural', 'country'],
