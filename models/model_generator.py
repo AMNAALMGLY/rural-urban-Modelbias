@@ -90,7 +90,7 @@ class PositionalEncoding2D(nn.Module):
         emb_x = torch.cat((sin_inp_x.sin(), sin_inp_x.cos()), dim=-1).unsqueeze(1)
         emb_y = torch.cat((sin_inp_y.sin(), sin_inp_y.cos()), dim=-1)
         print(emb_x.requires_grad)
-        emb = torch.zeros((x, y, self.channels * 2), device=tensor.device,requires_grad=True).type(
+        emb = torch.zeros((x, y, self.channels * 2), device=tensor.device).type(
             tensor.type()
         )
         emb[:, :, : self.channels] = emb_x
