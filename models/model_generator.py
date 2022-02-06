@@ -177,7 +177,7 @@ class Encoder(nn.Module):
         # self.models[model_name].to(args.gpus)
         # feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
         # features.append(feature)
-        features.append(self.resnet_bands(x['images'])[1])
+        #features.append(self.resnet_bands(x['images'])[1])
         # features.append(self.resnet_ms(x['ms'])[1])
 
         # patches Experiments
@@ -194,7 +194,7 @@ class Encoder(nn.Module):
         #x_p = rearrange(x_p, 'b p1 p2 (c h w) -> b (p1 p2) c h w', p1=int(num_patches ** 0.5),
          #                    p2=int(num_patches ** 0.5),h =h , w=w)
         for p in range(num_patches):
-            print((self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1]).shape)
+
             features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
         #
 
@@ -206,7 +206,7 @@ class Encoder(nn.Module):
         #    assert 2 >= number_of_fts >= 1, 'number of features should be at least one'
         #    features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
         features = torch.stack((features), dim=1)
-        print(features.shape)
+
         assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
 
         print('features_concat_shape', features.shape)
