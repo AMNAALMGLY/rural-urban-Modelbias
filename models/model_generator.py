@@ -131,7 +131,7 @@ class Layers(nn.Module):
 
 
 class Encoder(nn.Module):
-    def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, dim,
+    def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None,dim=512,
                  num_outputs=1,
                  model_dict=None, freeze_encoder=False):
         # TODO add resnet_NL and resnet_Ms
