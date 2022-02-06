@@ -183,7 +183,7 @@ class Batcher():
 
         print('ex_bands :', ex_bands)
         for band in ex_bands:
-            keys_to_features[band] = tf.io.FixedLenFeature(shape=[355 ** 2], dtype=tf.float32)
+            keys_to_features[band] = tf.io.FixedLenFeature(shape=[255 ** 2], dtype=tf.float32)
 
         for key in scalar_float_keys:
             keys_to_features[key] = tf.io.FixedLenFeature(shape=[], dtype=tf.float32)
@@ -200,11 +200,11 @@ class Batcher():
         img = float('nan')
         if len(ex_bands) > 0:
             for band in ex_bands:  ##TODO is this loop necessary ?vectorize
-                ex[band].set_shape([355 * 355])
+                ex[band].set_shape([255 * 255])
                 #ex[band].set_shape([448*448])
                 #ex[band] = tf.image.resize_with_crop_or_pad(ex[band], 3, 3)
                 #ex[band] = tf.reshape(ex[band], [448, 448])
-                ex[band] = tf.reshape(ex[band], [355, 355])
+                ex[band] = tf.reshape(ex[band], [255, 255])
                 #'[15:-16, 15:-16]  # crop to 224x224
 
                 if self.clipn:
