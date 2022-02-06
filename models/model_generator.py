@@ -194,7 +194,7 @@ class Encoder(nn.Module):
         #x_p = rearrange(x_p, 'b p1 p2 (c h w) -> b (p1 p2) c h w', p1=int(num_patches ** 0.5),
          #                    p2=int(num_patches ** 0.5),h =h , w=w)
         for p in range(num_patches):
-            print(p)
+            print((self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1]).shape)
             features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
         #
 
