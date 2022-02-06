@@ -83,18 +83,19 @@ class PositionalEncoding2D(nn.Module):
         if len(tensor.shape) != 4:
             raise RuntimeError("The input tensor has to be 4d!")
         batch_size, x, y, orig_ch = tensor.shape
-        pos_x = torch.arange(x, device=tensor.device).type(self.inv_freq.type())
-        pos_y = torch.arange(y, device=tensor.device).type(self.inv_freq.type())
+        pos_x = torch.arange(x, device=tensor.device,requires_grad=True).type(self.inv_freq.type())
+        pos_y = torch.arange(y, device=tensor.device,requires_grad=True).type(self.inv_freq.type())
         sin_inp_x = torch.einsum("i,j->ij", pos_x, self.inv_freq)
         sin_inp_y = torch.einsum("i,j->ij", pos_y, self.inv_freq)
         emb_x = torch.cat((sin_inp_x.sin(), sin_inp_x.cos()), dim=-1).unsqueeze(1)
         emb_y = torch.cat((sin_inp_y.sin(), sin_inp_y.cos()), dim=-1)
-        emb = torch.zeros((x, y, self.channels * 2), device=tensor.device).type(
+        print(emb_x.requires_grad)
+        emb = torch.zeros((x, y, self.channels * 2), device=tensor.device,requires_grad=True).type(
             tensor.type()
         )
         emb[:, :, : self.channels] = emb_x
         emb[:, :, self.channels: 2 * self.channels] = emb_y
-        print(emb.device)
+        print(emb.requires_grad)
         return emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1)
 
 
