@@ -160,7 +160,7 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-        self.positionalE = PositionalEncoding2D(dim)
+        self.positionalE = PositionalEncoding2D(channels=112*112*1)
         self.multi_head = MultiHeadedAttention(h=1, d_model=dim)
         self.ff = nn.Linear(self.fc_in_dim, self.fc_in_dim)
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
