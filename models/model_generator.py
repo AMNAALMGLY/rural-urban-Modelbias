@@ -205,7 +205,7 @@ class Encoder(nn.Module):
         #    assert 2 >= number_of_fts >= 1, 'number of features should be at least one'
         #    features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
         features = torch.stack((features), dim=1)
-
+        print(features.shape)
         assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
 
         print('features_concat_shape', features.shape)
