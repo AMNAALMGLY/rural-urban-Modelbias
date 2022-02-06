@@ -83,8 +83,8 @@ class PositionalEncoding2D(nn.Module):
         if len(tensor.shape) != 4:
             raise RuntimeError("The input tensor has to be 4d!")
         batch_size, x, y, orig_ch = tensor.shape
-        pos_x = torch.arange(float(x), device=tensor.device,requires_grad=True).type(self.inv_freq.type())
-        pos_y = torch.arange(float(y), device=tensor.device,requires_grad=True).type(self.inv_freq.type())
+        pos_x = torch.arange(float(x), device=tensor.device).type(self.inv_freq.type())
+        pos_y = torch.arange(float(y), device=tensor.device).type(self.inv_freq.type())
         sin_inp_x = torch.einsum("i,j->ij", pos_x, self.inv_freq)
         sin_inp_y = torch.einsum("i,j->ij", pos_y, self.inv_freq)
         emb_x = torch.cat((sin_inp_x.sin(), sin_inp_x.cos()), dim=-1).unsqueeze(1)
@@ -179,8 +179,14 @@ class Encoder(nn.Module):
 
         # patches Experiments
         x_p = img_to_patch(x['buildings'], p=112)
+
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
+        x_p = rearrange(x_p, 'b (p1 p2) c h w -> b p1 p2 (c h w)', p1=int(num_patches ** 0.5),
+                             p2=int(num_patches ** 0.5),h =h , w=w)
+        x_p = self.positionalE(x_p)
+        x_p = rearrange(x_p, 'b p1 p2 (c h w) -> b (p1 p2) c h w', p1=int(num_patches ** 0.5),
+                             p2=int(num_patches ** 0.5),h =h , w=w)
         for p in range(num_patches):
             features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
         #
@@ -198,9 +204,8 @@ class Encoder(nn.Module):
 
         print('features_concat_shape', features.shape)
         # postitional Encoding for tiles
-        features=rearrange(features,'b (p1 p2) d -> b p1 p2 d',p1=int(num_patches**0.5),p2=int(num_patches**0.5))
-        features=self.positionalE(features)
-        features=rearrange(features,'b p1 p2 d -> b (p1 p2) d',p1=int(num_patches**0.5),p2=int(num_patches**0.5))
+
+
         print(features.requires_grad)
         if self.self_attn:
             print('in attention')
