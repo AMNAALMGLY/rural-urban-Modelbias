@@ -33,7 +33,7 @@ args = Namespace(
 
     # data
 
-    data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords',
+    data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     buildings_records=None,
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
@@ -41,7 +41,7 @@ args = Namespace(
     cache=['train', 'train_eval', 'val'],
     augment=True,
     clipn=True,
-    normalize=None,
+    normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
     fold='A',
     ls_bands=   'ms',
