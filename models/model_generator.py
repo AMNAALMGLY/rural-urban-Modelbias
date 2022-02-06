@@ -212,12 +212,12 @@ class Encoder(nn.Module):
         features=rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
                              p2=int(num_patches ** 0.5))
         self.pe=self.positionalE(features)
-        features=self.pe
-        features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
+
+        self.pe = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
                              p2=int(num_patches ** 0.5))
 
 
-        print(features.requires_grad)
+        print(self.pe.requires_grad)
         if self.self_attn:
             print('in attention')
 
@@ -228,16 +228,16 @@ class Encoder(nn.Module):
                 attn, _ = intersample_attention(features, features, features)  # bxnxd
             elif self.self_attn == 'multihead':
                 print(' inside multi head attention')
-                features = self.layers(features)
+                self.pe = self.layers(self.pe)
 
                 # self.multi_head.to(args.gpus)
                 # attn = self.multi_head(features, features, features)
 
             # print('attention shape', attn.shape)
         # features = features + attn  # residual connection
-        features = torch.max(features, dim=1, keepdim=False)[0]
+        self.pe = torch.max(self.pe, dim=1, keepdim=False)[0]
 
-        return self.fc(self.relu(self.dropout(features)))
+        return self.fc(self.relu(self.dropout(self.pe)))
 
     """
         features_img, features_b, features_meta = torch.zeros((x['buildings'].shape[0], self.dim), device=args.gpus) \
