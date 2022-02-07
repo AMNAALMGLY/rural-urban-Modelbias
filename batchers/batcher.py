@@ -1,48 +1,37 @@
-from batchers.dataset_constants import SIZES, SURVEY_NAMES, MEANS_DICT, STD_DEVS_DICT
+########
+# ADAPTED from github.com/sustainlab-group/africa_poverty
+########
+import numpy as np
+
+from batchers.wilds.dataset_constants_buildings import SIZES, SURVEY_NAMES, MEANS_DICT, STD_DEVS_DICT
 
 from glob import glob
 import os
 
 import tensorflow as tf
 
-
-#ROOT_DIR = '/atlas/u/chrisyeh/africa_poverty/'
-ROOT_DIR = '/home/aimsg/PycharmProjects/demo/africa_poverty/'
-
-DHS_TFRECORDS_PATH_ROOT = os.path.join(ROOT_DIR, 'data/dhs_tfrecords')
+ROOT_DIR = '/atlas/u/chrisyeh/africa_poverty/'
+DHS_TFRECORDS_PATH_ROOT = '/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings'
+# DHS_TFRECORDS_PATH_ROOT = os.path.join(ROOT_DIR, 'data/dhs_tfrecords')
 LSMS_TFRECORDS_PATH_ROOT = os.path.join(ROOT_DIR, 'data/lsms_tfrecords')
 
 
-def get_tfrecord_paths(dataset, split='all'):
-    '''
-    Args
-    - dataset: str, a key in SURVEY_NAMES
-    - split: str, one of ['train', 'val', 'test', 'all']
-
-    Returns:
-    - tfrecord_paths: list of str, paths to TFRecord files, sorted
-    '''
-    #expected_size = SIZES[dataset][split]
+def get_tfrecord_paths(dataset: str, split: str, fold: str, root=DHS_TFRECORDS_PATH_ROOT) -> np.ndarray:
     if split == 'all':
         splits = ['train', 'val', 'test']
     else:
-        splits = [split]
+        splits=[split]
+    paths = []
+    fold_name = SURVEY_NAMES[f'{dataset}_{fold}']
+    for s in splits:
+        for country in fold_name[s]:
+            path = os.path.join(root, country + '*', '*.tfrecord.gz')
+            paths += glob(path)
+    print(len(paths))
+    #assert  len(paths)==SIZES[f'{dataset}_{fold}'][split]
 
-    survey_names = SURVEY_NAMES[dataset]
-    tfrecord_paths = []
-    for split in splits:
+    return np.sort(paths)
 
-        for country_year in survey_names[split]:
-
-            glob_path = os.path.join(DHS_TFRECORDS_PATH_ROOT, country_year + '*', '*.tfrecord.gz')
-
-            tfrecord_paths.extend(glob(glob_path))
-    tfrecord_paths = sorted(tfrecord_paths)
-
-
-    #assert len(tfrecord_paths) == expected_size
-
-    return tfrecord_paths
 
 
 def get_lsms_tfrecord_paths(cys):
@@ -103,13 +92,13 @@ class Batcher():
         self.augment = augment
         self.normalize = normalize
         self.cache = cache
-        print(tfrecord_files)
-        if ls_bands not in [None, 'rgb', 'ms']:
+
+        if ls_bands not in [None, 'rgb', 'ms', 'buildings']:
             raise ValueError(f'Error: got {ls_bands} for "ls_bands"')
         self.ls_bands = ls_bands
 
-        if dataset not in MEANS_DICT:
-            raise ValueError(f'Error: got {dataset} for "dataset"')
+        #if dataset not in MEANS_DICT:
+        #    raise ValueError(f'Error: got {dataset} for "dataset"')
         self.dataset = dataset
 
         if negatives not in [None, 'zero']:
@@ -148,7 +137,7 @@ class Batcher():
             # shuffle the order of the input files, then interleave their individual records
             dataset = tf.data.Dataset.from_tensor_slices(self.tfrecord_files)
             dataset = dataset.shuffle(buffer_size=1000)
-            dataset = dataset.apply(tf.contrib.data.parallel_interleave(
+            dataset = dataset.apply(tf.data.experimental.parallel_interleave(
                 lambda file_path: tf.data.TFRecordDataset(file_path, compression_type='GZIP'),
                 cycle_length=self.num_threads,
                 block_length=1
@@ -161,11 +150,6 @@ class Batcher():
                 buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
                 num_parallel_reads=self.num_threads)
 
-        # print('='*100)
-        # print(self.tfrecord_files)
-        # print(dataset.output_shapes)
-        # print(dataset.element_spec)
-
         # filter out unwanted TFRecords
         if getattr(self, 'filter_fn', None) is not None:
             dataset = dataset.filter(self.filter_fn)
@@ -173,18 +157,12 @@ class Batcher():
         # prefetch 2 batches at a time to smooth out the time taken to
         # load input files as we go through shuffling and processing
         dataset = dataset.prefetch(buffer_size=2 * self.batch_size)
-
         dataset = dataset.map(self.process_tfrecords, num_parallel_calls=self.num_threads)
-        print('after map >> ', dataset)
         if self.nl_band == 'split':
             dataset = dataset.map(self.split_nl_band)
 
-        print('after nl band >> ', dataset)
-
         if self.cache:
             dataset = dataset.cache()
-
-        print('after cache >> ', dataset)
         if self.shuffle:
             dataset = dataset.shuffle(buffer_size=1000)
         if self.augment:
@@ -198,12 +176,10 @@ class Batcher():
         # prefetch 2 batches at a time
         dataset = dataset.prefetch(2)
 
-        iterator = dataset.make_initializable_iterator()
-
-        batch = iterator.get_next()
-        iter_init = iterator.initializer
-        #print('iter_init:', iter_init)
-        return iter_init, batch
+        iterator = iter(dataset)
+        batch = next(iterator)
+        # iter_init = iterator.initializer
+        return batch
 
     def process_tfrecords(self, example_proto):
         '''
@@ -226,6 +202,8 @@ class Batcher():
             bands = ['BLUE', 'GREEN', 'RED']  # BGR order
         elif self.ls_bands == 'ms':
             bands = ['BLUE', 'GREEN', 'RED', 'SWIR1', 'SWIR2', 'TEMP1', 'NIR']
+        elif self.ls_bands == 'buildings':
+            bands = ['buildings']
         if self.nl_band is not None:
             bands += ['NIGHTLIGHTS']
 
@@ -235,21 +213,21 @@ class Batcher():
 
         keys_to_features = {}
         for band in bands:
-            keys_to_features[band] = tf.FixedLenFeature(shape=[255**2], dtype=tf.float32)
+            keys_to_features[band] = tf.io.FixedLenFeature(shape=[255 ** 2], dtype=tf.float32)
         for key in scalar_float_keys:
-            keys_to_features[key] = tf.FixedLenFeature(shape=[], dtype=tf.float32)
+            keys_to_features[key] = tf.io.FixedLenFeature(shape=[], dtype=tf.float32)
 
-        ex = tf.parse_single_example(example_proto, features=keys_to_features)
+        ex = tf.io.parse_single_example(example_proto, features=keys_to_features)
         loc = tf.stack([ex['lat'], ex['lon']])
         year = tf.cast(ex.get('year', -1), tf.int32)
 
         img = float('nan')
         if len(bands) > 0:
-            means = MEANS_DICT[self.dataset]
-            std_devs = STD_DEVS_DICT[self.dataset]
+            means = MEANS_DICT['DHS']
+            std_devs = STD_DEVS_DICT['DHS']
 
             # for each band, subtract mean and divide by std dev
-            # then reshape to (255, 255) and crop to (2git git push --force origin main24, 224)
+            # then reshape to (255, 255) and crop to (224, 224)
             for band in bands:
                 ex[band].set_shape([255 * 255])
                 ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]
@@ -262,9 +240,12 @@ class Batcher():
                             true_fn=lambda: (ex[band] - means['DMSP']) / std_devs['DMSP'],
                             false_fn=lambda: (ex[band] - means['VIIRS']) / std_devs['VIIRS']
                         )
+                    elif band == 'buildings':
+                        continue
                     else:
                         ex[band] = (ex[band] - means[band]) / std_devs[band]
             img = tf.stack([ex[band] for band in bands], axis=2)
+
         result = {'images': img, 'locs': loc, 'years': year}
 
         if self.nl_label == 'mean':
@@ -344,6 +325,7 @@ class Batcher():
 
         Returns: tf.Tensor with data augmentation applied
         '''
+
         def rand_levels(image):
             # up to 0.5 std dev brightness change
             image = tf.image.random_brightness(image, max_delta=0.5)
@@ -373,9 +355,9 @@ class UrbanBatcher(Batcher):
         - predicate: tf.Tensor, type bool, True to keep, False to filter out
         '''
         keys_to_features = {
-            'urban_rural': tf.FixedLenFeature(shape=[], dtype=tf.float32)
+            'urban_rural': tf.io.FixedLenFeature(shape=[], dtype=tf.float32)
         }
-        ex = tf.parse_single_example(example_proto, features=keys_to_features)
+        ex = tf.io.parse_single_example(example_proto, features=keys_to_features)
         do_keep = tf.equal(ex['urban_rural'], 1.0)
         return do_keep
 
@@ -390,9 +372,9 @@ class RuralBatcher(Batcher):
         - predicate: tf.Tensor, type bool, True to keep, False to filter out
         '''
         keys_to_features = {
-            'urban_rural': tf.FixedLenFeature(shape=[], dtype=tf.float32)
+            'urban_rural': tf.io.FixedLenFeature(shape=[], dtype=tf.float32)
         }
-        ex = tf.parse_single_example(example_proto, features=keys_to_features)
+        ex = tf.io.parse_single_example(example_proto, features=keys_to_features)
         do_keep = tf.equal(ex['urban_rural'], 0.0)
         return do_keep
 
