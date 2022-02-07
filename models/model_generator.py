@@ -163,7 +163,7 @@ class Encoder(nn.Module):
         self.Mlp = Mlp
 
         #self.positionalE = PositionalEncoding2D(channels=112*112*1)
-        self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
+        #self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
         self.ff = nn.Linear(self.fc_in_dim, self.fc_in_dim)
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
@@ -182,7 +182,7 @@ class Encoder(nn.Module):
 
         # patches Experiments
 
-        x_p = img_to_patch(x['images'], p=112)
+        x_p = img_to_patch(x['buildings'], p=112)
 
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
@@ -238,7 +238,7 @@ class Encoder(nn.Module):
 
                 # self.multi_head.to(args.gpus)
                 # attn = self.multi_head(features, features, features)
-            features = torch.max(self.pe, dim=1, keepdim=False)[0]
+            features = torch.max(features, dim=1, keepdim=False)[0]
             # print('attention shape', attn.shape)
 
 
