@@ -148,7 +148,6 @@ def get_paths(dataset: str, split: str, fold: str, root) -> np.ndarray:
 
     # TODO change to the old data
     #assert  len(paths)==SIZES[f'{dataset}_{fold}'][split]
-
     return np.sort(paths)
 
 

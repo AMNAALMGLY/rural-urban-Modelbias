@@ -11,7 +11,8 @@ import os
 import tensorflow as tf
 
 ROOT_DIR = '/atlas/u/chrisyeh/africa_poverty/'
-DHS_TFRECORDS_PATH_ROOT = '/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings'
+DHS_TFRECORDS_PATH_ROOT ='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large'
+    #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings'
 # DHS_TFRECORDS_PATH_ROOT = os.path.join(ROOT_DIR, 'data/dhs_tfrecords')
 LSMS_TFRECORDS_PATH_ROOT = os.path.join(ROOT_DIR, 'data/lsms_tfrecords')
 
@@ -213,7 +214,7 @@ class Batcher():
 
         keys_to_features = {}
         for band in bands:
-            keys_to_features[band] = tf.io.FixedLenFeature(shape=[255 ** 2], dtype=tf.float32)
+            keys_to_features[band] = tf.io.FixedLenFeature(shape=[355 ** 2], dtype=tf.float32)
         for key in scalar_float_keys:
             keys_to_features[key] = tf.io.FixedLenFeature(shape=[], dtype=tf.float32)
 
@@ -229,8 +230,8 @@ class Batcher():
             # for each band, subtract mean and divide by std dev
             # then reshape to (255, 255) and crop to (224, 224)
             for band in bands:
-                ex[band].set_shape([255 * 255])
-                ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]
+                ex[band].set_shape([355 * 355])
+                ex[band] = tf.reshape(ex[band], [355, 355])[15:-16, 15:-16]
                 if self.negatives == 'zero':
                     ex[band] = tf.nn.relu(ex[band])
                 if self.normalize:
