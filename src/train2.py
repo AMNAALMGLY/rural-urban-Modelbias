@@ -204,14 +204,16 @@ def main(args):
                                args.nl_label, args.include_buildings, paths_test_b, args.normalize, False, args.clipn,
                                args.batch_size, groupby='urban',
                                cache=True, shuffle=False)
-
+        '''
         batcher_all= Batcher(get_paths(args.dataset, 'all', args.fold, args.data_path), args.scaler_features_keys,'ms', None, 'wealthpooled',
                                 None, False, None, args.normalize, False,
                                 False, 8, groupby=args.group,
                                 cache=True, shuffle=False)
+        
         for i in batcher_all:
             print('large tfrecords: ', i['locs'],i['labels'],i['years'],i['urban_rural'],i['country'])
             break
+        '''
     ##############################################################WILDS dataset############################################################
     elif args.dataset=='wilds':
         dataset = get_dataset(dataset="poverty", download=True, unlabeled=True)
