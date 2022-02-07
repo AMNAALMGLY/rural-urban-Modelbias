@@ -43,10 +43,10 @@ args = Namespace(
     normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
     fold='A',
-    ls_bands= None,
+    ls_bands= 'ms',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    include_buildings=True,
+    include_buildings=False,
     scaler_features_keys={'urban_rural': tf.float32, 'country': tf.string},
     metadata=None,
     #['urban_rural', 'country'],
