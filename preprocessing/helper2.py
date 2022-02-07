@@ -132,11 +132,7 @@ def analyze_tfrecord_batch(iter_init: tf.Operation,
     }
     return stats
 
-
-def per_band_mean_std(stats: Mapping[str, np.ndarray],
-                      band_order: list[str]
-                      ) -> tuple[dict[str, np.number], dict]:
-    '''Calculates the per-band mean and standard deviation, only including
+'''Calculates the per-band mean and standard deviation, only including
     "good pixels". A good pixel is one where at least 1 band is > 0.
 
     Args
@@ -145,23 +141,18 @@ def per_band_mean_std(stats: Mapping[str, np.ndarray],
         - 'sums': np.array, shape [nbands], type float64, sum of values per band, excluding values <= 0
         - 'sum_sqs': np.array, shape [nbands], type float64, sum of squared-values per band, excluding values <= 0
     - band_order: list of str, names of bands
-    '''
-    num_good_pixels, sums, sum_sqs = [
-        stats[k] for k in
-        ['num_good_pixels', 'sums', 'sum_sqs']
-    ]
+'''
+def per_band_mean_std(stats,band_order ) :
+    num_good_pixels, sums, sum_sqs = [stats[k] for k in  ['num_good_pixels', 'sums', 'sum_sqs']]
     num_total_pixels = np.sum(num_good_pixels)
     means = sums / float(num_total_pixels)
     stds = np.sqrt(sum_sqs/float(num_total_pixels) - means**2)
-
     means = {
         band_name: means[b]
-        for b, band_name in enumerate(band_order)
-    }
+        for b, band_name in enumerate(band_order)}
     stds = {
         band_name: stds[b]
-        for b, band_name in enumerate(band_order)
-    }
+        for b, band_name in enumerate(band_order) }
     return means, stds
 
 
