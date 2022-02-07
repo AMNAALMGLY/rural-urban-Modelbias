@@ -210,7 +210,7 @@ def main(args):
                                 False, 8, groupby=args.group,
                                 cache=True, shuffle=False)
         for i in batcher_all:
-            print('large tfrecords: ', i['locs'],i['labels'],i['years'],i['urban_rural'])
+            print('large tfrecords: ', i['locs'],i['labels'],i['years'],i['urban_rural'],i['country'])
             break
     ##############################################################WILDS dataset############################################################
     elif args.dataset=='wilds':
