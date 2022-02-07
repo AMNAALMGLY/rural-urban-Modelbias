@@ -209,7 +209,7 @@ def main(args):
                                 None, False, None, args.normalize, False,
                                 False, 8, groupby=args.group,
                                 cache=True, shuffle=False)
-        for i in batcher_train:
+        for i in batcher_all:
             print('large tfrecords: ', i['locs'],i['labels'],i['years'],i['urban_rural'],i['country'])
             break
     ##############################################################WILDS dataset############################################################
