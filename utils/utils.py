@@ -19,10 +19,9 @@ from collections import ChainMap
 
 from configs import args
 
-#from batchers.dataset_constants import SURVEY_NAMES
+#from batchers.dataset_constants import SURVEY_NAMES,SIZES
 
 from batchers.dataset_constants_buildings import SURVEY_NAMES
-
 
 
 class Metric:
@@ -146,7 +145,9 @@ def get_paths(dataset: str, split: str, fold: str, root) -> np.ndarray:
         for country in fold_name[s]:
             path = os.path.join(root, country + '*', '*.tfrecord.gz')
             paths += glob(path)
-    #assert  len(paths)==SIZES[f'{dataset}_{fold}'][split]
+
+    # TODO change to the old data
+    assert  len(paths)==SIZES[f'{dataset}_{fold}'][split]
 
     return np.sort(paths)
 

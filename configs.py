@@ -12,7 +12,7 @@ args = Namespace(
     # Model
 
     model_name=dict(resnet_bands='resnet18', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
-    self_attn=None,  # choices : [vanilla, intersample , multihead]
+    self_attn='multihead',  # choices : [vanilla, intersample , multihead]
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
@@ -27,16 +27,15 @@ args = Namespace(
     patience=20,
 
     lr=.0001,  # lr0001         #0.0001 nl,ms
-    fc_reg=.01,
+    fc_reg=.00001,
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=.01,
+    conv_reg=.00001,
 
     # data
 
     data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    buildings_records=None,
-    #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
+    buildings_records='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
     label_name='wealthpooled',  # urban_rural
     cache=['train', 'train_eval', 'val'],
     augment=True,
@@ -44,10 +43,10 @@ args = Namespace(
     normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
     fold='A',
-    ls_bands= 'ms',
+    ls_bands= None,
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    include_buildings=False,
+    include_buildings=True,
     scaler_features_keys={'urban_rural': tf.float32, 'country': tf.string},
     metadata=None,
     #['urban_rural', 'country'],
