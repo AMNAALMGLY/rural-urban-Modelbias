@@ -27,67 +27,94 @@ from wilds.common.data_loaders import get_train_loader, get_eval_loader
 from ray import tune
 import torchvision.transforms as transforms
 
-
 wandp = default_args.wandb_p
 entity = default_args.entity
 
 
 def geo_attn_exp(model_name, MODEL_DIRS, ):
-    COUNTRIES=dataset_constants_buildings.DHS_COUNTRIES
+    COUNTRIES = dataset_constants_buildings.DHS_COUNTRIES
     df = pd.read_csv('data/dhs_clusters.csv', float_precision='high', index_col=False)
-    df=df[df['country'].isin(COUNTRIES)].reset_index(drop=True)
-    labels=df['wealthpooled'].to_numpy(dtype=np.float32)
+    df = df[df['country'].isin(COUNTRIES)].reset_index(drop=True)
+    labels = df['wealthpooled'].to_numpy(dtype=np.float32)
 
-    #Load features from pretrained Model
+    # Load features from pretrained Model
     f = args.fold
     model_fold_name = f'{model_name}_{f}'
     model_dir = MODEL_DIRS[model_fold_name]
     npz_path = os.path.join('outputs', 'dhs_ooc', model_dir, 'features.npz')
     npz = load_npz(npz_path, check={'labels': labels})
     features = torch.tensor(npz['features'])
-    labels=torch.tensor(labels)
-    print('features,labels',features.shape,labels.shape)
-    #Sorting idx according to lat, lon
-    countries_train_idx=(df[df['country'].isin(dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['train'])].index).to_numpy()
+    labels = torch.tensor(labels)
+    print('features,labels', features.shape, labels.shape)
+    # Sorting idx according to lat, lon
+    countries_train_idx = (
+        df[df['country'].isin(dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['train'])].index).to_numpy()
     countries_valid_idx = (
         df[df['country'].isin(dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['val'])].index).to_numpy()
     countries_test_idx = (
         df[df['country'].isin(dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['test'])].index).to_numpy()
 
-    #idx = np.array(range(num_examples))
+    # idx = np.array(range(num_examples))
 
     sorted_idx = (df.sort_values(['lat', 'lon']).index).to_numpy()
-    print('sorted_idx',sorted_idx)
+    print('sorted_idx', sorted_idx)
     train_idx = sorted_idx[np.isin(sorted_idx, countries_train_idx)]
     print('train_idx', len(train_idx))
     valid_idx = sorted_idx[np.isin(sorted_idx, countries_valid_idx)]
     test_idx = sorted_idx[np.isin(sorted_idx, countries_test_idx)]
 
     # Dataloader
-    #print('validate sorting',features[:5],features[train_idx][:5])
-    train,valid,test = torch.utils.data.TensorDataset(features[train_idx], labels[train_idx]),torch.utils.data.TensorDataset(features[valid_idx], labels[valid_idx]),torch.utils.data.TensorDataset(features[test_idx], labels[test_idx])
+    # print('validate sorting',features[:5],features[train_idx][:5])
+    train, valid, test = torch.utils.data.TensorDataset(features[train_idx],
+                                                        labels[train_idx]), torch.utils.data.TensorDataset(
+        features[valid_idx], labels[valid_idx]), torch.utils.data.TensorDataset(features[test_idx], labels[test_idx])
 
-    #train, test, valid = dataset[train_idx], dataset[test_idx], dataset[valid_idx]
+    # train, test, valid = dataset[train_idx], dataset[test_idx], dataset[valid_idx]
     trainloader, validloader, testloader = torch.utils.data.DataLoader(train,
                                                                        batch_size=64), torch.utils.data.DataLoader(
         valid, batch_size=64), torch.utils.data.DataLoader(test, batch_size=64)
 
-    attn_layer= geoAttention()
-    best_loss,path,score=setup_experiment(attn_layer, trainloader, validloader, None, args, testloader)
-    return best_loss,path,score
+    attn_layer = geoAttention()
+    best_loss, path, score = setup_experiment(attn_layer, trainloader, validloader, None, args, testloader)
+    return best_loss, path, score
+
+
 def building_exp():
-    dir='outputs/dhs_ooc/DHS_OOC_A_patches_attnLayer_b64_fc0001_conv0001_lr0001/'
-    npz=load_npz(dir)
-    data=npz['building_sum']
+    # Train data
+    dir = 'outputs/dhs_ooc/DHS_OOC_A_patches_attnLayer_b64_fc0001_conv0001_lr0001/building_sum'
+    npz = load_npz(dir)
+    data = npz['building_sum']
     data.unsqueeze_(-1)
-    model=get_model('mlp',1)
+    # Valid data
+    dir = 'outputs/dhs_ooc/DHS_OOC_A_patches_attnLayer_b64_fc0001_conv0001_lr0001/building_sum_valid'
+    npz = load_npz(dir)
+    valid = npz['building_sum']
+    valid.unsqueeze_(-1)
+
+    model = get_model('mlp', 1)
     COUNTRIES = dataset_constants_buildings.DHS_COUNTRIES
     df = pd.read_csv('data/dhs_clusters.csv', float_precision='high', index_col=False)
     df = df[df['country'].isin(COUNTRIES)].reset_index(drop=True)
     labels = df['wealthpooled'].to_numpy(dtype=np.float32)
-    labels=torch.tensor(labels)
+    labels = torch.tensor(labels)
 
-    pass
+    idx = np.array(range(len(labels)))
+    train_idx = (
+        df[df['country'].isin(dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['train'])].index).to_numpy()
+    valid_idx = (
+        df[df['country'].isin(dataset_constants_buildings.SURVEY_NAMES[f'DHS_OOC_{f}']['val'])].index).to_numpy()
+    # train_idx,valid_idx=idx[np.isin(idx,countries_train_idx)]
+    train, valid = torch.utils.data.TensorDataset(data, labels[train_idx]), torch.utils.data.TensorDataset(valid,
+                                                                                                           labels[
+                                                                                                               valid_idx])
+    trainloader, validloader = torch.utils.data.DataLoader(train,
+                                                           batch_size=64), torch.utils.data.DataLoader(
+        valid, batch_size=64)
+
+    best_loss, path, score = setup_experiment(model, trainloader, validloader, None, args,)
+    return best_loss, path, score
+
+
 def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args, batcher_test=None):
     '''
    setup the experiment paramaters
@@ -133,7 +160,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
     trainer = Trainer(save_dir=dirpath, **params)
 
     # Fitting...
-    if args.dataset == 'wilds' or args.dataset =='features':        #attention layer also use this function
+    if args.dataset == 'wilds' or args.dataset == 'features':  # attention layer also use this function
         best_loss, path, = trainer.fit_wilds(train_loader, valid_loader, max_epochs=args.max_epochs, gpus=args.gpus,
                                              class_model=class_model)
     else:
@@ -173,9 +200,9 @@ def main(args):
     '''
 
     wandb.config.update(data_params)
-    if args.dataset== 'features':
-        MODEL_DIRS={'resnet_nl_A': 'DHS_OOC_A_encoder_b_nl_geo_b128_fc001_conv001_lre-05'}
-        best_loss, best_path, score= geo_attn_exp('resnet_nl', MODEL_DIRS, )
+    if args.dataset == 'features':
+        MODEL_DIRS = {'resnet_nl_A': 'DHS_OOC_A_encoder_b_nl_geo_b128_fc001_conv001_lre-05'}
+        best_loss, best_path, score = geo_attn_exp('resnet_nl', MODEL_DIRS, )
         return
     # dataloader
     elif args.dataset == 'DHS_OOC':
@@ -227,7 +254,7 @@ def main(args):
             break
         '''
     ##############################################################WILDS dataset############################################################
-    elif args.dataset=='wilds':
+    elif args.dataset == 'wilds':
         dataset = get_dataset(dataset="poverty", download=True, unlabeled=True)
 
         # Get the training set
@@ -277,7 +304,7 @@ def main(args):
 
     encoder = Encoder(**model_dict, self_attn=args.self_attn)
     # encoder=Encoder(self_attn=args.self_attn,**model_dict)
-    #config = {"lr": args.lr, "wd": args.conv_reg}  # you can remove this now it is for raytune
+    # config = {"lr": args.lr, "wd": args.conv_reg}  # you can remove this now it is for raytune
     best_loss, best_path, score = setup_experiment(encoder, batcher_train, batcher_valid, args.resume, args,
                                                    batcher_test)
 
