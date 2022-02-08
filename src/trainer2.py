@@ -495,15 +495,17 @@ class Trainer:
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
 
-                    b=torch.tensor(record[1]['buildings'])
-                    building_sum.append(torch.sum(b ,dim=(1,2,3)))
+                    #b=torch.tensor(record[1]['buildings'])
+
+                    #building_sum.append(torch.sum(b ,dim=(1,2,3)))
+            '''
             building_sum=torch.cat(building_sum,dim=0)
             print('shape of sum ',building_sum.shape)
             np_dict=defaultdict()
             np_dict['building_sum']=building_sum.numpy()
-
+            
             save_results(self.save_dir, np_dict, 'building_sum')
-
+            '''
             # Metric calulation and average loss
             r2 = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
             wandb.log({f'{self.metric_str[0]} train': r2, 'epoch': epoch})
@@ -575,6 +577,7 @@ class Trainer:
 
             self.metric[0].reset()
             if epoch >= swa_start:
+                print('in SWA scheduler')
                 self.swa_model.update_parameters(self.model)
                 self.swa_scheduler.step()
             else:
