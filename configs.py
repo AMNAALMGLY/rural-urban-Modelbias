@@ -12,7 +12,7 @@ args = Namespace(
     # Model
 
     model_name=dict(resnet_bands='resnet18', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
-    self_attn='multihead',  # choices : [vanilla, intersample , multihead]
+    self_attn=None,  # choices : [vanilla, intersample , multihead]
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
@@ -33,7 +33,8 @@ args = Namespace(
 
     # data
 
-    data_path='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
+    data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
+    #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     buildings_records='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
@@ -44,7 +45,7 @@ args = Namespace(
     normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
     fold='A',
-    ls_bands= None,
+    ls_bands= 'ms',
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     include_buildings=True,
