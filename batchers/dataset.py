@@ -7,6 +7,7 @@ from typing import Callable, Tuple
 import tensorflow as tf
 import os
 from batchers.dataset_constants import MEANS_DICT, STD_DEVS_DICT
+from batchers.dataset_constants_buildings import MAX_DICT, MIN_DICT
 from configs import args
 
 from utils.utils import save_results
@@ -211,19 +212,21 @@ class Batcher():
                 if self.normalize:
                     means = MEANS_DICT[self.normalize]
                     stds = STD_DEVS_DICT[self.normalize]
-                    maximum = max(means['DMSP'] + (3 * stds['DMSP']), means['VIIRS'] + (3 * stds['VIIRS']))
-                    minimum = min(-means['DMSP'] - (3 * stds['DMSP']), -means['VIIRS'] - (3 * stds['VIIRS']))
-                    range = maximum - minimum
+                    mins=MIN_DICT[self.normalize]
+                    maxs=MAX_DICT[self.normalize]
+
                     if band == 'NIGHTLIGHTS':
                         ex[band] = tf.cond(
                             year < 2012,  # true = DMSP
-                            #true_fn=lambda: (((ex[band] - means['DMSP']) / stds['DMSP']) - minimum) / range,
-                            #false_fn=lambda: (((ex[band] - means['VIIRS']) / stds['VIIRS'])-minimum)/range))
+                            #true_fn=lambda:  ex[band] = (ex[band] - mins['DMSP']) / (maxs['DMSP']-mins['DMSP'])
+                            #false_fn=lambda:  ex[band] = (ex[band] - mins['VIIRS']) / (maxs['VIIRS']-mins['VIIRS'])
                             true_fn=lambda: (ex[band] - means['DMSP']) / stds['DMSP'],
                             false_fn=lambda: (ex[band] - means['VIIRS']) / stds['VIIRS'])
 
                     else:
-                        ex[band] = (ex[band] - means[band]) / stds[band]
+                        ex[band] = (ex[band] - mins[band]) / (maxs[band]-mins[band])
+                        #ex[band] = (ex[band] - means[band]) / stds[band]
+
             img = tf.stack([ex[band] for band in ex_bands], axis=2)
 
 
