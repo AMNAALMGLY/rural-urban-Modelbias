@@ -111,15 +111,15 @@ _MAX_DHS={
 
 }
 _MIN_DHS={
-    'BLUE':2.0,
-    'GREEN': 2.0,
-    'RED': 2.0,
-    'SWIR1': 2.0,
-    'SWIR2':2.0,
-    'TEMP1':3.16299e+02,
-    'NIR': 2.0,
-    'DMSP':1.178694e+03,
-    'VIIRS': 2.52105e+03
+    'BLUE':0.0,
+    'GREEN': 0.0,
+    'RED': 0.0,
+    'SWIR1': 0.0,
+    'SWIR2':0.0,
+    'TEMP1':0.0,
+    'NIR': 0.0,
+    'DMSP':0.0,
+    'VIIRS': 0.0
 
 }
 
@@ -209,6 +209,14 @@ MEANS_DICT = {
     'DHS': _MEANS_DHS,
     'DHSNL': _MEANS_DHSNL,
     'LSMS': _MEANS_LSMS,
+}
+MIN_DICT = {
+    'DHS': _MIN_DHS,
+
+}
+MAX_DICT = {
+    'DHS': _MAX_DHS,
+
 }
 
 STD_DEVS_DICT = {
