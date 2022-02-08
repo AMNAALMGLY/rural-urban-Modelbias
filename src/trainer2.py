@@ -496,8 +496,9 @@ class Trainer:
                     time.sleep(0.1)
 
                     b=torch.tensor(record[1]['buildings'])
-                    building_sum.append(np.sum(b ,axis=(1,2,3),keepdim=False))
+                    building_sum.append(np.sum(b ,axis=(1,2,3)))
             building_sum=np.cat(building_sum,dim=0)
+            print('shape of sum ',building_sum.shape)
             np_dict=defaultdict()
             np_dict['building_sum']=building_sum
 
