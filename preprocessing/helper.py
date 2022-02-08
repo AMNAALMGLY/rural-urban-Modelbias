@@ -222,7 +222,8 @@ def get_images(tfrecord_paths, label_name='wealthpooled', return_meta=False):
          None,None, None, 'wealthpooled',
          None, True, tfrecord_paths, None, False,
          False, 128, None,
-         cache=True, shuffle=False).get_dataset()
+         cache=True, shuffle=False)\
+         #.get_dataset()
      '''
      #with tf.compat.v1.Session() as sess:
      for elem in dataset:
@@ -257,12 +258,13 @@ def analyze_tfrecord_batch(tfrecord_paths, total_num_images, nbands, k=20):
      if len(tfrecord_paths) % 128 != 0:
          num_batches += 1
          print('here')
-     for i in range(num_batches):
+     batcher=get_images(tfrecord_paths,)
+     for i in batcher:
                  batch_start_time = time.time()
                  print('here')
-                 batch_np = get_images(tfrecord_paths[i*128: (i+1)*128])
+                 #batch_np = get_images(tfrecord_paths[i*128: (i+1)*128])
                  img_batch, loc_batch, label_batch, year_batch = \
-                     batch_np[1]['buildings'], batch_np[0]['locs'], batch_np[0]['labels'], batch_np[0]['years']
+                     i[1]['buildings'], i[0]['locs'], i[0]['labels'], i[0]['years']
                  batch_size = len(img_batch)
                  processing_start_time = time.time()
                  batch_times.append(processing_start_time - batch_start_time)
