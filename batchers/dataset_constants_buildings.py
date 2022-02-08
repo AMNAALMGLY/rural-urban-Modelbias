@@ -103,10 +103,26 @@ _MAX_DHS={
     'GREEN': 2.0,
     'RED': 2.0,
     'SWIR1': 2.0,
-    'SWIR2':316.29,
-    'TEMP1':2.0
+    'SWIR2':2.0,
+    'TEMP1':3.16299e+02,
+    'NIR': 2.0,
+    'DMSP':1.178694e+03,
+    'VIIRS': 2.52105e+03
 
 }
+_MIN_DHS={
+    'BLUE':2.0,
+    'GREEN': 2.0,
+    'RED': 2.0,
+    'SWIR1': 2.0,
+    'SWIR2':2.0,
+    'TEMP1':3.16299e+02,
+    'NIR': 2.0,
+    'DMSP':1.178694e+03,
+    'VIIRS': 2.52105e+03
+
+}
+
 # means and standard deviations calculated over the entire dataset (train + val + test),
 # with negative values set to 0, and ignoring any pixel that is 0 across all bands
 #'maxs': array([2.00000000e+00, 2.00000000e+00, 2.00000000e+00, 2.00000000e+00,   2.00000000e+00, 3.16299988e+02, 2.00000000e+00, 1.17869397e+03,   2.52104688e+03])
