@@ -216,17 +216,13 @@ def get_images(tfrecord_paths, label_name='wealthpooled', return_meta=False):
 
      Returns: np.array, shape [N, 224, 224, 8], type float32
      '''
-     batch = batcher.Batcher(
-         tfrecord_files=tfrecord_paths,
-         dataset='DHS',
-         batch_size=128,
-         ls_bands='ms',
-         nl_band='merge',
-         label_name=label_name,
-         shuffle=False,
-         augment=False,
-         negatives=None,
-         normalize=False).get_batch()
+     labels_paths=get_paths('DHS_OOC', 'all', 'A', '/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords')
+     batch = dataset.Batcher(
+         labels_paths,
+         None,None, None, 'wealthpooled',
+         None, True, tfrecord_paths, None, False,
+         False, 128, None,
+         cache=True, shuffle=False).get_dataset()
      '''
      #with tf.compat.v1.Session() as sess:
      for elem in dataset:
@@ -266,7 +262,7 @@ def analyze_tfrecord_batch(tfrecord_paths, total_num_images, nbands, k=20):
                  print('here')
                  batch_np = get_images(tfrecord_paths[i*128: (i+1)*128])
                  img_batch, loc_batch, label_batch, year_batch = \
-                     batch_np['buildings'], batch_np['locs'], batch_np['labels'], batch_np['years']
+                     batch_np[1]['buildings'], batch_np[0]['locs'], batch_np[0]['labels'], batch_np[0]['years']
                  batch_size = len(img_batch)
                  processing_start_time = time.time()
                  batch_times.append(processing_start_time - batch_start_time)

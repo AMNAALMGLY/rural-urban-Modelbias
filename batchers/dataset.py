@@ -364,6 +364,12 @@ class Batcher():
 
         dataset = dataset.prefetch(2)
         print(f'Time in getdataset: {time.time() - start}')
+        '''
+        iterator = iter(dataset)
+        batch = next(iterator)
+        # iter_init = iterator.initializer
+        return batch
+        '''
         return dataset
 
 
