@@ -209,6 +209,118 @@ def analyze_tfrecord_batch(iter_init, batch_op, total_num_images, nbands, k=20):
     k_worst.sort()
     return stats, k_worst
 
+def get_images(tfrecord_paths, label_name='wealthpooled', return_meta=False):
+     '''
+     Args
+     - tfrecord_paths: list of str, length N <= 32, paths of TFRecord files
+
+     Returns: np.array, shape [N, 224, 224, 8], type float32
+     '''
+     batch = batcher.Batcher(
+         tfrecord_files=tfrecord_paths,
+         dataset='DHS',
+         batch_size=128,
+         ls_bands='ms',
+         nl_band='merge',
+         label_name=label_name,
+         shuffle=False,
+         augment=False,
+         negatives=None,
+         normalize=False).get_batch()
+     '''
+     #with tf.compat.v1.Session() as sess:
+     for elem in dataset:
+         sess.run(init_iter)
+         if return_meta:
+             ret = sess.run(batch_op)
+         else:
+             ret = sess.run(batch_op['images'])
+     return ret
+     '''
+     return batch
+
+def analyze_tfrecord_batch(tfrecord_paths, total_num_images, nbands, k=20):
+     images_count = 0
+     # statistics for each band: min, max, sum, sum of squares, number of non-zero pixels
+     mins = np.ones(nbands, dtype=np.float64) * np.inf
+     mins_nz = np.ones(nbands, dtype=np.float64) * np.inf
+     mins_goodpx = np.ones(nbands, dtype=np.float64) * np.inf
+     maxs = np.zeros(nbands, dtype=np.float64)
+     sums = np.zeros(nbands, dtype=np.float64)
+     sum_sqs = np.zeros(nbands, dtype=np.float64)
+     nz_pixels = np.zeros(nbands, dtype=np.int64)
+     # heap to track the worst (by -nz_pixels) images
+     # - elements are (value, (label, image, loc))
+     k_worst = []
+     batch_times = []
+     processing_times = []
+     start = time.time()
+     # number of `good pixels` in each image
+     num_good_pixels = []
+     num_batches = len(tfrecord_paths) // 128
+     if len(tfrecord_paths) % 128 != 0:
+         num_batches += 1
+         print('here')
+     for i in range(num_batches):
+                 batch_start_time = time.time()
+                 print('here')
+                 batch_np = get_images(tfrecord_paths[i*128: (i+1)*128])
+                 img_batch, loc_batch, label_batch, year_batch = \
+                     batch_np['buildings'], batch_np['locs'], batch_np['labels'], batch_np['years']
+                 batch_size = len(img_batch)
+                 processing_start_time = time.time()
+                 batch_times.append(processing_start_time - batch_start_time)
+                 dmsp_mask = (year_batch < 2012)
+                 dmsp_bands = np.arange(nbands-1)
+                 viirs_mask = ~dmsp_mask
+                 viirs_bands = [i for i in range(nbands) if i != nbands-2]
+                 # a good pixel is one where at least 1 band is > 0
+                 batch_goodpx = np.any(img_batch > 0, axis=3)
+                 num_good_pixels_per_image = np.sum(batch_goodpx, axis=(1,2))
+                 num_good_pixels.extend(num_good_pixels_per_image)
+                 img_batch_positive = np.where(img_batch <= 0, np.inf, img_batch)
+                 img_batch_nonneg = np.where(img_batch < 0, 0, img_batch)
+                 for mask, bands in [(dmsp_mask, dmsp_bands), (viirs_mask, viirs_bands)]:
+                     if np.sum(mask) == 0: continue
+                     imgs = img_batch[mask]
+                     imgs_positive = img_batch_positive[mask]
+                     imgs_nonneg = img_batch_nonneg[mask]
+                     goodpx = batch_goodpx[mask]
+                     imgs_goodpx = imgs[goodpx]  # shape [len(mask), nbands]
+                     mins[bands] = np.minimum(mins[bands], np.min(imgs, axis=(0,1,2)))
+                     mins_nz[bands] = np.minimum(mins_nz[bands], np.min(imgs_positive, axis=(0,1,2)))
+                     mins_goodpx[bands] = np.minimum(mins_goodpx[bands], np.min(imgs_goodpx, axis=0))
+                     maxs[bands] = np.maximum(maxs[bands], np.max(imgs, axis=(0,1,2)))
+                     # use dtype=np.float64 to avoid significant loss of precision in np.sum
+                     sums[bands] += np.sum(imgs_nonneg, axis=(0,1,2), dtype=np.float64)
+                     sum_sqs[bands] += np.sum(imgs_nonneg ** 2, axis=(0,1,2), dtype=np.float64)
+                     nz_pixels[bands] += np.sum(imgs > 0, axis=(0,1,2))
+                 processing_times.append(time.time() - processing_start_time)
+                 images_count += batch_size
+                 if images_count % 1024 == 0:
+                     print(f'\rProcessed {images_count}/{total_num_images} images', end='')
+     total_time = time.time() - start
+     assert len(num_good_pixels) == images_count
+     assert images_count == total_num_images
+     print(f'\rFinished. Processed {images_count} images.')
+     print('Time per batch - mean: {:0.3f}s, std: {:0.3f}s'.format(
+         np.mean(batch_times), np.std(batch_times)))
+     print('Time to process each batch - mean: {:0.3f}s, std: {:0.3f}s'.format(
+         np.mean(processing_times), np.std(processing_times)))
+     print('Total time: {:0.3f}s, Num batches: {}'.format(total_time, len(batch_times)))
+     stats = {
+         'num_good_pixels': num_good_pixels,
+         'mins': mins,
+         'mins_nz': mins_nz,
+         'mins_goodpx': mins_goodpx,
+         'maxs': maxs,
+         'sums': sums,
+         'sum_sqs': sum_sqs,
+         'nz_pixels': nz_pixels
+     }
+     #k_worst.sort()
+     return stats
+
 
 def print_analysis_results(stats: Mapping[str, np.ndarray],
                            band_order: List[str]) -> Tuple[Dict, Dict]:
