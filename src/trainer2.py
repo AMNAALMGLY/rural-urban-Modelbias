@@ -513,6 +513,7 @@ class Trainer:
             wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
             print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str[0]} is {r2:.2f}')
             self.metric[0].reset()
+            building_sum=[]
             with torch.no_grad():
                 valid_step = 0
                 valid_epoch_loss = 0
@@ -528,6 +529,17 @@ class Trainer:
                     if (valid_step + 1) % 20 == 0:
                         running_loss = valid_epoch_loss / (valid_step)
                         wandb.log({"valid_loss": running_loss, 'epoch': epoch})
+                    b=torch.tensor(record[1]['buildings'])
+                    if epoch==0:
+                        building_sum.append(torch.sum(b ,dim=(1,2,3)))
+                if epoch==0:
+                    building_sum=torch.cat(building_sum,dim=0)
+                    print('shape of sum ',building_sum.shape)
+                    np_dict=defaultdict()
+                    np_dict['building_sum']=building_sum.numpy()
+
+                    save_results(self.save_dir, np_dict, 'building_sum_val')
+
 
                 avg_valid_loss = valid_epoch_loss / valid_steps
 
