@@ -278,6 +278,8 @@ def analyze_tfrecord_batch(tfrecord_paths, total_num_images, nbands, k=20):
                  num_good_pixels.extend(num_good_pixels_per_image)
                  img_batch_positive = np.where(img_batch <= 0, np.inf, img_batch)
                  img_batch_nonneg = np.where(img_batch < 0, 0, img_batch)
+                 #mins_b=[]
+                 #sums_b=[]
                  for mask, bands in [(dmsp_mask, dmsp_bands), (viirs_mask, viirs_bands)]:
                      if np.sum(mask) == 0: continue
                      imgs = img_batch[mask]
@@ -285,6 +287,8 @@ def analyze_tfrecord_batch(tfrecord_paths, total_num_images, nbands, k=20):
                      imgs_nonneg = img_batch_nonneg[mask]
                      goodpx = batch_goodpx[mask]
                      imgs_goodpx = imgs[goodpx]  # shape [len(mask), nbands]
+                     #mins_b.extend(np.np.minimum(mins[bands], np.min(imgs, axis=(1,2))))
+                     #sums_b.extend( np.sum(imgs_nonneg, axis=(1,2), dtype=np.float64))
                      mins[bands] = np.minimum(mins[bands], np.min(imgs, axis=(0,1,2)))
                      mins_nz[bands] = np.minimum(mins_nz[bands], np.min(imgs_positive, axis=(0,1,2)))
                      mins_goodpx[bands] = np.minimum(mins_goodpx[bands], np.min(imgs_goodpx, axis=0))

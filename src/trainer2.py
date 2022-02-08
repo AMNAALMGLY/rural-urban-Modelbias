@@ -11,7 +11,7 @@ import torch.nn as nn
 from tqdm import tqdm
 
 from batchers.dataset_constants_buildings import DHS_COUNTRIES
-from utils.utils import Metric
+from utils.utils import Metric, save_results
 from configs import args
 import wandb
 from pl_bolts import optimizers
@@ -149,6 +149,7 @@ class Trainer:
                       x.shape[-2])  if args.input=='images' else x
         '''
         x = defaultdict()
+
         if args.include_buildings:
             if args.ls_bands and args.nl_band:
                 # 2 bands split them inot seperate inputs
@@ -174,6 +175,7 @@ class Trainer:
             target = torch.tensor(batch[0]['labels'], )
             target = target.type_as(self.model.fc.weight)
             x['buildings'] = torch.tensor(batch[1]['buildings'], )
+
 
         else:
             if args.ls_bands and args.nl_band:
@@ -460,6 +462,8 @@ class Trainer:
         val_list = defaultdict(lambda x: '')
         start = time.time()
 
+        building_sum=[]
+
         for epoch in range(max_epochs):
             epoch_start = time.time()
 
@@ -490,6 +494,14 @@ class Trainer:
 
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
+
+                    b=torch.tensor(record[1]['buildings'])
+                    building_sum.append(np.sum(b ,axis=(1,2,3),keepdim=False))
+            building_sum=np.cat(building_sum,dim=0)
+            np_dict=defaultdict()
+            np_dict['building_sum']=building_sum
+
+            save_results(self.save_dir, np_dict, 'building_sum')
 
             # Metric calulation and average loss
             r2 = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
