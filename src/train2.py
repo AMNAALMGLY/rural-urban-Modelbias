@@ -81,6 +81,12 @@ def building_exp():
     data=npz['building_sum']
     data.unsqueeze_(-1)
     model=get_model('mlp',1)
+    COUNTRIES = dataset_constants_buildings.DHS_COUNTRIES
+    df = pd.read_csv('data/dhs_clusters.csv', float_precision='high', index_col=False)
+    df = df[df['country'].isin(COUNTRIES)].reset_index(drop=True)
+    labels = df['wealthpooled'].to_numpy(dtype=np.float32)
+    labels=torch.tensor(labels)
+
     pass
 def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args, batcher_test=None):
     '''
