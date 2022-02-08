@@ -161,15 +161,15 @@ class Encoder(nn.Module):
         self.resnet_ms = resnet_ms
         self.resnet_build = resnet_build
         self.Mlp = Mlp
-        '''
-        self.positionalE = PositionalEncoding2D(channels=28*28*1)
+
+        self.positionalE = PositionalEncoding2D(channels=56*56*1)
         #self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
         self.ff = nn.Linear(self.fc_in_dim, self.fc_in_dim)
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
         self.layers = Layers(self.layer, 6)
         # nn.MultiheadAttention(self.dim, 1)
-        '''
+
     def forward(self, x):
         features = []
         # for  key in  x.keys():
@@ -177,12 +177,12 @@ class Encoder(nn.Module):
         # self.models[model_name].to(args.gpus)
         # feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
         # features.append(feature)
-        features.append(self.resnet_bands(x['images'])[1])
+        #features.append(self.resnet_bands(x['images'])[1])
         #features.append(self.resnet_ms(x['ms'])[1])
 
         # patches Experiments
-        '''
-        x_p = img_to_patch(x['buildings'], p=112)
+
+        x_p = img_to_patch(x['buildings'], p=56)
 
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
@@ -222,7 +222,7 @@ class Encoder(nn.Module):
         print(features.requires_grad)
 
 
-        '''
+
         if self.self_attn:
             print('in attention')
 
@@ -242,8 +242,8 @@ class Encoder(nn.Module):
             # print('attention shape', attn.shape)
 
 
-        return self.fc(self.relu(self.dropout(torch.cat(features))))
-        #return self.fc(self.relu(self.dropout(features)))
+        #return self.fc(self.relu(self.dropout(torch.cat(features))))
+        return self.fc(self.relu(self.dropout(features)))
 
     """
         features_img, features_b, features_meta = torch.zeros((x['buildings'].shape[0], self.dim), device=args.gpus) \
