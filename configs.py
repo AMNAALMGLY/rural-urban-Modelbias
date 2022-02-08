@@ -27,9 +27,9 @@ args = Namespace(
     patience=20,
 
     lr=.0001,  # lr0001         #0.0001 nl,ms                     #    {1 × 10−5, 3 x 10-5 , 10-4 }
-    fc_reg=0.00001,                                               #{ 0 , 1, 10-3 , 10-2}
+    fc_reg=0.0000,                                               #{ 0 , 1, 10-3 , 10-2}
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=0.00001,
+    conv_reg=0.0000,
 
     # data
 
