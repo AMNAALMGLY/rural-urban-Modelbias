@@ -75,7 +75,13 @@ def geo_attn_exp(model_name, MODEL_DIRS, ):
     attn_layer= geoAttention()
     best_loss,path,score=setup_experiment(attn_layer, trainloader, validloader, None, args, testloader)
     return best_loss,path,score
-
+def building_exp():
+    dir='outputs/dhs_ooc/DHS_OOC_A_patches_attnLayer_b64_fc0001_conv0001_lr0001/'
+    npz=load_npz(dir)
+    data=npz['building_sum']
+    data.unsqueeze_(-1)
+    model=get_model('mlp',1)
+    pass
 def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args, batcher_test=None):
     '''
    setup the experiment paramaters

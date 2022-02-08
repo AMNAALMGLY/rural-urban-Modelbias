@@ -206,7 +206,8 @@ class Batcher():
                 #ex[band] = tf.image.resize_with_crop_or_pad(ex[band], 3, 3)
                 #ex[band] = tf.reshape(ex[band], [448, 448])
                 #ex[band] = tf.reshape(ex[band], [355, 355])[65:-66, 65:-66]  # crop to 224x224
-                ex[band] = tf.reshape(ex[band], [355, 355])[65:-66, 65:-66]
+                ex[band] = tf.reshape(ex[band], [355, 355])
+                #[65:-66, 65:-66]
                 if self.clipn:
                     ex[band] = tf.nn.relu(ex[band])
                 if self.normalize:
@@ -224,8 +225,8 @@ class Batcher():
                             false_fn=lambda: (ex[band] - means['VIIRS']) / stds['VIIRS'])
 
                     else:
-                        ex[band] = (ex[band] - mins[band]) / (maxs[band]-mins[band])
-                        #ex[band] = (ex[band] - means[band]) / stds[band]
+                        #ex[band] = (ex[band] - mins[band]) / (maxs[band]-mins[band])
+                        ex[band] = (ex[band] - means[band]) / stds[band]
 
             img = tf.stack([ex[band] for band in ex_bands], axis=2)
 
