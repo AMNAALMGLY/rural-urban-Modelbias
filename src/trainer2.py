@@ -16,7 +16,7 @@ from configs import args
 import wandb
 from pl_bolts import optimizers
 import tensorflow as tf
-from ray import  tune
+from ray import tune
 
 writer = SummaryWriter()
 patience = args.patience
@@ -93,6 +93,10 @@ class Trainer:
             self.metric.append(Metric(self.num_outputs).get_metric(m))
 
         self.scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
+        ##Stochastic weight averaging
+        self.swa_scheduler = self.configure_optimizers()['lr_scheduler']['swa_scheduler']
+
+        self.swa_model = torch.optim.swa_utils.AveragedModel(self.model)
         self.opt = self.configure_optimizers()['optimizer']
 
         self.setup_criterion()
@@ -296,7 +300,7 @@ class Trainer:
 
                     x = x.type_as(self.model.fc.weight)
                     y = y.type_as(self.model.fc.weight)
-                    #x = dict(images=x)
+                    # x = dict(images=x)
                     outputs = self.model(x)
                     outputs = outputs.squeeze(dim=-1)
                     y = y.squeeze(dim=-1)
@@ -320,7 +324,7 @@ class Trainer:
 
                     preds = torch.tensor(outputs, device=args.gpus)
                     self.metric[0].to(args.gpus)
-                    print('shapes:',y.shape,preds.shape)
+                    print('shapes:', y.shape, preds.shape)
                     self.metric[0].update(preds, y)
 
             # Metric calulation and average loss
@@ -335,10 +339,10 @@ class Trainer:
                 valid_epoch_loss = 0
                 print('--------------------------Validation-------------------- ')
                 self.model.eval()
-                for x, y,  in validloader:
+                for x, y, in validloader:
                     x = x.type_as(self.model.fc.weight)
                     y = y.type_as(self.model.fc.weight)
-                    #x=dict(images=x)
+                    # x=dict(images=x)
                     outputs = self.model(x)
                     outputs = outputs.squeeze(dim=-1)
                     y = y.squeeze(dim=-1)
@@ -443,6 +447,9 @@ class Trainer:
             self.class_model = None
         # log the gradients
         wandb.watch(self.model, log='all')
+
+        swa_start = int(0.75 * max_epochs)  # swa in 25% of the training
+
         train_steps = len(trainloader)
 
         valid_steps = len(validloader)  # the number of batches
@@ -509,7 +516,7 @@ class Trainer:
 
                 avg_valid_loss = valid_epoch_loss / valid_steps
 
-                #tune.report(mean_loss=avg_valid_loss)
+                # tune.report(mean_loss=avg_valid_loss)
 
                 r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
 
@@ -554,9 +561,16 @@ class Trainer:
                 print(f'Saving model to {resume_path}')
 
             self.metric[0].reset()
-            self.scheduler.step()
+            if epoch >= swa_start:
+                self.swa_model.update_parameters(self.model)
+                self.swa_scheduler.step()
+            else:
+                self.scheduler.step()
 
             print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
+        # UPDATE SWA MODEL RUNNIGN MEAN AND VARIANCE
+
+        Trainer.update_bn(trainloader, self.swa_model)
 
         # choose the best model between the saved models in regard to r2 value or minimum loss
         if len(val_list.keys()) > 0:
@@ -622,10 +636,12 @@ class Trainer:
                 # 'scheduler': ExponentialLR(opt,
                 #            gamma=args.lr_decay),
                 # 'scheduler':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=200)
-                'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=20, max_epochs=500,
+                'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=20,
+                                                                                   max_epochs=500,
                                                                                    warmup_start_lr=1e-8),
                 # 'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, verbose=True)
-                # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min')
+                # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min'),
+                'swa_scheduler': torch.optim.swa_utils.SWALR(opt, anneal_strategy="cos", anneal_epochs=5, swa_lr=0.05)
 
             }
         }
@@ -639,6 +655,56 @@ class Trainer:
 
         else:
             self.criterion = nn.MSELoss()
+
+    @torch.no_grad()
+    def update_bn(loader, model, device=None):
+        r"""Updates BatchNorm running_mean, running_var buffers in the model.
+        It performs one pass over data in `loader` to estimate the activation
+        statistics for BatchNorm layers in the model.
+        Args:
+            loader (torch.utils.data.DataLoader): dataset loader to compute the
+                activation statistics on. Each data batch should be either a
+                tensor, or a list/tuple whose first element is a tensor
+                containing data.
+            model (torch.nn.Module): model for which we seek to update BatchNorm
+                statistics.
+            device (torch.device, optional): If set, data will be transferred to
+                :attr:`device` before being passed into :attr:`model`.
+        Example:
+
+        .. note::
+            The `update_bn` utility assumes that each data batch in :attr:`loader`
+            is either a tensor or a list or tuple of tensors; in the latter case it
+            is assumed that :meth:`model.forward()` should be called on the first
+            element of the list or tuple corresponding to the data batch.
+        """
+        momenta = {}
+        for module in model.modules():
+            if isinstance(module, torch.nn.modules.batchnorm._BatchNorm):
+                module.running_mean = torch.zeros_like(module.running_mean)
+                module.running_var = torch.ones_like(module.running_var)
+                momenta[module] = module.momentum
+
+        if not momenta:
+            return
+
+        was_training = model.training
+        model.train()
+        for module in momenta.keys():
+            module.momentum = None
+            module.num_batches_tracked *= 0
+
+        for input in loader:
+            if isinstance(input, (list, tuple)):
+                input = input[1]['buildings']
+            if device is not None:
+                input = input.to(device)
+
+            model(input)
+
+        for bn_module in momenta.keys():
+            bn_module.momentum = momenta[bn_module]
+        model.train(was_training)
 
     def custom_loss(self, batch, target):
         losses = []
