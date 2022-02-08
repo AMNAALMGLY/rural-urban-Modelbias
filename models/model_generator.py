@@ -161,7 +161,7 @@ class Encoder(nn.Module):
         self.resnet_ms = resnet_ms
         self.resnet_build = resnet_build
         self.Mlp = Mlp
-
+        '''
         self.positionalE = PositionalEncoding2D(channels=28*28*1)
         #self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
@@ -169,7 +169,7 @@ class Encoder(nn.Module):
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
         self.layers = Layers(self.layer, 6)
         # nn.MultiheadAttention(self.dim, 1)
-
+        '''
     def forward(self, x):
         features = []
         # for  key in  x.keys():
