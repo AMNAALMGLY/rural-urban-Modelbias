@@ -22,24 +22,27 @@ args = Namespace(
     lr_decay=0.96,
     batch_size=64,
     gpu=-1,
-    max_epochs=2,
+    max_epochs=300,
     epoch_thresh=150,
     patience=20,
 
     lr=.0001,  # lr0001         #0.0001 nl,ms                     #    {1 × 10−5, 3 x 10-5 , 10-4 }
-    fc_reg=0.00001,                                               #{ 0 , 1, 10-3 , 10-2}
+    fc_reg=0.000001,                                               #{ 0 , 1, 10-3 , 10-2}
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=0.00001,
+    conv_reg=0.000001,
 
     # data
 
     data_path='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_buildings_large/'
+
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    buildings_records='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
+    buildings_records='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_buildings_large/',
+    #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
+
+    # '/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_buildings_large/'
     label_name='wealthpooled',  # urban_rural
     cache=['train', 'train_eval', 'val'],
     augment=True,
@@ -51,7 +54,7 @@ args = Namespace(
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     include_buildings=True,
-    scaler_features_keys={'urban_rural': tf.float32, 'country': tf.string},
+    scaler_features_keys={'urban_rural': tf.float32},
     metadata=None,
     #['urban_rural', 'country'],
     # ['locs'],
@@ -60,8 +63,8 @@ args = Namespace(
 
     # Experiment
 
-    seed=123,
-    experiment_name='DHS_OOC_A_ms_larger',
+    seed=0,
+    experiment_name='DHS_OOC_A_building_larger',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=  None,
