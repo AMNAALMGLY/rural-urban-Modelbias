@@ -728,7 +728,7 @@ class Trainer:
         for input in loader:
             #if isinstance(input, (list, tuple)):
 
-            input = input['buildings'].reshape(-1,input['buildings'].shape[-1],input['buildings'].shape[-3],input['buildings'].shape[-2])
+            input = input[1]['buildings'].reshape(-1,input[1]['buildings'].shape[-1],input[1]['buildings'].shape[-3],input[1]['buildings'].shape[-2])
             if device is not None:
                 input = input.to(device)
 
