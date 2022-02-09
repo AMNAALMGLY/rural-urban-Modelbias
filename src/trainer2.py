@@ -730,7 +730,7 @@ class Trainer:
 
             x['buildings']=torch.tensor( input[1]['buildings'])
             x={key :value.reshape(-1,value.shape[-1],value.shape[-2],value.shape[-3])for key , value in x.items()}
-            x={key:value.as_type(model.fc.weight) for key , value in x.items()}
+            x={key:value.type_as(model.fc.weight) for key , value in x.items()}
             input =x
             if device is not None:
                 input = input.to(device)
