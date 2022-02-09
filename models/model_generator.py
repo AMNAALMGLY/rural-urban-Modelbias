@@ -182,7 +182,7 @@ class Encoder(nn.Module):
 
         # patches Experiments
 
-        x_p = img_to_patch(x['images'], p=56)
+        x_p = img_to_patch(x['buildings'], p=56)
 
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
