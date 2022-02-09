@@ -162,7 +162,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
     trainer = Trainer(save_dir=dirpath, **params)
 
     # Fitting...
-    if args.dataset == 'wilds' or args.dataset == 'features':  # attention layer also use this function
+    if args.dataset == 'wilds' or args.dataset == 'features' or args.dataset =='stats':  # attention layer also use this function
         best_loss, path, = trainer.fit_wilds(train_loader, valid_loader, max_epochs=args.max_epochs, gpus=args.gpus,
                                              class_model=class_model)
     else:
