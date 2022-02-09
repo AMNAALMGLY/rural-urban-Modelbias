@@ -84,19 +84,19 @@ def building_exp():
     dir = 'outputs/dhs_ooc/DHS_OOC_A_patches_attnLayer_b64_fc0001_conv0001_lr0001/building_sum.npz'
     npz = load_npz(dir)
     d = npz['building_sum']
-    d=np.expand_dims(d, axis=1)
+    d=torch.tensor(np.expand_dims(d, axis=1))
     # Valid data
     dir = 'outputs/dhs_ooc/DHS_OOC_A_ms_larger_b64_fce-05_conve-05_lr0001/building_sum_val.npz'
     npz = load_npz(dir)
     valid = npz['building_sum']
-    valid = np.expand_dims(valid, axis=1)
+    valid =torch.tensor( np.expand_dims(valid, axis=1))
 
     model = get_model('mlp', 1)
     COUNTRIES = dataset_constants_buildings.DHS_COUNTRIES
     df = pd.read_csv('data/dhs_clusters.csv', float_precision='high', index_col=False)
     df = df[df['country'].isin(COUNTRIES)].reset_index(drop=True)
     labels = df['wealthpooled'].to_numpy(dtype=np.float32)
-
+    labels = torch.tensor(labels)
 
     idx = np.array(range(len(labels)))
     train_idx = (
