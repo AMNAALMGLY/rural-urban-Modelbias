@@ -22,7 +22,7 @@ args = Namespace(
     lr_decay=0.96,
     batch_size=64,
     gpu=-1,
-    max_epochs=5,
+    max_epochs=2,
     epoch_thresh=150,
     patience=20,
 

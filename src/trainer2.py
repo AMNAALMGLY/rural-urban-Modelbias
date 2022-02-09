@@ -726,8 +726,8 @@ class Trainer:
             module.num_batches_tracked *= 0
 
         for input in loader:
-            if isinstance(input, (list, tuple)):
-                input = input[1]
+            #if isinstance(input, (list, tuple)):
+            input = input[1].reshape(-1,input[1].shape[-1],input[1].shape[-3],input[1].shape[-2])
             if device is not None:
                 input = input.to(device)
 
