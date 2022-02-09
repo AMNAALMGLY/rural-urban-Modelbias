@@ -86,11 +86,11 @@ def building_exp():
     data = npz['building_sum']
     data.unsqueeze_(-1)
     # Valid data
-    dir = 'outputs/dhs_ooc/DHS_OOC_A_patches_attnLayer_b64_fc0001_conv0001_lr0001/building_sum_val'
+    dir = 'outputs/dhs_ooc/DHS_OOC_A_ms_larger_b64_fce-05_conve-05_lr0001/building_sum_val'
     npz = load_npz(dir)
     valid = npz['building_sum']
     valid.unsqueeze_(-1)
-
+    print(data[:3],valid[:3])
     model = get_model('mlp', 1)
     COUNTRIES = dataset_constants_buildings.DHS_COUNTRIES
     df = pd.read_csv('data/dhs_clusters.csv', float_precision='high', index_col=False)
@@ -204,6 +204,9 @@ def main(args):
         MODEL_DIRS = {'resnet_nl_A': 'DHS_OOC_A_encoder_b_nl_geo_b128_fc001_conv001_lre-05'}
         best_loss, best_path, score = geo_attn_exp('resnet_nl', MODEL_DIRS, )
         return
+    elif args.dataset=='stats':
+
+        return building_exp()
     # dataloader
     elif args.dataset == 'DHS_OOC':
         paths_train = get_paths(args.dataset, 'train', args.fold, args.data_path)
