@@ -512,7 +512,8 @@ class MLP(nn.Module):
       #self.layer3=nn.Linear(output_dim,1)
       self.relu=nn.ReLU()
    def forward(self,x):
-       return self.fc(self.relu(self.layer2( self.relu(self.layer1(x))))),self.layer2( self.relu(self.layer1(x)))
+       return self.fc(self.relu(self.layer2( self.relu(self.layer1(x)))))
+              #self.layer2( self.relu(self.layer1(x)))
 
 def mlp(in_channels: int, pretrained: bool = False, progress: bool = True, **kwargs: Any) :
     r"""ResNet-18 model from
