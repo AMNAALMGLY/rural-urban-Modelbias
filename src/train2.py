@@ -83,14 +83,14 @@ def building_exp():
     # Train data
     dir = 'outputs/dhs_ooc/DHS_OOC_A_patches_attnLayer_b64_fc0001_conv0001_lr0001/building_sum.npz'
     npz = load_npz(dir)
-    data = npz['building_sum']
-    data=np.expand_dims(data, axis=1)
+    d = npz['building_sum']
+    d=np.expand_dims(d, axis=1)
     # Valid data
     dir = 'outputs/dhs_ooc/DHS_OOC_A_ms_larger_b64_fce-05_conve-05_lr0001/building_sum_val.npz'
     npz = load_npz(dir)
     valid = npz['building_sum']
     valid = np.expand_dims(valid, axis=1)
-    print(data[:3],valid[:3])
+
     model = get_model('mlp', 1)
     COUNTRIES = dataset_constants_buildings.DHS_COUNTRIES
     df = pd.read_csv('data/dhs_clusters.csv', float_precision='high', index_col=False)
@@ -104,8 +104,8 @@ def building_exp():
     valid_idx = (
         df[df['country'].isin(dataset_constants_buildings.SURVEY_NAMES['DHS_OOC_A']['val'])].index).to_numpy()
     # train_idx,valid_idx=idx[np.isin(idx,countries_train_idx)]
-    print(labels[train_idx])
-    train, valid = torch.utils.data.TensorDataset(data, labels[train_idx]), torch.utils.data.TensorDataset(valid,
+
+    train, valid = torch.utils.data.TensorDataset(d, labels[train_idx]), torch.utils.data.TensorDataset(valid,
                                                                                                            labels[
                                                                                                                valid_idx])
     trainloader, validloader = torch.utils.data.DataLoader(train,
