@@ -86,7 +86,7 @@ def building_exp():
     data = npz['building_sum']
     data.unsqueeze_(-1)
     # Valid data
-    dir = 'outputs/dhs_ooc/DHS_OOC_A_patches_attnLayer_b64_fc0001_conv0001_lr0001/building_sum_valid'
+    dir = 'outputs/dhs_ooc/DHS_OOC_A_patches_attnLayer_b64_fc0001_conv0001_lr0001/building_sum_val'
     npz = load_npz(dir)
     valid = npz['building_sum']
     valid.unsqueeze_(-1)
