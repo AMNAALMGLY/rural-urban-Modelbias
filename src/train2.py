@@ -81,12 +81,12 @@ def geo_attn_exp(model_name, MODEL_DIRS, ):
 
 def building_exp():
     # Train data
-    dir = 'outputs/dhs_ooc/DHS_OOC_A_patches_attnLayer_b64_fc0001_conv0001_lr0001/building_sum'
+    dir = 'outputs/dhs_ooc/DHS_OOC_A_patches_attnLayer_b64_fc0001_conv0001_lr0001/building_sum.npz'
     npz = load_npz(dir)
     data = npz['building_sum']
     data.unsqueeze_(-1)
     # Valid data
-    dir = 'outputs/dhs_ooc/DHS_OOC_A_ms_larger_b64_fce-05_conve-05_lr0001/building_sum_val'
+    dir = 'outputs/dhs_ooc/DHS_OOC_A_ms_larger_b64_fce-05_conve-05_lr0001/building_sum_val.npz'
     npz = load_npz(dir)
     valid = npz['building_sum']
     valid.unsqueeze_(-1)
