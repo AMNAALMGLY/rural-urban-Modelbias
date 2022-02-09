@@ -142,7 +142,8 @@ class Batcher():
         keys_to_features[band] = tf.io.FixedLenFeature(shape=[255 ** 2], dtype=tf.float32)
         ex = tf.io.parse_single_example(example, features=keys_to_features)
         ex[band].set_shape([255 * 255])
-        ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]  # crop to 224x224
+        #ex[band] = tf.image.resize(ex[band], [224, 224])
+        #ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]  # crop to 224x224
 
         if self.clipn:
             ex[band] = tf.nn.relu(ex[band])
@@ -207,6 +208,7 @@ class Batcher():
                 #ex[band] = tf.reshape(ex[band], [448, 448])
                 #ex[band] = tf.reshape(ex[band], [355, 355])[65:-66, 65:-66]  # crop to 224x224
                 ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]
+                #ex[band]=tf.image.resize(ex[band],[224,224])
                 #[65:-66, 65:-66]
                 if self.clipn:
                     ex[band] = tf.nn.relu(ex[band])
