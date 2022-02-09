@@ -84,12 +84,12 @@ def building_exp():
     dir = 'outputs/dhs_ooc/DHS_OOC_A_patches_attnLayer_b64_fc0001_conv0001_lr0001/building_sum.npz'
     npz = load_npz(dir)
     data = npz['building_sum']
-    data.unsqueeze_(-1)
+    data=np.expand_dims(data, axis=1)
     # Valid data
     dir = 'outputs/dhs_ooc/DHS_OOC_A_ms_larger_b64_fce-05_conve-05_lr0001/building_sum_val.npz'
     npz = load_npz(dir)
     valid = npz['building_sum']
-    valid.unsqueeze_(-1)
+    valid = np.expand_dims(valid, axis=1)
     print(data[:3],valid[:3])
     model = get_model('mlp', 1)
     COUNTRIES = dataset_constants_buildings.DHS_COUNTRIES
