@@ -724,11 +724,14 @@ class Trainer:
         for module in momenta.keys():
             module.momentum = None
             module.num_batches_tracked *= 0
-
+        x = defaultdict()
         for input in loader:
             #if isinstance(input, (list, tuple)):
 
-            input = input[1]['buildings'].reshape(-1,input[1]['buildings'].shape[-1],input[1]['buildings'].shape[-3],input[1]['buildings'].shape[-2])
+            x['buildings']=torch.tensor( input[1]['buildings'])
+            x={key :value.reshape(-1,value.shape[-1],value.shape[-2],value.shape[-3])for key , value in x.items()}
+            x={key:value.as_type(model.fc.weight) for key , value in x.items()}
+            input =x
             if device is not None:
                 input = input.to(device)
 
