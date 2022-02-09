@@ -22,7 +22,7 @@ args = Namespace(
     lr_decay=0.96,
     batch_size=64,
     gpu=-1,
-    max_epochs=500,
+    max_epochs=5,
     epoch_thresh=150,
     patience=20,
 
@@ -44,7 +44,7 @@ args = Namespace(
     augment=True,
     clipn=True,
     normalize='DHS',
-    dataset='stats',            #Features, #Wilds
+    dataset='DHS_OOC',            #Features, #Wilds
     fold='A',
     ls_bands= None,
     nl_band=None,  # [None , merge , split]
