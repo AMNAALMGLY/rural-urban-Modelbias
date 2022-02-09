@@ -143,7 +143,7 @@ class Batcher():
         ex = tf.io.parse_single_example(example, features=keys_to_features)
         ex[band].set_shape([255 * 255])
         #ex[band] = tf.image.resize(ex[band], [224, 224])
-        #ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]  # crop to 224x224
+        ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]  # crop to 224x224
 
         if self.clipn:
             ex[band] = tf.nn.relu(ex[band])
