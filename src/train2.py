@@ -96,7 +96,7 @@ def building_exp():
     df = pd.read_csv('data/dhs_clusters.csv', float_precision='high', index_col=False)
     df = df[df['country'].isin(COUNTRIES)].reset_index(drop=True)
     labels = df['wealthpooled'].to_numpy(dtype=np.float32)
-    labels = torch.tensor(labels)
+
 
     idx = np.array(range(len(labels)))
     train_idx = (
