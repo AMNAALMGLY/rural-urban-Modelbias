@@ -104,7 +104,8 @@ def building_exp():
     valid_idx = (
         df[df['country'].isin(dataset_constants_buildings.SURVEY_NAMES['DHS_OOC_A']['val'])].index).to_numpy()
     # train_idx,valid_idx=idx[np.isin(idx,countries_train_idx)]
-
+    print(type(labels[train_idx]),(labels[train_idx]).shape)
+    print(type(labels[train_idx]), (labels[train_idx]).shape)
     train, valid = torch.utils.data.TensorDataset(d, labels[train_idx]), torch.utils.data.TensorDataset(valid,
                                                                                                            labels[
                                                                                                                valid_idx])
