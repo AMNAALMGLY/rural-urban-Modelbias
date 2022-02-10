@@ -431,11 +431,28 @@ def img_to_patch(img, p):
 def img_to_patch_strided(img, p=100,s=50):
     #p is patch size
     #s is the strid
-    print(img.shape)
+
+    #calculate padding
+    pad0_left = (img.size(0) // s * s + p) - img.size(0)
+    pad1_left = (img.size(1) // s * s + p) - img.size(1)
+
+
+    # Calculate symmetric padding
+    pad0_right = pad0_left // 2 if pad0_left % 2 == 0 else pad0_left // 2 + 1
+    pad1_right = pad1_left // 2 if pad1_left % 2 == 0 else pad1_left // 2 + 1
+
+    pad0_left = pad0_left // 2
+    pad1_left = pad1_left // 2
+
+    img=torch.nn.functional.pad(img,(pad1_left,pad1_right,pad0_left,pad0_right))
+   #
+    print('shape after padding',img.shape)
+
     patches=img.unfold(2,p,s).unfold(3,p,s)
+    print('strided patches size :', patches.shape)  # should be b x c x num_patchesx num_patches x 100 x 100
     num_patches=patches.shape[2]
     #num_patches=((H-100)/s +1) **2
-    print('strided patches size :',patches.shape) #should be b x c x num_patchesx num_patches x 100 x 100
+
     patches=rearrange(patches,'b c p1 p2 h w -> b (p1 p2) c h w ',p1=num_patches,p2=num_patches,h=p,w=p)
     print('strided patch after rearrange ',patches.shape)
     return patches
