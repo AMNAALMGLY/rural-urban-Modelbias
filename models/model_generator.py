@@ -181,7 +181,7 @@ class Encoder(nn.Module):
         #features.append(self.resnet_ms(x['ms'])[1])
 
         # patches Experiments
-        print('image shape',x['buildings'])
+        print('image shape',x['buildings'].shape)
         #just for the NL+b experiment
         #x['buildings']=torch.cat((x['buildings'],x['images']),dim=1)
         #print('image shape with NL+B', x['buildings'])
