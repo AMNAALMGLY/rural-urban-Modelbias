@@ -28,9 +28,9 @@ args = Namespace(
     patience=20,
 
     lr=.0001,  # lr0001         #0.0001 nl,ms                     #    {1 × 10−5, 3 x 10-5 , 10-4 }
-    fc_reg=1.,                                               #{ 0 , 1, 10-3 , 10-2}
+    fc_reg=.00001,                                               #{ 0 , 1, 10-3 , 10-2}
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=1.,
+    conv_reg=.00001,
 
     # data
 
@@ -40,7 +40,8 @@ args = Namespace(
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    buildings_records='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
+    buildings_records=None,
+    #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
 
@@ -55,7 +56,7 @@ args = Namespace(
     ls_bands= None,
     nl_band='merge',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    include_buildings=True,
+    include_buildings=False,
     scaler_features_keys={'urban_rural': tf.float32},
     metadata=None,
     #['urban_rural', 'country'],
@@ -101,7 +102,7 @@ if args.input == 'locs':
     args.in_channels = 2
 '''
 
-args.in_channels = [2]
+args.in_channels = [1]
 '''
 if args.ls_bands:
   args.in_channels.append(args.bands_channels.get(args.ls_bands, 0))
