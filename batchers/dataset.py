@@ -145,7 +145,7 @@ class Batcher():
         ex[band] = tf.reshape(ex[band], [355, 355,1])
         #ex[band]=tf.expand_dims(ex[band],axis=-1)
         print('size before reshape ',ex[band].shape)
-        ex[band] = tf.image.resize(ex[band], [224, 224 , 1])
+        ex[band] = tf.image.resize(ex[band], [224, 224 ])
         #ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]  # crop to 224x224
 
         if self.clipn:
