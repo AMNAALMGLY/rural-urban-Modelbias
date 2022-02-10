@@ -431,10 +431,10 @@ def img_to_patch(img, p):
 def img_to_patch_strided(img, p=100,s=50):
     #p is patch size
     #s is the strid
-
+    #img shape is b c h w
     #calculate padding
-    pad0_left = (img.size(0) // s * s + p) - img.size(0)
-    pad1_left = (img.size(1) // s * s + p) - img.size(1)
+    pad0_left = (img.size(2) // s * s + p) - img.size(2)
+    pad1_left = (img.size(3) // s * s + p) - img.size(3)
 
 
     # Calculate symmetric padding
