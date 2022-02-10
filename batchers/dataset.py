@@ -228,8 +228,8 @@ class Batcher():
                             year < 2012,  # true = DMSP
                             #true_fn=lambda:  ex[band] = (ex[band] - mins['DMSP']) / (maxs['DMSP']-mins['DMSP'])
                             #false_fn=lambda:  ex[band] = (ex[band] - mins['VIIRS']) / (maxs['VIIRS']-mins['VIIRS'])
-                            #true_fn=lambda: (ex[band] - mins['DMSP']) / maxs['DMSP'],
-                            true_fn=lambda: all_0,
+                            true_fn=lambda: (ex[band] - mins['DMSP']) / maxs['DMSP'],
+                            #true_fn=lambda: all_0,
                             false_fn=lambda: (ex[band] - mins['VIIRS']) / maxs['VIIRS'])
 
                     else:
