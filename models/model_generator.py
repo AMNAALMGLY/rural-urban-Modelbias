@@ -182,6 +182,9 @@ class Encoder(nn.Module):
 
         # patches Experiments
         print('image shape',x['buildings'])
+        #just for the NL+b experiment
+        x['buildings']=torch.cat((x['buildings'],x['images']),dim=1)
+        print('image shape after NL+B', x['buildings'])
         x_p = img_to_patch(x['buildings'], p=56)
 
         print('patches shape :', x_p.shape)
