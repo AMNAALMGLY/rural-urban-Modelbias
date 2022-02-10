@@ -101,7 +101,8 @@ if args.input == 'locs':
     args.in_channels = 2
 '''
 
-args.in_channels = []
+args.in_channels = [2]
+'''
 if args.ls_bands:
   args.in_channels.append(args.bands_channels.get(args.ls_bands, 0))
 if args.nl_band:
@@ -110,3 +111,4 @@ if args.include_buildings:
     args.in_channels.append(args.bands_channels['buildings'])
 if args.metadata:
     args.in_channels.append(args.bands_channels[args.metadata[0]]+args.bands_channels[args.metadata[1]])
+'''
