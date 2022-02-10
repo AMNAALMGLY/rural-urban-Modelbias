@@ -192,14 +192,16 @@ class Encoder(nn.Module):
 
 
 
-        #for p in range(num_patches):
+        for p in range(num_patches):
 
-        #    features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
-        #
+            features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
+        features = torch.stack((features), dim=1)
         #Vectorization
+        '''
         features=torch.empty((b,num_patches,self.fc_in_dim))
         features=features.type_as(x_p)
         features[:,range(num_patches),:]=self.resnet_bands(x_p[:, range(num_patches), ...].squeeze(1))[1]
+        '''
         # features.append(self.resnet_build(x['buildings'])[1])
 
         # if self.Mlp:
@@ -207,7 +209,7 @@ class Encoder(nn.Module):
         #    number_of_fts = x[args.metadata[0]].shape[-1]
         #    assert 2 >= number_of_fts >= 1, 'number of features should be at least one'
         #    features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
-        #features = torch.stack((features), dim=1)
+        #
 
         assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
 
