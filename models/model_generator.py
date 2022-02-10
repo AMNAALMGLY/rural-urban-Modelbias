@@ -189,18 +189,17 @@ class Encoder(nn.Module):
 
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
-        # postitional Encoding for tiles
 
-        #x_p = rearrange(x_p, 'b (p1 p2) c h w -> b p1 p2 (c h w)', p1=int(num_patches ** 0.5),
-         #                    p2=int(num_patches ** 0.5),h =h , w=w)
-        #x_p = self.positionalE(x_p)
-        #x_p = rearrange(x_p, 'b p1 p2 (c h w) -> b (p1 p2) c h w', p1=int(num_patches ** 0.5),
-         #                    p2=int(num_patches ** 0.5),h =h , w=w)
-        for p in range(num_patches):
 
-            features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
+
+        #for p in range(num_patches):
+
+        #    features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
         #
-
+        #Vectorization
+        features=torch.empty((b,num_patches,self.fc_in_dim))
+        features=features.type_as(x_p)
+        features[:,range(num_patches),:]=self.resnet_bands(x_p[:, range(num_patches), ...].squeeze(1))[1]
         # features.append(self.resnet_build(x['buildings'])[1])
 
         # if self.Mlp:
@@ -208,7 +207,7 @@ class Encoder(nn.Module):
         #    number_of_fts = x[args.metadata[0]].shape[-1]
         #    assert 2 >= number_of_fts >= 1, 'number of features should be at least one'
         #    features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
-        features = torch.stack((features), dim=1)
+        #features = torch.stack((features), dim=1)
 
         assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
 
@@ -428,7 +427,7 @@ def img_to_patch(img, p):
 
     x_p = rearrange(img, 'b c (h p1) (w p2) -> b (h w) c p1 p2 ', p1=p, p2=p)
     return x_p
-def img_to_patch_strided(img, p=100,s=80,padding=False):
+def img_to_patch_strided(img, p=120,s=100,padding=False):
     #p is patch size
     #s is the strid
     #img shape is b c h w
