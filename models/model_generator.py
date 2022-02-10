@@ -167,7 +167,7 @@ class Encoder(nn.Module):
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
         self.ff = nn.Linear(self.fc_in_dim, self.fc_in_dim)
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
-        self.layers = Layers(self.layer, 6)
+        self.layers = Layers(self.layer, 4)
         # nn.MultiheadAttention(self.dim, 1)
 
     def forward(self, x):

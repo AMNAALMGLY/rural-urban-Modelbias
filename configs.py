@@ -22,7 +22,8 @@ args = Namespace(
     lr_decay=0.96,
     batch_size=64,
     gpu=-1,
-    max_epochs=300,
+    max_epochs=300
+    ,
     epoch_thresh=150,
     patience=20,
 
@@ -39,7 +40,7 @@ args = Namespace(
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    buildings_records='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_buildings_large/',
+    buildings_records='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
 
     # '/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_buildings_large/'
