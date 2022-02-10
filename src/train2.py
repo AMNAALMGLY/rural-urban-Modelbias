@@ -218,7 +218,7 @@ def main(args):
         paths_test = get_paths(args.dataset, 'test', args.fold, args.data_path)
         print('num_train', len(paths_train))
         print('num_valid', len(paths_valid))
-        print('num_valid', len(paths_test))
+        print('num_test', len(paths_test))
 
         paths_train_b = None
         paths_valid_b = None
