@@ -431,7 +431,8 @@ def img_to_patch(img, p):
 def img_to_patch_strided(img, p=100,s=50):
     #p is patch size
     #s is the strid
-    patches=img.unfold(2,p,s).unfold(3,p,s)
+    print(img.shape)
+    patches=img.unfold(-2,p,s).unfold(-1,p,s)
     #num_patches=((H-100)/s +1) **2
     print('strided patches size :',patches.shape) #should be b x c x num_patchesx num_patches x 100 x 100
     return patches
