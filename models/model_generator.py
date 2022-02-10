@@ -432,7 +432,10 @@ def img_to_patch_strided(img, p=100,s=50):
     #p is patch size
     #s is the strid
     print(img.shape)
-    patches=img.unfold(-2,p,s).unfold(-1,p,s)
+    patches=img.unfold(2,p,s).unfold(3,p,s)
+    num_patches=patches.shape[2]
     #num_patches=((H-100)/s +1) **2
     print('strided patches size :',patches.shape) #should be b x c x num_patchesx num_patches x 100 x 100
+    patches=rearrange(patches,'b c p1 p1 p p -> b c (p1 p1) p p ',p1=num_patches,p=p)
+    print('strided patch after rearrange ',patches.shape)
     return patches
