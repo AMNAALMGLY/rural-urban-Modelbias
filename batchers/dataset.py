@@ -211,7 +211,7 @@ class Batcher():
                 #ex[band] = tf.image.resize_with_crop_or_pad(ex[band], 3, 3)
                 #ex[band] = tf.reshape(ex[band], [448, 448])
                 #ex[band] = tf.reshape(ex[band], [355, 355])[65:-66, 65:-66]  # crop to 224x224
-                ex[band] = tf.reshape(ex[band], [255, 255 ,1])
+                ex[band] = tf.reshape(ex[band], [255, 255 ])
                 #[15:-16, 15:-16]
                 #ex[band]=tf.image.resize(ex[band],[224,224])
                 #[65:-66, 65:-66]
