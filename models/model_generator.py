@@ -425,3 +425,10 @@ def img_to_patch(img, p):
 
     x_p = rearrange(img, 'b c (h p1) (w p2) -> b (h w) c p1 p2 ', p1=p, p2=p)
     return x_p
+def img_to_patch_strided(img, p=100,s=90):
+    #p is patch size
+    #s is the strid
+    patches=img.unfold(-2,p,s).unfold(-1,p,s)
+    #num_patches=((H-100)/s +1) **2
+    print('strided patches size :',patches.shape) #should be b x c x num_patchesx num_patches x 100 x 100
+    return patches
