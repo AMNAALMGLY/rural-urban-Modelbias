@@ -529,10 +529,10 @@ class Trainer:
                     if (valid_step + 1) % 20 == 0:
                         running_loss = valid_epoch_loss / (valid_step)
                         wandb.log({"valid_loss": running_loss, 'epoch': epoch})
-                    b=torch.tensor(record[1]['buildings'])
-                    if epoch==0:
-                        building_sum.append(torch.sum(b ,dim=(1,2,3)))
-
+                   # b=torch.tensor(record[1]['buildings'])
+                    #if epoch==0:
+                     #   building_sum.append(torch.sum(b ,dim=(1,2,3)))
+                """
                 if epoch==0:
                     building_sum=torch.cat(building_sum,dim=0)
                     print('shape of sum ',building_sum.shape)
@@ -540,7 +540,7 @@ class Trainer:
                     np_dict['building_sum']=building_sum.numpy()
 
                     save_results(self.save_dir, np_dict, 'building_sum_val')
-
+                """
 
 
 
