@@ -40,7 +40,7 @@ args = Namespace(
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    buildings_records=None,
+    buildings_records='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
@@ -54,9 +54,9 @@ args = Namespace(
     dataset='DHS_OOC',            #Features, #Wilds
     fold='A',
     ls_bands= None,
-    nl_band='merge',  # [None , merge , split]
+    nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    include_buildings=False,
+    include_buildings=True,
     scaler_features_keys={'urban_rural': tf.float32},
     metadata=None,
     #['urban_rural', 'country'],
