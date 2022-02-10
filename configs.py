@@ -69,7 +69,7 @@ args = Namespace(
     experiment_name='DHS_OOC_A_building_larger',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
-    group=  None,
+    group=  'urban',
     # 'urban',
 
     loss_type='regression',
