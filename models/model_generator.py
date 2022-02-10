@@ -181,10 +181,10 @@ class Encoder(nn.Module):
         #features.append(self.resnet_ms(x['ms'])[1])
 
         # patches Experiments
-        print('image shape',x['images'].shape)
+        #print('image shape',x['images'].shape)
         #just for the NL+b experiment
         #x['buildings']=torch.cat((x['buildings'],x['images']),dim=1)
-        #print('image shape with NL+B', x['buildings'])
+        print('images ', x['images'])
         x_p = img_to_patch_strided(x['images'], p=70)
 
         print('patches shape :', x_p.shape)
