@@ -142,13 +142,16 @@ class Batcher():
         keys_to_features[band] = tf.io.FixedLenFeature(shape=[355 ** 2], dtype=tf.float32)
         ex = tf.io.parse_single_example(example, features=keys_to_features)
         ex[band].set_shape([355 * 355])
-        ex[band]=tf.expand_dims(ex[band],axis=-1)
+        ex[band] = tf.reshape(ex[band], [355, 355,1])
+        #ex[band]=tf.expand_dims(ex[band],axis=-1)
+        print('size before reshape ',ex[band].shape)
         ex[band] = tf.image.resize(ex[band], [224, 224 , 1])
         #ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]  # crop to 224x224
 
         if self.clipn:
             ex[band] = tf.nn.relu(ex[band])
-        return {'buildings':tf.expand_dims(ex[band],axis=-1)}
+        #return {'buildings':tf.expand_dims(ex[band],axis=-1)}
+        return {'buildings':ex[band]}
 
     def tfrecords_to_dict(self, example: tf.Tensor) -> dict[str, tf.Tensor]:
 
