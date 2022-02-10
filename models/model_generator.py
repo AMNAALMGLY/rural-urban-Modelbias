@@ -183,8 +183,8 @@ class Encoder(nn.Module):
         # patches Experiments
         print('image shape',x['buildings'].shape)
         #just for the NL+b experiment
-        #x['buildings']=torch.cat((x['buildings'],x['images']),dim=1)
-        #print('image shape with NL+B', x['buildings'])
+        x['buildings']=torch.cat((x['buildings'],x['images']),dim=1)
+        print('image shape with NL+B', x['buildings'])
         x_p = img_to_patch_strided(x['buildings'], p=100)
 
         print('patches shape :', x_p.shape)
