@@ -223,7 +223,7 @@ class Batcher():
                     maxs=MAX_DICT[self.normalize]
 
                     if band == 'NIGHTLIGHTS':
-                        all_0 = tf.zeros(shape=[224, 224, 1], dtype=tf.float32, name='all_0')
+                        all_0 = tf.zeros(shape=[224, 224], dtype=tf.float32, name='all_0')
                         ex[band] = tf.cond(
                             year < 2012,  # true = DMSP
                             #true_fn=lambda:  ex[band] = (ex[band] - mins['DMSP']) / (maxs['DMSP']-mins['DMSP'])
