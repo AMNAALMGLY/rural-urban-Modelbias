@@ -181,8 +181,8 @@ class Encoder(nn.Module):
         #features.append(self.resnet_ms(x['ms'])[1])
 
         # patches Experiments
-        print('image shape',x['images'])
-        x_p = img_to_patch(x['images'], p=56)
+        print('image shape',x['buildings'])
+        x_p = img_to_patch(x['buildings'], p=56)
 
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
