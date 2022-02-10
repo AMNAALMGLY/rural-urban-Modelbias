@@ -664,9 +664,9 @@ class Trainer:
         return {
             'optimizer': opt,
             'lr_scheduler': {
-                 'scheduler': ExponentialLR(opt,
-                            gamma=args.lr_decay),
-                 #'scheduler':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=200)
+                # 'scheduler': ExponentialLR(opt,
+                 #           gamma=args.lr_decay),
+                 'scheduler':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=args.max_epochs),
                #'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=10,
                 #                                                                   max_epochs=500,
                  #                                                                  warmup_start_lr=1e-7),
