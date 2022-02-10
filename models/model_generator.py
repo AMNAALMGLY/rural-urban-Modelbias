@@ -162,7 +162,7 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-        self.positionalE = PositionalEncoding2D(channels=56*56*1)
+        self.positionalE = PositionalEncoding2D(channels=56*56*2)
         #self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
         self.ff = nn.Linear(self.fc_in_dim, self.fc_in_dim)
