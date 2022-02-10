@@ -22,15 +22,15 @@ args = Namespace(
     lr_decay=0.96,
     batch_size=32,
     gpu=-1,
-    max_epochs=300
+    max_epochs=200
     ,
     epoch_thresh=150,
     patience=20,
 
     lr=.0001,  # lr0001         #0.0001 nl,ms                     #    {1 × 10−5, 3 x 10-5 , 10-4 }
-    fc_reg=.00001,                                               #{ 0 , 1, 10-3 , 10-2}
+    fc_reg=.000001,                                               #{ 0 , 1, 10-3 , 10-2}
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=.00001,
+    conv_reg=.000001,
 
     # data
 
@@ -52,7 +52,7 @@ args = Namespace(
     clipn=True,
     normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
-    fold='A',
+    fold='B',
     ls_bands= None,
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
@@ -67,7 +67,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_A_buildingNL_larger_p150',
+    experiment_name='DHS_OOC_B_buildings_larger_PE150',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=  None,
