@@ -191,17 +191,18 @@ class Encoder(nn.Module):
         b, num_patches, c, h, w = x_p.shape
 
 
-
+        '''
         for p in range(num_patches):
 
             features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
         features = torch.stack((features), dim=1)
-        #Vectorization
         '''
+        #Vectorization
+
         features=torch.empty((b,num_patches,self.fc_in_dim))
         features=features.type_as(x_p)
-        features[:,range(num_patches),:]=self.resnet_bands(x_p[:, range(num_patches), ...].squeeze(1))[1]
-        '''
+        features[:,range(num_patches),:]=self.resnet_bands(torch.squeeze(x_p[:, range(num_patches), ...]),dim=1)[1]
+
         # features.append(self.resnet_build(x['buildings'])[1])
 
         # if self.Mlp:
