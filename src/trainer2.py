@@ -667,10 +667,10 @@ class Trainer:
                 # 'scheduler': ExponentialLR(opt,
                  #           gamma=args.lr_decay),
                 # 'scheduler':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=args.max_epochs),
-               'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
-                                                                                   max_epochs=200,
-                                                                                   warmup_start_lr=1e-7),
-                 #'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
+               #'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
+                #                                                                   max_epochs=200,
+                 #                                                                  warmup_start_lr=1e-7),
+                 'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min'),
                 'swa_scheduler': torch.optim.swa_utils.SWALR(opt, anneal_strategy="cos", anneal_epochs=5, swa_lr=0.05)
 
@@ -728,8 +728,8 @@ class Trainer:
         for input in loader:
             #if isinstance(input, (list, tuple)):
 
-            #x['buildings']=torch.tensor( input[1]['buildings'])
-            x['images']=torch.tensor(input['images'])
+            x['buildings']=torch.tensor( input[1]['buildings'])
+            x['images']=torch.tensor(input[0]['images'])
             x={key :value.reshape(-1,value.shape[-1],value.shape[-2],value.shape[-3])for key , value in x.items()}
             #x={key:value.type_as(model.fc.weight) for key , value in x.items()}
             input =x

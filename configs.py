@@ -34,13 +34,13 @@ args = Namespace(
 
     # data
 
-    data_path='/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
+    data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
 
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    buildings_records=None,
+    buildings_records='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
@@ -56,10 +56,10 @@ args = Namespace(
     normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
     fold='B',
-    ls_bands= None,
-    nl_band='merge',  # [None , merge , split]
+    ls_bands= 'ms',
+    nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    include_buildings=False,
+    include_buildings=True,
     scaler_features_keys={'urban_rural': tf.float32},
     metadata=None,
     #['urban_rural', 'country'],
@@ -70,7 +70,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_B_NL_larger_PE120',
+    experiment_name='DHS_OOC_B_ms_build_larger_PE120',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=  None,
@@ -105,7 +105,7 @@ if args.input == 'locs':
     args.in_channels = 2
 '''
 
-args.in_channels = [1]
+args.in_channels = [7,1]
 '''
 if args.ls_bands:
   args.in_channels.append(args.bands_channels.get(args.ls_bands, 0))
