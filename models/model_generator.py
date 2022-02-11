@@ -439,7 +439,7 @@ def img_to_patch(img, p):
 
     x_p = rearrange(img, 'b c (h p1) (w p2) -> b (h w) c p1 p2 ', p1=p, p2=p)
     return x_p
-def img_to_patch_strided(img, p=120,s=100,padding=False):
+def img_to_patch_strided(img, p=120,s=80,padding=False):
     #p is patch size
     #s is the strid
     #img shape is b c h w
