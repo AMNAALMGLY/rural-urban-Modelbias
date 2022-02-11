@@ -154,7 +154,7 @@ class Encoder(nn.Module):
         # MultiHeadedAttention(h=1,d_model=512)
 
         self.resnet_bands = resnet_bands
-        self.fc_in_dim = self.resnet_bands.fc.in_features*2
+        self.fc_in_dim = self.resnet_bands.fc.in_features
         self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)  # combines both together
         self.dim = self.fc_in_dim
 
@@ -186,20 +186,20 @@ class Encoder(nn.Module):
         #x['buildings']=torch.cat((x['buildings'],x['images']),dim=1)
        # print('images ', x['images'])
         x_p = img_to_patch_strided(x['images'], p=120)
-        x_p2=img_to_patch_strided(x['buildings'], p=120)
+        #x_p2=img_to_patch_strided(x['buildings'], p=120)
 
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
 
 
-        features2=[]
+        #features2=[]
         for p in range(num_patches):
 
             features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
-            features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c, h, w))[1])
+         #   features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c, h, w))[1])
         features = torch.stack((features), dim=1)
-        features2 = torch.stack((features2), dim=1)
-        features=torch.cat((features,features2),dim=-1)
+        #features2 = torch.stack((features2), dim=1)
+        #features=torch.cat((features,features2),dim=-1)
 
         #Vectorization
         '''

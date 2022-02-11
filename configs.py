@@ -40,7 +40,8 @@ args = Namespace(
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    buildings_records='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
+    buildings_records=None,
+    #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
@@ -57,7 +58,7 @@ args = Namespace(
     ls_bands= None,
     nl_band='merge',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    include_buildings=True,
+    include_buildings=False,
     scaler_features_keys={'urban_rural': tf.float32},
     metadata=None,
     #['urban_rural', 'country'],
@@ -68,10 +69,10 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_B_BuildNL_larger_PE120',
+    experiment_name='DHS_OOC_A_NL_larger_PE120',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
-    group=  'urban',
+    group=  None,
     # 'urban',
 
     loss_type='regression',
@@ -103,7 +104,7 @@ if args.input == 'locs':
     args.in_channels = 2
 '''
 
-args.in_channels = [1,1]
+args.in_channels = [1]
 '''
 if args.ls_bands:
   args.in_channels.append(args.bands_channels.get(args.ls_bands, 0))
