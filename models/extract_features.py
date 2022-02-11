@@ -32,10 +32,10 @@ DHS_MODELS = [
     # 'DHS_OOC_D_nl_random_weighted_b32_fc01_conv01_lr0001',
     #  'DHS_OOC_E_nl_random_weighted_b32_fc01_conv01_lr0001',
      'DHS_OOC_A_building_larger_p120_b32_fce-05_conve-05_lr0001/',
-     'DHS_OOC_B_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
-     'DHS_OOC_C_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
-     'DHS_OOC_D_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
-     'DHS_OOC_E_BUILD_larger_PE120_b32_fc1_conv1_lr0001/',
+    # 'DHS_OOC_B_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
+   #  'DHS_OOC_C_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
+    # 'DHS_OOC_D_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
+    # 'DHS_OOC_E_BUILD_larger_PE120_b32_fc1_conv1_lr0001/',
 
 
     # 'DHS_OOC_A_NL_larger_PE120_b32_fc1.0_conv1.0_lr0001/',
@@ -209,7 +209,7 @@ def run_extraction_on_models(model_dir: str,
                 np_dict['features'] = features
             else:
                 np_dict['features'] = np.append(np_dict['features'], features, axis=0)
-
+    print(np_dict['features'])
     save_dir = os.path.join(out_root_dir, model_dir)
 
     print(f'saving features to {save_dir} named {save_filename}')
