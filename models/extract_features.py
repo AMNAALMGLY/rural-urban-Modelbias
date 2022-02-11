@@ -38,11 +38,11 @@ DHS_MODELS = [
     # 'DHS_OOC_E_BUILD_larger_PE120_b32_fc1_conv1_lr0001/',
 
 
-    # 'DHS_OOC_A_NL_larger_PE120_b32_fc1.0_conv1.0_lr0001/',
-    # 'DHS_OOC_B_NL_larger_PE120_b32_fc01_conv01_lr0001/',
-    # 'DHS_OOC_C_NL_larger_PE120_b32_fc01_conv01_lr0001/',
-    # 'DHS_OOC_D_NL_larger_PE120_b32_fc1_conv1_lr0001/',
-    # 'DHS_OOC_E_NL_larger_PE120_b32_fc01_conv01_lr0001/',
+     'DHS_OOC_A_NL_larger_PE120_b32_fc1.0_conv1.0_lr0001/',
+     'DHS_OOC_B_NL_larger_PE120_b32_fc1.0_conv1.0_lr0001//',
+     'DHS_OOC_C_NL_larger_PE120_b32_fc01_conv01_lr0001/',
+     'DHS_OOC_D_NL_larger_PE120_b32_fc1_conv1_lr0001/',
+     'DHS_OOC_E_NL_larger_PE120_b32_fc01_conv01_lr0001/',
 
     #'DHS_OOC_A_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
     #'DHS_OOC_B_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
