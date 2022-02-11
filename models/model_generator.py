@@ -154,8 +154,8 @@ class Encoder(nn.Module):
         # MultiHeadedAttention(h=1,d_model=512)
 
         self.resnet_bands = resnet_bands
-        self.fc_in_dim = self.resnet_bands.fc.in_features
-        self.fc = nn.Linear(self.fc_in_dim*2, num_outputs, device=args.gpus)  # combines both together
+        self.fc_in_dim = self.resnet_bands.fc.in_features*2
+        self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)  # combines both together
         self.dim = self.fc_in_dim
 
         self.resnet_ms = resnet_ms
@@ -196,7 +196,7 @@ class Encoder(nn.Module):
         for p in range(num_patches):
 
             features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
-            features2.append(self.resnet_ms(x_p[:, p, ...].view(-1, c, h, w))[1])
+            features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c, h, w))[1])
         features = torch.stack((features), dim=1)
         features2 = torch.stack((features2), dim=1)
         features=torch.cat((features,features2),dim=-1)
