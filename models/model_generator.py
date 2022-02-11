@@ -205,7 +205,7 @@ class Encoder(nn.Module):
         #res_input=torch.empty((b,c,h,w)).type_as(x_p)
 
 
-        features[:,torch.arange(num_patches),:]=self.resnet_bands(x_p[:, torch.arange(num_patches), ...])[1]
+        features[:,torch.arange(num_patches),:]=self.resnet_bands(x_p[:, 0, ...])[1]
 
         # features.append(self.resnet_build(x['buildings'])[1])
 
