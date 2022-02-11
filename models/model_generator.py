@@ -162,7 +162,7 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-        self.positionalE = PositionalEncoding2D(channels=120*120*1)
+        self.positionalE = PositionalEncoding2D(channels=150*150*1)
         #self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
         self.ff = nn.Linear(self.fc_in_dim, self.fc_in_dim)
@@ -185,7 +185,7 @@ class Encoder(nn.Module):
         #just for the NL+b experiment
         #x['buildings']=torch.cat((x['buildings'],x['images']),dim=1)
        # print('images ', x['images'])
-        x_p = img_to_patch_strided(x['buildings'], p=120)
+        x_p = img_to_patch_strided(x['buildings'], p=150)
         #x_p2=img_to_patch_strided(x['buildings'], p=120)
 
         print('patches shape :', x_p.shape)
@@ -439,7 +439,7 @@ def img_to_patch(img, p):
 
     x_p = rearrange(img, 'b c (h p1) (w p2) -> b (h w) c p1 p2 ', p1=p, p2=p)
     return x_p
-def img_to_patch_strided(img, p=120,s=80,padding=False):
+def img_to_patch_strided(img, p=120,s=50,padding=False):
     #p is patch size
     #s is the strid
     #img shape is b c h w
