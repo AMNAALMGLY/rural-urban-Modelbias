@@ -31,11 +31,11 @@ DHS_MODELS = [
     # 'DHS_OOC_C_nl_random_weighted_b32_fc01_conv01_lr0001',
     # 'DHS_OOC_D_nl_random_weighted_b32_fc01_conv01_lr0001',
     #  'DHS_OOC_E_nl_random_weighted_b32_fc01_conv01_lr0001',
-     'DHS_OOC_A_building_larger_p120_b32_fce-05_conve-05_lr0001/',
-    # 'DHS_OOC_B_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
-   #  'DHS_OOC_C_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
-    # 'DHS_OOC_D_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
-    # 'DHS_OOC_E_BUILD_larger_PE120_b32_fc1_conv1_lr0001/',
+    # 'DHS_OOC_A_building_larger_p120_b32_fce-05_conve-05_lr0001/',
+     'DHS_OOC_B_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
+     'DHS_OOC_C_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
+     'DHS_OOC_D_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
+     'DHS_OOC_E_BUILD_larger_PE120_b32_fc1_conv1_lr0001/',
 
 
     # 'DHS_OOC_A_NL_larger_PE120_b32_fc1.0_conv1.0_lr0001/',
