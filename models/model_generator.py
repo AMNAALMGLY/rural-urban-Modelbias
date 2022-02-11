@@ -221,7 +221,7 @@ class Encoder(nn.Module):
         #    features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
         #
 
-        assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
+        #assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
 
         print('features_concat_shape', features.shape)
 
@@ -229,10 +229,10 @@ class Encoder(nn.Module):
                              p2=int(num_patches ** 0.5))
         
         features=self.positionalE(features)
-        assert tuple(features.shape) == (b, int(num_patches**0.5),int(num_patches**0.5), self.fc_in_dim), 'positional encoding shape is not as expected'
+       # assert tuple(features.shape) == (b, int(num_patches**0.5),int(num_patches**0.5), self.fc_in_dim), 'positional encoding shape is not as expected'
         features= rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
                              p2=int(num_patches ** 0.5))
-        assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
+        #assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
 
 
 

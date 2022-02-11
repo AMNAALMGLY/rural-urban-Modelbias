@@ -46,7 +46,7 @@ args = Namespace(
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
 
-    # '/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_buildings_large/'
+
     label_name='wealthpooled',  # urban_rural
     cache=['train', 'train_eval', 'val'],
     augment=True,
