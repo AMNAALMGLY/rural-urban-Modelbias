@@ -191,12 +191,14 @@ class Encoder(nn.Module):
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
 
+        b, num_patches2, c2, h2, w2 = x_p.shape    #num_patches2=num_patches assumption
+
 
         features2=[]
         for p in range(num_patches):
 
             features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
-            features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c, h, w))[1])
+            features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c2, h2, w2))[1])
         features = torch.stack((features), dim=1)
         features2 = torch.stack((features2), dim=1)
         features=torch.cat((features,features2),dim=-1)
