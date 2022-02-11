@@ -153,6 +153,10 @@ class PreActResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        #for vectrization only
+        if x.dim()>4:
+            x.squeeze_(1)
+
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu1(x)
