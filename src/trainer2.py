@@ -74,6 +74,8 @@ class Trainer:
         if num_outputs is not None:
 
             fc = nn.Linear(model.fc.in_features, num_outputs, bias=True)
+            if  args.no_of_gpus>1:
+                fc=nn.DataParallel(fc)
             # initialization
             torch.nn.init.trunc_normal_(fc.weight.data, std=0.01)
             # fc.bias.data.zero_()

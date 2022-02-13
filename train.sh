@@ -47,11 +47,11 @@ conda activate envi
 
 #{content}
 
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=0,1
 
 sbatch --output=${LOG_FOLDER}/%j.out --error=${LOG_FOLDER}/%j.err \
-    --nodes=1 --ntasks-per-node=1 --time=2-00:00:00 --mem=100G \
-    --partition=atlas --cpus-per-task=10 --exclude=atlas5,atlas6,atlas20\
+    --nodes=1 --ntasks-per-node=1 --time=2-00:00:00 --mem=80G \
+    --partition=atlas --cpus-per-task=4 --exclude=atlas5,atlas6,atlas20\
     --gres=gpu:${GPUS} --job-name=${JOBNAME} --wrap="${WRAP}"
 
 
@@ -60,3 +60,4 @@ echo "Waiting for child processes to finish..."
 wait
 echo "Done!"
 
+sbatch --output=. --error=. --nodes=1 --ntasks-per-node=1 --time=2-00:00:00 --mem=80G --partition=atlas --cpus-per-task=4 --exclude=atlas5,atlas6,atlas20  --gres=gpu:2 --job-name='hi' --wrap="python -m src.train2.py"
