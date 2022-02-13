@@ -106,7 +106,7 @@ if args.input == 'locs':
     args.in_channels = 2
 '''
 
-args.in_channels = [7,1]
+args.in_channels = [1]
 '''
 if args.ls_bands:
   args.in_channels.append(args.bands_channels.get(args.ls_bands, 0))
