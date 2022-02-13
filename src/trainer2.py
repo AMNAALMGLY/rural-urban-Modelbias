@@ -439,7 +439,7 @@ class Trainer:
         best_path = os.path.join(self.save_dir, 'best.ckpt')
         return best_loss, best_path,
 
-    def fit(self, trainloader, validloader, max_epochs, gpus, class_model=None, early_stopping=True, save_every=10):
+    def fit(self, trainloader, validloader, batcher_test,max_epochs, gpus, class_model=None, early_stopping=True, save_every=10):
 
         self.model.to(gpus)
         # Weighting model
@@ -462,7 +462,7 @@ class Trainer:
         val_list = defaultdict(lambda x: '')
         start = time.time()
 
-        building_sum=[]
+        #building_sum=[]
 
         for epoch in range(max_epochs):
             epoch_start = time.time()
@@ -572,6 +572,10 @@ class Trainer:
                         val_list[avg_valid_loss] = save_path
                         print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
                         print(f'Path to best model at loss found during training: \n{save_path}')
+
+                        #AGAINST ML RULES : During best path saving test the performance
+                        r2_test=self.test(batcher_test)
+
                 elif best_loss - avg_valid_loss < 0:
                     # loss is degrading
                     print('in loss degrading loop by :')
@@ -667,10 +671,10 @@ class Trainer:
                 # 'scheduler': ExponentialLR(opt,
                  #           gamma=args.lr_decay),
                 # 'scheduler':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=args.max_epochs),
-               #'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
-                #                                                                   max_epochs=200,
-                 #                                                                  warmup_start_lr=1e-7),
-                 'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
+               'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
+                                                                                   max_epochs=200,
+                                                                                   warmup_start_lr=1e-8),
+               #  'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min'),
                 'swa_scheduler': torch.optim.swa_utils.SWALR(opt, anneal_strategy="cos", anneal_epochs=5, swa_lr=0.05)
 
@@ -685,7 +689,7 @@ class Trainer:
             self.criterion = nn.BCEWithLogitsLoss()
 
         else:
-            self.criterion = nn.MSELoss()
+            self.criterion = nn.L1Loss()
 
     @torch.no_grad()
     def update_bn(loader, model, device=None):
