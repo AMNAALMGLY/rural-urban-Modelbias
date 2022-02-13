@@ -166,7 +166,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
         best_loss, path, = trainer.fit_wilds(train_loader, valid_loader, max_epochs=args.max_epochs, gpus=args.gpus,
                                              class_model=class_model)
     else:
-        best_loss, path, = trainer.fit(train_loader, valid_loader, max_epochs=args.max_epochs, gpus=args.gpus,
+        best_loss, path, = trainer.fit(train_loader, valid_loader,batcher_test, max_epochs=args.max_epochs, gpus=args.gpus,
                                        class_model=class_model)
     score = trainer.test(batcher_test)
 
@@ -246,7 +246,7 @@ def main(args):
 
         batcher_test = Batcher(paths_test, {'urban_rural': tf.float32}, args.ls_bands, args.nl_band, args.label_name,
                                args.nl_label, args.include_buildings, paths_test_b, args.normalize, False, args.clipn,
-                               args.batch_size, groupby='urban',
+                               args.batch_size, groupby='rural',
                                cache=True, shuffle=False)
         '''
         batcher_all= Batcher(get_paths(args.dataset, 'all', args.fold, args.data_path), args.scaler_features_keys,'ms', None, 'wealthpooled',
