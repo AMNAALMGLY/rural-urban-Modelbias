@@ -74,12 +74,12 @@ class Trainer:
         if num_outputs is not None:
 
             fc = nn.Linear(model.fc.in_features, num_outputs, bias=True)
-            if  args.no_of_gpus>1:
-                fc=nn.DataParallel(fc)
+
             # initialization
             torch.nn.init.trunc_normal_(fc.weight.data, std=0.01)
             # fc.bias.data.zero_()
             # torch.nn.init.constant_(fc.bias.data, 0.01)
+
 
             model.fc = fc
 
@@ -273,6 +273,7 @@ class Trainer:
         self.model.to(gpus)
         if args.no_of_gpus >1 :
             self.model=nn.DataParallel(self.model)
+            self.model.fc=nn.DataParallel(self.model.fc)
         # Weighting model
         if class_model:
             self.class_model = class_model.to(gpus)
@@ -449,6 +450,7 @@ class Trainer:
 
         if args.no_of_gpus > 1:
             self.model = nn.DataParallel(self.model)
+            self.model.fc = nn.DataParallel(self.model.fc)
 
         # Weighting model
         if class_model:
