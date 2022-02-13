@@ -10,10 +10,10 @@
 ##########################
 #source you virtualenv
 #cd /sailhome/amna/anaconda3
-GPUS=1
+GPUS=2
 echo "Number of GPUs: "${GPUS}
 WRAP="python -m src.train2"
-JOBNAME="ms_b"
+JOBNAME="data parralism"
 LOG_FOLDER="/atlas/u/amna/logs/resnet18_logs/"
 echo ${WRAP}
 echo "Log Folder:"${LOG_FOLDER}

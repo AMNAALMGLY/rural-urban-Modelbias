@@ -269,6 +269,8 @@ class Trainer:
     def fit_wilds(self, trainloader, validloader, max_epochs, gpus, class_model=None, early_stopping=True,
                   save_every=10):
         self.model.to(gpus)
+        if args.no_of_gpus >1 :
+            self.model=nn.DataParallel(self.model)
         # Weighting model
         if class_model:
             self.class_model = class_model.to(gpus)
@@ -442,6 +444,10 @@ class Trainer:
     def fit(self, trainloader, validloader, batcher_test,max_epochs, gpus, class_model=None, early_stopping=True, save_every=10):
 
         self.model.to(gpus)
+
+        if args.no_of_gpus > 1:
+            self.model = nn.DataParallel(self.model)
+
         # Weighting model
         if class_model:
             self.class_model = class_model.to(gpus)
