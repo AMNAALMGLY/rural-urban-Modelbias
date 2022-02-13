@@ -92,7 +92,9 @@ class Trainer:
 
         if args.no_of_gpus > 1:
             self.model = nn.DataParallel(self.model)
-            #self.model.fc = nn.DataParallel(self.model.fc)
+            self.typeAs=self.model.module.fc
+        else:
+            self.typeAs = self.model.fc
         self.model.to(args.gpus)
 
         self.metric_str = metric
@@ -181,7 +183,7 @@ class Trainer:
                         x[meta].unsqueeze_(-1)
 
             target = torch.tensor(batch[0]['labels'], )
-            target = target.type_as(self.model.fc.weight)
+            target = target.type_as(self.typeAs.weight)
             x['buildings'] = torch.tensor(batch[1]['buildings'], )
 
 
@@ -203,9 +205,9 @@ class Trainer:
                         batch[meta] = tf.reshape(batch[meta], [-1, 1])
                     x[meta] = torch.tensor(batch[meta].numpy(), dtype=torch.int32)
             target = torch.tensor(batch['labels'], )
-            target = target.type_as(self.model.fc.weight)
+            target = target.type_as(self.typeAs.weight)
 
-        x = {key: value.type_as(self.model.fc.weight) for key, value in x.items()}
+        x = {key: value.type_as(self.typeAs.weight) for key, value in x.items()}
 
         for key, value in x.items():
             x[key] = value.reshape(-1, value.shape[-1], value.shape[-3], value.shape[-2]) if value.dim() >= 3 else value
@@ -277,9 +279,7 @@ class Trainer:
     def fit_wilds(self, trainloader, validloader, max_epochs, gpus, class_model=None, early_stopping=True,
                   save_every=10):
         self.model.to(gpus)
-        if args.no_of_gpus >1 :
-            self.model=nn.DataParallel(self.model)
-            self.model.fc=nn.DataParallel(self.model.fc)
+
         # Weighting model
         if class_model:
             self.class_model = class_model.to(gpus)
@@ -311,8 +311,8 @@ class Trainer:
                     tepoch.set_description(f"Epoch {epoch}")
                     print('inLoader:', x.shape)
 
-                    x = x.type_as(self.model.fc.weight)
-                    y = y.type_as(self.model.fc.weight)
+                    x = x.type_as(self.typeAs.weight)
+                    y = y.type_as(self.typeAs.weight)
                     # x = dict(images=x)
                     outputs = self.model(x)
                     outputs = outputs.squeeze(dim=-1)
@@ -353,8 +353,8 @@ class Trainer:
                 print('--------------------------Validation-------------------- ')
                 self.model.eval()
                 for x, y, in validloader:
-                    x = x.type_as(self.model.fc.weight)
-                    y = y.type_as(self.model.fc.weight)
+                    x = x.type_as(self.typeAs.weight)
+                    y = y.type_as(self.typeAs.weight)
                     # x=dict(images=x)
                     outputs = self.model(x)
                     outputs = outputs.squeeze(dim=-1)
