@@ -89,6 +89,12 @@ class Trainer:
             raise ValueError('please specify a value for your number of outputs for the loss function to evaluate '
                              'against')
 
+
+        if args.no_of_gpus > 1:
+            self.model = nn.DataParallel(self.model)
+            #self.model.fc = nn.DataParallel(self.model.fc)
+        self.model.to(args.gpus)
+
         self.metric_str = metric
         self.metric = []
         for m in metric:
@@ -446,11 +452,7 @@ class Trainer:
 
     def fit(self, trainloader, validloader, batcher_test,max_epochs, gpus, class_model=None, early_stopping=True, save_every=10):
 
-        self.model.to(gpus)
 
-        if args.no_of_gpus > 1:
-            self.model = nn.DataParallel(self.model)
-            self.model.fc = nn.DataParallel(self.model.fc)
 
         # Weighting model
         if class_model:
