@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Callable, Tuple
 
 import tensorflow as tf
+import tensorflow_addons as tfa
+
 import os
 from batchers.dataset_constants import MEANS_DICT, STD_DEVS_DICT
 from batchers.dataset_constants_buildings import MAX_DICT, MIN_DICT
@@ -425,7 +427,7 @@ class Batcher():
 
         #img=tf.image.stateless_random_crop(img, size=[210, 210, args.in_channels], seed=seed)
         #img=tf.image.central_crop(img,0.8)
-        #img=tf.image.rot90(img)
+        img=tfa.image.rotate(img,angles=60)
         #img=tf.image.resize_with_crop_or_pad(img, 448, 448)
 
 
@@ -465,10 +467,12 @@ class Batcher():
         #print(img.shape,b.shape)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
+        img = tfa.image.rotate(img, angles=60)
        # img=tf.image.stateless_random_crop(
         #    img, size=[210, 210, args.in_channels-1], seed=seed)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
+        b = tfa.image.rotate(b, angles=60)
       #  b = tf.image.stateless_random_crop(
       #      b, size=[210, 210, 1], seed=seed)
         print('images augment')
