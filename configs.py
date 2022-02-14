@@ -20,7 +20,7 @@ args = Namespace(
     # Training
 
     lr_decay=0.96,
-    batch_size=32,
+    batch_size=128,
     gpu=-1,
     max_epochs=200
     ,
