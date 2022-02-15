@@ -432,7 +432,7 @@ class Batcher():
         angle=np.array([30*np.random.choice(10)])
         print(type(angle),angle)
         print(type(img))
-        img=tfa.image.rotate(img,angles=angle)
+        img=tfa.image.rotate(img,angles=30)
         #img=tf.image.resize_with_crop_or_pad(img, 448, 448)
 
 
