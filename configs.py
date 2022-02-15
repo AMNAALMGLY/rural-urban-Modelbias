@@ -75,7 +75,7 @@ args = Namespace(
     experiment_name='DHS_OOC_A_NL_MAELOSS_StepWarmup',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
-    group=  'rural',
+    group=  None,
     # 'urban',
 
     loss_type='regression',
