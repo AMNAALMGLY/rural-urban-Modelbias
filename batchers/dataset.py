@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Callable, Tuple
 
+import numpy as np
 import tensorflow as tf
 import tensorflow_addons as tfa
 
@@ -427,7 +428,8 @@ class Batcher():
 
         #img=tf.image.stateless_random_crop(img, size=[210, 210, args.in_channels], seed=seed)
         #img=tf.image.central_crop(img,0.8)
-        img=tfa.image.rotate(img,angles=60)
+        i = np.random.randint(11)
+        img=tfa.image.rotate(img,angles=30*i)
         #img=tf.image.resize_with_crop_or_pad(img, 448, 448)
 
 
@@ -472,7 +474,10 @@ class Batcher():
         #    img, size=[210, 210, args.in_channels-1], seed=seed)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
-        b = tfa.image.rotate(b, angles=60)
+
+        i =np.random.randint(11)
+
+        b = tfa.image.rotate(b, angles=30*i)
       #  b = tf.image.stateless_random_crop(
       #      b, size=[210, 210, 1], seed=seed)
         print('images augment')

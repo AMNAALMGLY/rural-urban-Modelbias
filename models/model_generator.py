@@ -148,7 +148,7 @@ class Encoder(nn.Module):
         # print('Module dict ',self.models)
         # self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
 
-        self.relu = nn.ReLU()
+        self.relu = nn.GELU()
         self.dropout = nn.Dropout(p=0.1)
         self.self_attn = self_attn
         # MultiHeadedAttention(h=1,d_model=512)
@@ -165,7 +165,7 @@ class Encoder(nn.Module):
         self.positionalE = PositionalEncoding2D(self.fc_in_dim)
         #self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
-        self.ff = nn.Linear(self.fc_in_dim, self.fc_in_dim)
+        self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim//2),nn.GELU(),nn.Linear(self.fc_in_dim//2, self.fc_in_dim))
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
         self.layers = Layers(self.layer, 6)
         # nn.MultiheadAttention(self.dim, 1)
@@ -185,7 +185,7 @@ class Encoder(nn.Module):
         #just for the NL+b experiment
         #x['buildings']=torch.cat((x['buildings'],x['images']),dim=1)
        # print('images ', x['images'])
-        x_p = img_to_patch_strided(x['buildings'], p=120)
+        x_p = img_to_patch_strided(x['images'], p=120)
         #x_p2=img_to_patch_strided(x['buildings'], p=120,s=100)
 
         print('patches shape :', x_p.shape)
@@ -253,7 +253,7 @@ class Encoder(nn.Module):
 
                 # self.multi_head.to(args.gpus)
                 # attn = self.multi_head(features, features, features)
-            features = torch.sum(features, dim=1, keepdim=False)
+            features = torch.mean(features, dim=1, keepdim=False)
             # print('attention shape', attn.shape)
 
 
@@ -440,7 +440,7 @@ def img_to_patch(img, p):
 
     x_p = rearrange(img, 'b c (h p1) (w p2) -> b (h w) c p1 p2 ', p1=p, p2=p)
     return x_p
-def img_to_patch_strided(img, p=120,s=100,padding=False):
+def img_to_patch_strided(img, p=120,s=50,padding=False):
     #p is patch size
     #s is the strid
     #img shape is b c h w
