@@ -11,6 +11,7 @@ import torch.nn as nn
 from tqdm import tqdm
 
 from batchers.dataset_constants_buildings import DHS_COUNTRIES
+from utils.scheduler import StepLRScheduler
 from utils.utils import Metric, save_results
 from configs import args
 import wandb
@@ -477,6 +478,8 @@ class Trainer:
         #building_sum=[]
 
         for epoch in range(max_epochs):
+            #scheduler updates
+            #num_updates=epoch*len(trainloader)
             epoch_start = time.time()
 
             with tqdm(trainloader, unit="batch") as tepoch:
@@ -506,6 +509,7 @@ class Trainer:
 
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
+
 
                     #b=torch.tensor(record[1]['buildings'])
 
@@ -612,7 +616,7 @@ class Trainer:
                 self.swa_model.update_parameters(self.model)
                 self.swa_scheduler.step()
             else:
-                self.scheduler.step()
+                self.scheduler.step(epoch+1)
 
             print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
         # UPDATE SWA MODEL RUNNIGN MEAN AND VARIANCE
@@ -683,10 +687,11 @@ class Trainer:
                 # 'scheduler': ExponentialLR(opt,
                  #           gamma=args.lr_decay),
                 # 'scheduler':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=args.max_epochs),
-               'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
-                                                                                   max_epochs=200,
-                                                                                   warmup_start_lr=1e-8),
-               #  'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
+               #'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
+                #                                                                   max_epochs=200,
+                 #                                                                  warmup_start_lr=1e-8),
+                'scheduler':StepLRScheduler(opt,decay_t=1,decay_rate=args.lr_decay,warmup_t=4,warmup_lr_init=1e-7),
+                 #'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min'),
                 'swa_scheduler': torch.optim.swa_utils.SWALR(opt, anneal_strategy="cos", anneal_epochs=5, swa_lr=0.05)
 

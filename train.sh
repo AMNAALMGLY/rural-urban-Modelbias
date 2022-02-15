@@ -14,7 +14,7 @@ GPUS=2
 echo "Number of GPUs: "${GPUS}
 WRAP="python -m src.train2"
 JOBNAME="dparralism"
-LOG_FOLDER="/atlas/u/amna/logs/resnet18_logs/"
+LOG_FOLDER="/atlas/u/amna/rural-urban-Modelbias/resnet18_logs/"
 echo ${WRAP}
 echo "Log Folder:"${LOG_FOLDER}
 mkdir -p ${LOG_FOLDER}
