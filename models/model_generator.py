@@ -185,7 +185,7 @@ class Encoder(nn.Module):
         #just for the NL+b experiment
         #x['buildings']=torch.cat((x['buildings'],x['images']),dim=1)
        # print('images ', x['images'])
-        x_p = img_to_patch_strided(x['images'], p=120)
+        x_p = img_to_patch_strided(add_noise(x['images']), p=120)
         #x_p2=img_to_patch_strided(x['buildings'], p=120,s=100)
 
         print('patches shape :', x_p.shape)
@@ -468,3 +468,5 @@ def img_to_patch_strided(img, p=120,s=50,padding=False):
     patches=rearrange(patches,'b c p1 p2 h w -> b (p1 p2) c h w ',p1=num_patches1,p2=num_patches2,h=p,w=p)
     print('strided patch after rearrange ',patches.shape)
     return patches
+def add_noise(x):
+    return x+torch.randn_like(x)
