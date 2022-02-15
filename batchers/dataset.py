@@ -428,7 +428,8 @@ class Batcher():
 
         #img=tf.image.stateless_random_crop(img, size=[210, 210, args.in_channels], seed=seed)
         #img=tf.image.central_crop(img,0.8)
-        i = np.random.randint(11)
+        i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.int32)
+
         img=tfa.image.rotate(img,angles=30*i)
         #img=tf.image.resize_with_crop_or_pad(img, 448, 448)
 
