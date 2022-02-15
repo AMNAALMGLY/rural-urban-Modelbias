@@ -429,7 +429,7 @@ class Batcher():
         #img=tf.image.stateless_random_crop(img, size=[210, 210, args.in_channels], seed=seed)
         #img=tf.image.central_crop(img,0.8)
         #i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
-        angle=30*np.random.choice(10)
+        angle=np.array([30*np.random.choice(10)])
         print(type(angle),angle)
         print(type(img))
         img=tfa.image.rotate(img,angles=angle)
