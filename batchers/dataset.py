@@ -424,11 +424,11 @@ class Batcher():
         print('in augment ex')
         img = ex['images']
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
-        img = tf.image.stateless_random_flip_left_right(img, seed=seed)
+        img = tf.image.stateless_random_flip_up_down(img, seed=seed)
 
         #img=tf.image.stateless_random_crop(img, size=[210, 210, args.in_channels], seed=seed)
         #img=tf.image.central_crop(img,0.8)
-        i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.int32)
+        i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
 
         img=tfa.image.rotate(img,angles=30*i)
         #img=tf.image.resize_with_crop_or_pad(img, 448, 448)
@@ -469,14 +469,16 @@ class Batcher():
         b=ex[1]['buildings']
         #print(img.shape,b.shape)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
-        img = tf.image.stateless_random_flip_left_right(img, seed=seed)
-        img = tfa.image.rotate(img, angles=60)
+        img= tf.image.stateless_random_flip_up_down(img, seed=seed)
+        i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
+        img = tfa.image.rotate(img, angles=30 * i)
+
        # img=tf.image.stateless_random_crop(
         #    img, size=[210, 210, args.in_channels-1], seed=seed)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
-        b = tf.image.stateless_random_flip_left_right(b, seed=seed)
+        b = tf.image.stateless_random_flip_up_down(b, seed=seed)
 
-        i =np.random.randint(11)
+        i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
 
         b = tfa.image.rotate(b, angles=30*i)
       #  b = tf.image.stateless_random_crop(
@@ -489,8 +491,11 @@ class Batcher():
         return ex
     def build_augment(self,ex,seed):
         b=ex[1]['buildings']
+        i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
+        b = tfa.image.rotate(b, angles=30 * i)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
-        b = tf.image.stateless_random_flip_left_right(b, seed=seed)
+        b = tf.image.stateless_random_flip_up_down(b, seed=seed)
+
         ex[1]['buildings']=b
         return ex
 
