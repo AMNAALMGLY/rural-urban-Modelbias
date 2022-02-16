@@ -167,7 +167,7 @@ class Encoder(nn.Module):
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
         self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim//2),nn.GELU(),nn.Linear(self.fc_in_dim//2, self.fc_in_dim))
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
-        self.layers = Layers(self.layer, 6)
+        self.layers = Layers(self.layer,4)
         # nn.MultiheadAttention(self.dim, 1)
 
     def forward(self, x):
@@ -185,7 +185,7 @@ class Encoder(nn.Module):
         #just for the NL+b experiment
         #x['buildings']=torch.cat((x['buildings'],x['images']),dim=1)
        # print('images ', x['images'])
-        x_p = img_to_patch_strided(add_noise(x['images']), p=120)
+        x_p = img_to_patch_strided(x['images'], p=120)
         #x_p2=img_to_patch_strided(x['buildings'], p=120,s=100)
 
         print('patches shape :', x_p.shape)
