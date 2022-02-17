@@ -10,6 +10,7 @@ from torch.cuda.amp import autocast
 from configs import args
 from models.preact_resnet import PreActResNet18, PreActResNet34, PreActResNet50
 from models.resnet import resnet18, resnet34, resnet50, mlp
+from models.spaceEncoder import GridCellSpatialRelationEncoder
 from utils.utils import load_from_checkpoint
 import torch.nn.functional as F
 
@@ -91,13 +92,12 @@ class PositionalEncoding2D(nn.Module):
         sin_inp_y = torch.einsum("i,j->ij", pos_y, self.inv_freq)
         emb_x = torch.cat((sin_inp_x.sin(), sin_inp_x.cos()), dim=-1).unsqueeze(1)
         emb_y = torch.cat((sin_inp_y.sin(), sin_inp_y.cos()), dim=-1)
-        print(emb_x.requires_grad)
+
         emb = torch.zeros((x, y, self.channels * 2), device=tensor.device).type(
             tensor.type()
         )
         emb[:, :, : self.channels] = emb_x
         emb[:, :, self.channels: 2 * self.channels] = emb_y
-        print(emb.requires_grad)
         return emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1) + tensor
 
 
@@ -164,7 +164,8 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-        self.positionalE = PositionalEncoding2D(self.fc_in_dim)
+       # self.positionalE = PositionalEncoding2D(self.fc_in_dim)
+        self.positionalE=GridCellSpatialRelationEncoder()
         # self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
         self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 2), nn.GELU(),
@@ -440,7 +441,7 @@ def img_to_patch(img, p):
     return x_p
 
 
-def img_to_patch_strided(img, p=120, s=100, padding=False):
+def img_to_patch_strided(img, p=120, s=50, padding=False):
     # p is patch size
     # s is the strid
     # img shape is b c h w

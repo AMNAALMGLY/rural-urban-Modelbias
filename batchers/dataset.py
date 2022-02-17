@@ -430,9 +430,8 @@ class Batcher():
         #img=tf.image.central_crop(img,0.8)
         #i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
         angle=np.array([30*np.random.choice(10)])
-        print(type(angle),angle)
-        print(type(img))
-        img=tfa.image.rotate(img,angles=30)
+
+        #img=tfa.image.rotate(img,angles=30)
         #img=tf.image.resize_with_crop_or_pad(img, 448, 448)
 
 
@@ -482,7 +481,7 @@ class Batcher():
 
         i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
 
-        b = tfa.image.rotate(b, angles=30*i)
+        #b = tfa.image.rotate(b, angles=30*i)
       #  b = tf.image.stateless_random_crop(
       #      b, size=[210, 210, 1], seed=seed)
         print('images augment')
@@ -494,7 +493,7 @@ class Batcher():
     def build_augment(self,ex,seed):
         b=ex[1]['buildings']
         i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
-        b = tfa.image.rotate(b, angles=30 * i)
+        #b = tfa.image.rotate(b, angles=30 * i)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
         b = tf.image.stateless_random_flip_up_down(b, seed=seed)
 
