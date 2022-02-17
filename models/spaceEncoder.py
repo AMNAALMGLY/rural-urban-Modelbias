@@ -164,6 +164,7 @@ class GridCellSpatialRelationEncoder(nn.Module):
         print('paired',paired.shape)
         paired=paired.unsqueeze(0)
         coords=paired.repeat((batch_size,1,1))
+        print(coords.shape)
         '''
         pos_x = torch.arange(float(x), device=tensor.device)
         pos_x=torch.unsqueeze(pos_x,dim=0)
