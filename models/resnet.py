@@ -325,6 +325,7 @@ class ResNet(nn.Module):
         # See note [TorchScript super()]
 
         # x,_=self.attn(x)
+        print('from inside model',x.shape)
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
