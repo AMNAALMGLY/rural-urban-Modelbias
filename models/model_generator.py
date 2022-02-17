@@ -13,7 +13,7 @@ from models.resnet import resnet18, resnet34, resnet50, mlp
 from utils.utils import load_from_checkpoint
 import torch.nn.functional as F
 
-model_type = dict(resnet18=resnet18,
+model_type = dict(resnet18=PreActResNet18,
                   resnet34=resnet34,
                   resnet50=resnet50,
                   mlp=mlp,
