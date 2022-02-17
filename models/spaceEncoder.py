@@ -162,6 +162,7 @@ class GridCellSpatialRelationEncoder(nn.Module):
         pos= torch.arange(float(x),)
         paired=torch.cartesian_prod(pos,pos)
         print('paired',paired.shape)
+        paired=paired.unsqueeze(0)
         coords=paired.repeat((batch_size,1,1))
         '''
         pos_x = torch.arange(float(x), device=tensor.device)
@@ -195,6 +196,7 @@ class GridCellSpatialRelationEncoder(nn.Module):
             return self.ffn(spr_embeds)
         else:
             #rearrange first
+            print(spr_embeds.shape)
             spr_embeds=rearrange(spr_embeds, 'b (p1 p2) d -> b p1 p2 d', p1=int(x ** 0.5),
                              p2=int(y ** 0.5))
             print('embed shape',spr_embeds.shape)
