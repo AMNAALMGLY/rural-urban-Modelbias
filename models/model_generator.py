@@ -5,6 +5,8 @@ import numpy as np
 import torch
 from torch import nn, einsum
 from einops import rearrange
+from torch.cuda.amp import autocast
+
 from configs import args
 from models.preact_resnet import PreActResNet18, PreActResNet34, PreActResNet50
 from models.resnet import resnet18, resnet34, resnet50, mlp
@@ -131,7 +133,7 @@ class Layers(nn.Module):
 
 
 class Encoder(nn.Module):
-    def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None,dim=512,
+    def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, dim=512,
                  num_outputs=1,
                  model_dict=None, freeze_encoder=False):
         # TODO add resnet_NL and resnet_Ms
@@ -163,13 +165,15 @@ class Encoder(nn.Module):
         self.Mlp = Mlp
 
         self.positionalE = PositionalEncoding2D(self.fc_in_dim)
-        #self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
+        # self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
-        self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim//2),nn.GELU(),nn.Linear(self.fc_in_dim//2, self.fc_in_dim))
+        self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 2), nn.GELU(),
+                                nn.Linear(self.fc_in_dim // 2, self.fc_in_dim))
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
-        self.layers = Layers(self.layer,4)
+        self.layers = Layers(self.layer, 4)
         # nn.MultiheadAttention(self.dim, 1)
 
+    @autocast
     def forward(self, x):
         features = []
         # for  key in  x.keys():
@@ -177,33 +181,31 @@ class Encoder(nn.Module):
         # self.models[model_name].to(args.gpus)
         # feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
         # features.append(feature)
-        #features.append(self.resnet_bands(x['images'])[1])
-        #features.append(self.resnet_ms(x['ms'])[1])
+        # features.append(self.resnet_bands(x['images'])[1])
+        # features.append(self.resnet_ms(x['ms'])[1])
 
         # patches Experiments
-        #print('image shape',x['images'].shape)
-        #just for the NL+b experiment
-        #x['buildings']=torch.cat((x['buildings'],x['images']),dim=1)
-       # print('images ', x['images'])
+        # print('image shape',x['images'].shape)
+        # just for the NL+b experiment
+        # x['buildings']=torch.cat((x['buildings'],x['images']),dim=1)
+        # print('images ', x['images'])
         x_p = img_to_patch_strided(x['images'], p=120)
-        #x_p2=img_to_patch_strided(x['buildings'], p=120,s=100)
+        # x_p2=img_to_patch_strided(x['buildings'], p=120,s=100)
 
         print('patches shape :', x_p.shape)
         b, num_patches, c, h, w = x_p.shape
 
-        #b, num_patches2, c2, h2, w2 = x_p2.shape    #num_patches2=num_patches assumption
+        # b, num_patches2, c2, h2, w2 = x_p2.shape    #num_patches2=num_patches assumption
 
-
-        features2=[]
+        features2 = []
         for p in range(num_patches):
-
             features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
-           # features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c2, h2, w2))[1])
+        # features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c2, h2, w2))[1])
         features = torch.stack((features), dim=1)
-        #features2 = torch.stack((features2), dim=1)
-        #features=torch.cat((features,features2),dim=-1)
+        # features2 = torch.stack((features2), dim=1)
+        # features=torch.cat((features,features2),dim=-1)
 
-        #Vectorization
+        # Vectorization
         '''
         x_p=x_p.view(-1,c,h,w)
         features=self.resnet_bands(x_p)[1]
@@ -225,18 +227,15 @@ class Encoder(nn.Module):
 
         assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
 
-
-        features=rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
+        features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
                              p2=int(num_patches ** 0.5))
-        
-        features=self.positionalE(features)
-        assert tuple(features.shape) == (b, int(num_patches**0.5),int(num_patches**0.5), self.fc_in_dim), 'positional encoding shape is not as expected'
-        features= rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
+
+        features = self.positionalE(features)
+        assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
+                                         self.fc_in_dim), 'positional encoding shape is not as expected'
+        features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
                              p2=int(num_patches ** 0.5))
         assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
-
-
-
 
         if self.self_attn:
             print('in attention')
@@ -256,8 +255,7 @@ class Encoder(nn.Module):
             features = torch.mean(features, dim=1, keepdim=False)
             # print('attention shape', attn.shape)
 
-
-        #return self.fc(self.relu(self.dropout(torch.cat(features))))
+        # return self.fc(self.relu(self.dropout(torch.cat(features))))
         return self.fc(self.relu(self.dropout(features)))
 
     """
@@ -440,14 +438,15 @@ def img_to_patch(img, p):
 
     x_p = rearrange(img, 'b c (h p1) (w p2) -> b (h w) c p1 p2 ', p1=p, p2=p)
     return x_p
-def img_to_patch_strided(img, p=120,s=50,padding=False):
-    #p is patch size
-    #s is the strid
-    #img shape is b c h w
-    #calculate padding
+
+
+def img_to_patch_strided(img, p=120, s=100, padding=False):
+    # p is patch size
+    # s is the strid
+    # img shape is b c h w
+    # calculate padding
     pad0_left = (img.size(2) // s * s + p) - img.size(2)
     pad1_left = (img.size(3) // s * s + p) - img.size(3)
-
 
     # Calculate symmetric padding
     pad0_right = pad0_left // 2 if pad0_left % 2 == 0 else pad0_left // 2 + 1
@@ -456,17 +455,19 @@ def img_to_patch_strided(img, p=120,s=50,padding=False):
     pad0_left = pad0_left // 2
     pad1_left = pad1_left // 2
     if padding:
-               img=torch.nn.functional.pad(img,(pad1_left,pad1_right,pad0_left,pad0_right))
-   #
-               print('shape after padding',img.shape)
+        img = torch.nn.functional.pad(img, (pad1_left, pad1_right, pad0_left, pad0_right))
+        #
+        print('shape after padding', img.shape)
 
-    patches=img.unfold(2,p,s).unfold(3,p,s)
+    patches = img.unfold(2, p, s).unfold(3, p, s)
     print('strided patches size :', patches.shape)  # should be b x c x num_patchesx num_patches x 100 x 100
-    num_patches1,num_patches2=patches.shape[2],patches.shape[3]
-    #num_patches=((H-100)/s +1) **2
+    num_patches1, num_patches2 = patches.shape[2], patches.shape[3]
+    # num_patches=((H-100)/s +1) **2
 
-    patches=rearrange(patches,'b c p1 p2 h w -> b (p1 p2) c h w ',p1=num_patches1,p2=num_patches2,h=p,w=p)
-    print('strided patch after rearrange ',patches.shape)
+    patches = rearrange(patches, 'b c p1 p2 h w -> b (p1 p2) c h w ', p1=num_patches1, p2=num_patches2, h=p, w=p)
+    print('strided patch after rearrange ', patches.shape)
     return patches
+
+
 def add_noise(x):
-    return x+torch.randn_like(x)
+    return x + torch.randn_like(x)
