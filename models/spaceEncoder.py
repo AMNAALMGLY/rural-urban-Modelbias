@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 import numpy as np
 import math
-
+from einops import rearrange
 
 """
 A Set of position encoder
@@ -147,7 +147,7 @@ class GridCellSpatialRelationEncoder(nn.Module):
 
         return spr_embeds
 
-    def forward(self, coords):
+    def forward(self, tensor):
         """
         Given a list of coords (deltaX, deltaY), give their spatial relation embedding
         Args:
@@ -155,7 +155,23 @@ class GridCellSpatialRelationEncoder(nn.Module):
         Return:
             sprenc: Tensor shape (batch_size, num_context_pt, spa_embed_dim)
         """
+        if len(tensor.shape) != 4:
+            raise RuntimeError("The input tensor has to be 3d!")
+        batch_size, x, y, orig_ch = tensor.shape
 
+        pos= torch.arange(float(x), device=tensor.device)
+        paired=torch.cartesian_prod(pos,pos)
+        print('paired',paired.shape)
+        coords=paired.repeat((batch_size,1,1))
+        '''
+        pos_x = torch.arange(float(x), device=tensor.device)
+        pos_x=torch.unsqueeze(pos_x,dim=0)
+        pos_x=pos_x.repeat((batch_size,1))
+        pos_y = torch.arange(float(y), device=tensor.device)
+        pos_y = torch.unsqueeze(pos_y, dim=0)
+        pos_y = pos_y.repeat((batch_size, 1))
+        #coords=torch.empty((batch_size,x*y,2))
+        '''
         spr_embeds = self.make_input_embeds(coords)
 
         # # loop over all batches
@@ -174,8 +190,12 @@ class GridCellSpatialRelationEncoder(nn.Module):
         # sprenc = torch.einsum("bnd,dk->bnk", (spr_embeds, self.post_mat))
         # sprenc = self.f_act(self.dropout(self.post_linear(spr_embeds)))
 
-        # return sprenc
+
         if self.ffn is not None:
             return self.ffn(spr_embeds)
         else:
-            return spr_embeds
+            #rearrange first
+            spr_embeds=rearrange(spr_embeds, 'b (p1 p2) d -> b p1 p2 d', p1=int(x ** 0.5),
+                             p2=int(y ** 0.5))
+            print('embed shape',spr_embeds.shape)
+            return spr_embeds+tensor
