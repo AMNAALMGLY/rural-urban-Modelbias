@@ -441,7 +441,7 @@ def img_to_patch(img, p):
     return x_p
 
 
-def img_to_patch_strided(img, p=120, s=100, padding=False):
+def img_to_patch_strided(img, p=120, s=50, padding=False):
     # p is patch size
     # s is the strid
     # img shape is b c h w
