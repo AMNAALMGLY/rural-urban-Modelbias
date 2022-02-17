@@ -159,7 +159,7 @@ class GridCellSpatialRelationEncoder(nn.Module):
             raise RuntimeError("The input tensor has to be 3d!")
         batch_size, x, y, orig_ch = tensor.shape
 
-        pos= torch.arange(float(x), device=tensor.device)
+        pos= torch.arange(float(x),)
         paired=torch.cartesian_prod(pos,pos)
         print('paired',paired.shape)
         coords=paired.repeat((batch_size,1,1))
