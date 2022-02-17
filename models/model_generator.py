@@ -173,7 +173,7 @@ class Encoder(nn.Module):
         self.layers = Layers(self.layer, 4)
         # nn.MultiheadAttention(self.dim, 1)
 
-    @autocast
+    @autocast()
     def forward(self, x):
         features = []
         # for  key in  x.keys():
