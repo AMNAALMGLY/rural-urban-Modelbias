@@ -172,7 +172,7 @@ class GridCellSpatialRelationEncoder(nn.Module):
         pos_y = pos_y.repeat((batch_size, 1))
         #coords=torch.empty((batch_size,x*y,2))
         '''
-        spr_embeds = self.make_input_embeds(coords)
+        spr_embeds = self.make_input_embeds(coords.numpy())
 
         # # loop over all batches
         # spr_embeds = []
