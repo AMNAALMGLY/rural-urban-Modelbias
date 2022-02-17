@@ -165,7 +165,7 @@ class Encoder(nn.Module):
         self.Mlp = Mlp
 
        # self.positionalE = PositionalEncoding2D(self.fc_in_dim)
-        self.positionalE=GridCellSpatialRelationEncoder()
+        self.positionalE=GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
         # self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
         self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 2), nn.GELU(),
