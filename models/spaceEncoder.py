@@ -198,7 +198,7 @@ class GridCellSpatialRelationEncoder(nn.Module):
         else:
             #rearrange first
             print(spr_embeds.shape)
-            spr_embeds=rearrange(spr_embeds, 'b (p1 p2) d -> b p1 p2 d', p1=int(x ** 0.5),
-                             p2=int(y ** 0.5))
+            spr_embeds=rearrange(spr_embeds, 'b (p1 p2) d -> b p1 p2 d', p1=x ,
+                             p2=y )
             print('embed shape',spr_embeds.shape)
             return spr_embeds+tensor
