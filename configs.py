@@ -22,8 +22,7 @@ args = Namespace(
     lr_decay=0.96,
     batch_size=16,
     gpu=-1,
-    max_epochs=200
-    ,
+    max_epochs=300,
     epoch_thresh=150,
     patience=20,
     #A Building :wd=0
@@ -57,7 +56,7 @@ args = Namespace(
     clipn=True,
     normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
-    fold='A',
+    fold='B',
     ls_bands= None,
     nl_band='merge',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
@@ -72,7 +71,7 @@ args = Namespace(
     # Experiment
 
     seed=123,
-    experiment_name='DHS_OOC_A_NL_MAELOSS_StepWarmup',
+    experiment_name='DHS_OOC_B_NL_MAELOSS_StepWarmup',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=  None,

@@ -10,7 +10,7 @@
 ##########################
 #source you virtualenv
 #cd /sailhome/amna/anaconda3
-GPUS=1
+GPUS=2
 echo "Number of GPUs: "${GPUS}
 WRAP="python -m src.train2"
 JOBNAME="dparralism"
@@ -47,7 +47,7 @@ conda activate envi
 
 #{content}
 
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=0,1
 
 sbatch --output=${LOG_FOLDER}/%j.out --error=${LOG_FOLDER}/%j.err \
     --nodes=1 --ntasks-per-node=1 --time=2-00:00:00 --mem=80G \
