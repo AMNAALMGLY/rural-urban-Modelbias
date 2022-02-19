@@ -171,7 +171,7 @@ class Encoder(nn.Module):
         self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 2), nn.GELU(),
                                 nn.Linear(self.fc_in_dim // 2, self.fc_in_dim))
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
-        self.layers = Layers(self.layer, 4)
+        self.layers = Layers(self.layer, 6)
         # nn.MultiheadAttention(self.dim, 1)
 
     @autocast()
