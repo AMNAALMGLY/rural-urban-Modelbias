@@ -219,6 +219,7 @@ class Batcher():
                 #ex[band]=tf.image.resize(ex[band],[224,224])
                 #[65:-66, 65:-66]
                 #RESIZE FOR merging with building
+                ex[band]= tf.image.resize_with_crop_or_pad(ex[band], 100, 100)
                 ex[band]=tf.image.resize(ex[band], [355, 355], method='nearest')
                 if self.clipn:
                     ex[band] = tf.nn.relu(ex[band])
