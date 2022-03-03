@@ -748,7 +748,7 @@ class Trainer:
         x = defaultdict()
         for input in loader:
 
-            key=input.keys()[0]
+            key=list(input.keys())[0]
             #if isinstance(input, (list, tuple)):
 
             #x['buildings']=torch.tensor( input[1]['buildings'])

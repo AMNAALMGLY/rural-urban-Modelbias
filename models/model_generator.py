@@ -179,7 +179,7 @@ class Encoder(nn.Module):
     @autocast()
     def forward(self, x):
         features = []
-        key=x.keys()[0]
+        key=list(x.keys())[0]
         # for  key in  x.keys():
         # print(f'appending {model_name} features', type(model),x[key].requires_grad)
         # feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
