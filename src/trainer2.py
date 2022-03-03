@@ -50,7 +50,7 @@ class Trainer:
         -configure optimizor:setup optim and scheduler
     """
 
-    def __init__(self, model, lr, weight_decay, loss_type, num_outputs, metric, save_dir, **kwargs):
+    def __init__(self, model, lr, weight_decay, loss_type, num_outputs, metric, save_dir,sched, **kwargs):
 
         '''Initializes the Trainer.
         Args
@@ -103,7 +103,7 @@ class Trainer:
         for m in metric:
             self.metric.append(Metric(self.num_outputs).get_metric(m))
 
-        self.scheduler = self.configure_optimizers()['lr_scheduler']['scheduler']
+        self.scheduler = self.configure_optimizers()['lr_scheduler'][sched]
         ##Stochastic weight averaging
         self.swa_scheduler = self.configure_optimizers()['lr_scheduler']['swa_scheduler']
 
@@ -684,14 +684,14 @@ class Trainer:
         return {
             'optimizer': opt,
             'lr_scheduler': {
-                # 'scheduler': ExponentialLR(opt,
+                # 'exp': ExponentialLR(opt,
                  #           gamma=args.lr_decay),
-                # 'scheduler':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=args.max_epochs),
-               #'scheduler': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
+                # 'cos':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=args.max_epochs),
+               #'warmup_cos': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
                 #                                                                   max_epochs=200,
                  #                                                                  warmup_start_lr=1e-8),
-                'scheduler':StepLRScheduler(opt,decay_t=1,decay_rate=args.lr_decay,warmup_t=4,warmup_lr_init=1e-7),
-                 #'scheduler': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
+                'warmup_step':StepLRScheduler(opt,decay_t=1,decay_rate=args.lr_decay,warmup_t=10,warmup_lr_init=1e-7),
+                 #'step': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min'),
                 'swa_scheduler': torch.optim.swa_utils.SWALR(opt, anneal_strategy="cos", anneal_epochs=5, swa_lr=0.05)
 
@@ -747,10 +747,12 @@ class Trainer:
             module.num_batches_tracked *= 0
         x = defaultdict()
         for input in loader:
+
+            key=input.keys()[0]
             #if isinstance(input, (list, tuple)):
 
             #x['buildings']=torch.tensor( input[1]['buildings'])
-            x['images']=torch.tensor(input['images'])
+            x[key]=torch.tensor(input[key])
             x={key :value.reshape(-1,value.shape[-1],value.shape[-2],value.shape[-3])for key , value in x.items()}
             #x={key:value.type_as(model.fc.weight) for key , value in x.items()}
             input =x
@@ -758,7 +760,7 @@ class Trainer:
                 input = input.to(device)
             print(model)
             model(input)
-
+        print('......in SWA...............')
         for bn_module in momenta.keys():
             bn_module.momentum = momenta[bn_module]
         model.train(was_training)

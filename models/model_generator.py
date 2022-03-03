@@ -133,7 +133,7 @@ class Layers(nn.Module):
 
 
 class Encoder(nn.Module):
-    def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, dim=512,
+    def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, attn_blocks=6,patch=100,stride=50,dim=512,
                  num_outputs=1,
                  model_dict=None, freeze_encoder=False):
         # TODO add resnet_NL and resnet_Ms
@@ -171,18 +171,22 @@ class Encoder(nn.Module):
         self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 2), nn.GELU(),
                                 nn.Linear(self.fc_in_dim // 2, self.fc_in_dim))
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
-        self.layers = Layers(self.layer, 6)
+        self.layers = Layers(self.layer, attn_blocks)
+        self.patch=patch
+        self.stride=stride
         # nn.MultiheadAttention(self.dim, 1)
 
     @autocast()
     def forward(self, x):
         features = []
+        key=x.keys()[0]
         # for  key in  x.keys():
         # print(f'appending {model_name} features', type(model),x[key].requires_grad)
-        # self.models[model_name].to(args.gpus)
         # feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
         # features.append(feature)
-        # features.append(self.resnet_bands(x['images'])[1])
+        if not self.self_attn:
+               features.append(self.resnet_bands(x[key])[1])
+               features=torch.cat(features)
         # features.append(self.resnet_ms(x['ms'])[1])
 
         # patches Experiments
@@ -190,56 +194,57 @@ class Encoder(nn.Module):
         # just for the NL+b experiment
         # x['buildings']=torch.cat((x['buildings'],x['images']),dim=1)
         # print('images ', x['images'])
-        x_p = img_to_patch_strided(x['images'], p=120)
-        # x_p2=img_to_patch_strided(x['buildings'], p=120,s=100)
-
-        print('patches shape :', x_p.shape)
-        b, num_patches, c, h, w = x_p.shape
-
-        # b, num_patches2, c2, h2, w2 = x_p2.shape    #num_patches2=num_patches assumption
-
-        features2 = []
-        for p in range(num_patches):
-            features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
-        # features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c2, h2, w2))[1])
-        features = torch.stack((features), dim=1)
-        # features2 = torch.stack((features2), dim=1)
-        # features=torch.cat((features,features2),dim=-1)
-
-        # Vectorization
-        '''
-        x_p=x_p.view(-1,c,h,w)
-        features=self.resnet_bands(x_p)[1]
-        features=features.reshape(b,num_patches,self.fc_in_dim)
-
-        x_p2 = x_p2.view(-1, c, h, w)
-        features2 = self.resnet_build(x_p)[1]
-        features2 = features2.reshape(b, num_patches, self.fc_in_dim)
-        features=torch.cat((features, features2),dim=1)
-        '''
-        # features.append(self.resnet_build(x['buildings'])[1])
-
-        # if self.Mlp:
-        #    assert len(list(x[args.metadata[0]].shape)) == 2, 'the number of dimension should be 2'
-        #    number_of_fts = x[args.metadata[0]].shape[-1]
-        #    assert 2 >= number_of_fts >= 1, 'number of features should be at least one'
-        #    features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
-        #
-
-        assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
-
-        features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
-                             p2=int(num_patches ** 0.5))
-
-        features = self.positionalE(features)
-        assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
-                                         self.fc_in_dim), 'positional encoding shape is not as expected'
-        features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
-                             p2=int(num_patches ** 0.5))
-        assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
-
-        if self.self_attn:
+        else:
             print('in attention')
+            x_p = img_to_patch_strided(x[key], p=self.patch,s=self.stride)
+            # x_p2=img_to_patch_strided(x['buildings'], p=120,s=100)
+
+            print('patches shape :', x_p.shape)
+            b, num_patches, c, h, w = x_p.shape
+
+            # b, num_patches2, c2, h2, w2 = x_p2.shape    #num_patches2=num_patches assumption
+
+            features2 = []
+            for p in range(num_patches):
+                features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
+            # features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c2, h2, w2))[1])
+            features = torch.stack((features), dim=1)
+            # features2 = torch.stack((features2), dim=1)
+            # features=torch.cat((features,features2),dim=-1)
+
+            # Vectorization
+            '''
+            x_p=x_p.view(-1,c,h,w)
+            features=self.resnet_bands(x_p)[1]
+            features=features.reshape(b,num_patches,self.fc_in_dim)
+    
+            x_p2 = x_p2.view(-1, c, h, w)
+            features2 = self.resnet_build(x_p)[1]
+            features2 = features2.reshape(b, num_patches, self.fc_in_dim)
+            features=torch.cat((features, features2),dim=1)
+            '''
+            # features.append(self.resnet_build(x['buildings'])[1])
+
+            # if self.Mlp:
+            #    assert len(list(x[args.metadata[0]].shape)) == 2, 'the number of dimension should be 2'
+            #    number_of_fts = x[args.metadata[0]].shape[-1]
+            #    assert 2 >= number_of_fts >= 1, 'number of features should be at least one'
+            #    features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
+            #
+
+            assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
+
+            features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
+                                 p2=int(num_patches ** 0.5))
+
+            features = self.positionalE(features)
+            assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
+                                             self.fc_in_dim), 'positional encoding shape is not as expected'
+            features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
+                                 p2=int(num_patches ** 0.5))
+            assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
+
+
 
             if self.self_attn == 'vanilla':
                 attn, _ = attention(features, features, features)  # bxnxd

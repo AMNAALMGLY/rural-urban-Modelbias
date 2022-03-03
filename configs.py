@@ -16,9 +16,11 @@ args = Namespace(
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
-
+    p_size=120,
+    stride=50,
+    blocks=6,
     # Training
-
+    scheduler='warmup_step',           #warmup_step, #warmup_cos   #step    #cos  #exp
     lr_decay=0.96,
     batch_size=64,
     gpu=-1,
@@ -32,7 +34,7 @@ args = Namespace(
     conv_reg=0.1,
 
     # data
-
+    image_size=355,
     data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
 
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
@@ -69,12 +71,12 @@ args = Namespace(
     # keep_frac {keep_frac}
 
     # Experiment
-
     seed=123,
     experiment_name='DHS_OOC_B_NL_MAELOSS_StepWarmup',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
     init_ckpt_dir=None,
     group=  None,
+
     # 'urban',
 
     loss_type='regression',

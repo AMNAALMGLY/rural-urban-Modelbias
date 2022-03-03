@@ -62,7 +62,7 @@ class Batcher():
     def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label,include_buildings=False, buildings_records=None,
                  normalize='DHS',
                  augment=False, clipn=True,
-                 batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None):
+                 batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None,img_size=args.image_size):
 
         '''
         initializes the loader as follows :
@@ -115,6 +115,7 @@ class Batcher():
         self.shuffle = shuffle
         self._iterator = None
         self.ds = self.get_dataset()
+        self.img_size=img_size
 
 
 
@@ -142,10 +143,10 @@ class Batcher():
         '''
         band='buildings'
         keys_to_features = {}
-        keys_to_features[band] = tf.io.FixedLenFeature(shape=[355 ** 2], dtype=tf.float32)
+        keys_to_features[band] = tf.io.FixedLenFeature(shape=[self.img_size ** 2], dtype=tf.float32)
         ex = tf.io.parse_single_example(example, features=keys_to_features)
-        ex[band].set_shape([355 * 355])
-        ex[band] = tf.reshape(ex[band], [355, 355,1])
+        ex[band].set_shape([self.img_size * self.img_size])
+        ex[band] = tf.reshape(ex[band], [self.img_size, self.img_size,1])
         #ex[band]=tf.expand_dims(ex[band],axis=-1)
         #print('size before reshape ',ex[band].shape)
         #ex[band] = tf.image.resize(ex[band], [224, 224 ])
@@ -192,7 +193,7 @@ class Batcher():
 
         print('ex_bands :', ex_bands)
         for band in ex_bands:
-            keys_to_features[band] = tf.io.FixedLenFeature(shape=[255 ** 2], dtype=tf.float32)
+            keys_to_features[band] = tf.io.FixedLenFeature(shape=[self.img_size ** 2], dtype=tf.float32)
 
         for key in scalar_float_keys:
             keys_to_features[key] = tf.io.FixedLenFeature(shape=[], dtype=tf.float32)
@@ -209,12 +210,12 @@ class Batcher():
         img = float('nan')
         if len(ex_bands) > 0:
             for band in ex_bands:  ##TODO is this loop necessary ?vectorize
-                ex[band].set_shape([355 * 355])
+                ex[band].set_shape([self.img_size * self.img_size])
                 #ex[band].set_shape([448*448])
                 #ex[band] = tf.image.resize_with_crop_or_pad(ex[band], 3, 3)
                 #ex[band] = tf.reshape(ex[band], [448, 448])
                 #ex[band] = tf.reshape(ex[band], [355, 355])[65:-66, 65:-66]  # crop to 224x224
-                ex[band] = tf.reshape(ex[band], [355, 355 ,1])
+                ex[band] = tf.reshape(ex[band], [self.img_size, self.img_size ,1])
                 #[15:-16, 15:-16]
                 #ex[band]=tf.image.resize(ex[band],[224,224])
                 #[65:-66, 65:-66]
@@ -404,7 +405,7 @@ class Batcher():
         - img: tf.Tensor, shape [H, W, C], type float32, last two bands are [DMSP, VIIRS]
         '''
         assert self.nl_bands == 'split'
-        all_0 = tf.zeros(shape=[224, 224, 1], dtype=tf.float32, name='all_0')
+        all_0 = tf.zeros(shape=[self.img_size, self.img_size, 1], dtype=tf.float32, name='all_0')
         img = ex['images']
         year = ex['years']
 
@@ -472,15 +473,15 @@ class Batcher():
         #print(img.shape,b.shape)
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img= tf.image.stateless_random_flip_up_down(img, seed=seed)
-        i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
-        img = tfa.image.rotate(img, angles=30 * i)
+        #i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
+        #img = tfa.image.rotate(img, angles=30 * i)
 
        # img=tf.image.stateless_random_crop(
         #    img, size=[210, 210, args.in_channels-1], seed=seed)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
         b = tf.image.stateless_random_flip_up_down(b, seed=seed)
 
-        i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
+        #i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
 
         #b = tfa.image.rotate(b, angles=30*i)
       #  b = tf.image.stateless_random_crop(
