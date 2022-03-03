@@ -8,16 +8,29 @@
 # then cancel the job with
 #   scancel <jobid>
 ##########################
-#source you virtualenv
-#cd /sailhome/amna/anaconda3
-GPUS=1
-echo "Number of GPUs: "${GPUS}
-WRAP="python -m src.train2"
-JOBNAME="dparralism"
-LOG_FOLDER="/atlas/u/amna/rural-urban-Modelbias/resnet18_logs/"
-echo ${WRAP}
-echo "Log Folder:"${LOG_FOLDER}
-mkdir -p ${LOG_FOLDER}
+export CUDA_VISIBLE_DEVICES=0,1
+
+# choose the machine
+SBATCH --partition=atlas --exclude=atlas6,atlas20
+
+# set the machine parameters
+NO_GPUS=1
+SBATCH --nodes=1 --cpus-per-task=10 --mem={SLURM_MEM} --gres=gpu:${NO_GPUS}
+
+# set the job name
+SBATCH --job-name={SLURM_JOB_NAME}
+
+# set maximum time for job to run
+# indefinite job: --time=0
+# days/hours: --time=days-hours
+SBATCH --time=2-0
+
+# set the output log name
+SBATCH --output={SLURM_OUTPUT_LOG}/%j.out
+
+SBATCH --wrap={content}
+
+SBATCH --error={SLURM_OUTPUT_LOG}/%j.err
 # print out Slurm Environment Variables
 echo "
 Slurm Environment Variables:
@@ -26,6 +39,7 @@ Slurm Environment Variables:
 - SLURM_NNODES=$SLURM_NNODES
 - SLURMTMPDIR=$SLURMTMPDIR
 - SLURM_SUBMIT_DIR=$SLURM_SUBMIT_DIR
+
 "
 
 # slurm doesn't source .bashrc automatically
@@ -43,25 +57,12 @@ Basic system information:
 - User: $USER
 - pwd: $(pwd)
 "
+
 conda activate envi
 
-#{content}
-
-export CUDA_VISIBLE_DEVICES=0,1
-
-sbatch --output=${LOG_FOLDER}/%j.out --error=${LOG_FOLDER}/%j.err \
-    --nodes=1 --ntasks-per-node=1 --time=2-00:00:00 --mem=80G \
-    --partition=atlas --cpus-per-task=4 --exclude=atlas6,atlas20\
-    --gres=gpu:${GPUS} --job-name=${JOBNAME} --wrap="${WRAP}"
-
+{content}
 
 echo "All jobs launched!"
 echo "Waiting for child processes to finish..."
 wait
 echo "Done!"
-
-
-
-
-
-
