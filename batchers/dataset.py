@@ -109,13 +109,15 @@ class Batcher():
         self.augment = augment
         self.clipn = clipn
         self.groupby = groupby
+        self.img_size = img_size
+
         self.cache = cache
+
         self.save_dir = save_dir
         self.batch_size = batch_size
         self.shuffle = shuffle
         self._iterator = None
         self.ds = self.get_dataset()
-        self.img_size=img_size
 
 
 
