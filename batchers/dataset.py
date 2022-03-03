@@ -62,7 +62,7 @@ class Batcher():
     def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label,include_buildings=False, buildings_records=None,
                  normalize='DHS',
                  augment=False, clipn=True,
-                 batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None,img_size=args.image_size):
+                 batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None,img_size=355):
 
         '''
         initializes the loader as follows :
