@@ -189,7 +189,7 @@ def main(args):
     data_params = dict(dataset=args.dataset, fold=args.fold, ls_bands=args.ls_bands, nl_band=args.nl_band,
                        label_name=args.label_name,
                        nl_label=args.nl_label, include_buildings=args.include_buildings, batch_size=args.batch_size,
-                       groupby=args.group,img_size=args.image_size)
+                       groupby=args.group,img_size=args.image_size,crop=args.crop)
 
     params_filepath = os.path.join(dirpath, 'data_params.json')
 
@@ -246,17 +246,17 @@ def main(args):
         batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                                 args.nl_label, args.include_buildings, paths_train_b, args.normalize, args.augment,
                                 args.clipn, args.batch_size, groupby=args.group,
-                                cache=True, shuffle=True,img_size=args.image_size)
+                                cache=True, shuffle=True,img_size=args.image_size,crop=args.crop)
 
         batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                                 args.nl_label, args.include_buildings, paths_valid_b, args.normalize, False, args.clipn,
                                 args.batch_size, groupby=args.group,
-                                cache=True, shuffle=False,img_size=args.image_size)
+                                cache=True, shuffle=False,img_size=args.image_size,crop=args.crop)
 
         batcher_test = Batcher(paths_test, {'urban_rural': tf.float32}, args.ls_bands, args.nl_band, args.label_name,
                                args.nl_label, args.include_buildings, paths_test_b, args.normalize, False, args.clipn,
                                args.batch_size, groupby='rural',
-                               cache=True, shuffle=False,img_size=args.image_size)
+                               cache=True, shuffle=False,img_size=args.image_size,crop=args.crop)
         '''
         batcher_all= Batcher(get_paths(args.dataset, 'all', args.fold, args.data_path), args.scaler_features_keys,'ms', None, 'wealthpooled',
                                 None, False, None, args.normalize, False,
