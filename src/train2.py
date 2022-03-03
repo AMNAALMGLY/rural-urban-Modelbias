@@ -137,7 +137,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
 
     # setup Trainer params
     params = dict(model=model, lr=args.lr, weight_decay=args.conv_reg, loss_type=args.loss_type,
-                  num_outputs=args.num_outputs, metric=args.metric)
+                  num_outputs=args.num_outputs, metric=args.metric,sched=args.scheduler)
     # logging
     wandb.config.update(params)
     # setting experiment_path
@@ -187,7 +187,7 @@ def main(args):
     data_params = dict(dataset=args.dataset, fold=args.fold, ls_bands=args.ls_bands, nl_band=args.nl_band,
                        label_name=args.label_name,
                        nl_label=args.nl_label, include_buildings=args.include_buildings, batch_size=args.batch_size,
-                       groupby=args.group)
+                       groupby=args.group,img_size=args.image_size)
 
     params_filepath = os.path.join(dirpath, 'data_params.json')
     with open(params_filepath, 'w') as config_file:
@@ -237,17 +237,17 @@ def main(args):
         batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                                 args.nl_label, args.include_buildings, paths_train_b, args.normalize, args.augment,
                                 args.clipn, args.batch_size, groupby=args.group,
-                                cache=True, shuffle=True)
+                                cache=True, shuffle=True,img_size=args.image_size)
 
         batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                                 args.nl_label, args.include_buildings, paths_valid_b, args.normalize, False, args.clipn,
                                 args.batch_size, groupby=args.group,
-                                cache=True, shuffle=False)
+                                cache=True, shuffle=False,img_size=args.image_size)
 
         batcher_test = Batcher(paths_test, {'urban_rural': tf.float32}, args.ls_bands, args.nl_band, args.label_name,
                                args.nl_label, args.include_buildings, paths_test_b, args.normalize, False, args.clipn,
                                args.batch_size, groupby='rural',
-                               cache=True, shuffle=False)
+                               cache=True, shuffle=False,img_size=args.image_size)
         '''
         batcher_all= Batcher(get_paths(args.dataset, 'all', args.fold, args.data_path), args.scaler_features_keys,'ms', None, 'wealthpooled',
                                 None, False, None, args.normalize, False,
@@ -298,8 +298,11 @@ def main(args):
         params = dict(model_name=model_name, in_channels=in_channels)
         encoder_params[model_key] = params
     # saving encoder params
-    saved_encoder_params = dict(model_dict=encoder_params, self_attn=args.self_attn)
-    encoder_params['self_attn'] = args.self_attn  # comment if not necessary
+    #saved_encoder_params = dict(model_dict=encoder_params, self_attn=args.self_attn)
+    attn_dict=dict(self_attn=args.self_attn,attn_blocks=args.blocks,patch=args.p_size,stride=args.stride)
+
+    encoder_params.update(attn_dict)# comment if not necessary
+
     encoder_params_filepath = os.path.join(dirpath, 'encoder_params.json')
     print('encoder_params', encoder_params)
     with open(encoder_params_filepath, 'w') as config_file:
@@ -308,7 +311,7 @@ def main(args):
 
     # save the encoder_params
 
-    encoder = Encoder(**model_dict, self_attn=args.self_attn)
+    encoder = Encoder(**model_dict, **attn_dict)
     # encoder=Encoder(self_attn=args.self_attn,**model_dict)
     # config = {"lr": args.lr, "wd": args.conv_reg}  # you can remove this now it is for raytune
     best_loss, best_path, score = setup_experiment(encoder, batcher_train, batcher_valid, args.resume, args,
