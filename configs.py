@@ -12,13 +12,14 @@ args = Namespace(
     # Model
 
     model_name=dict(resnet_bands='resnet18', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
-    self_attn='multihead',  # choices : [vanilla, intersample , multihead]
+    self_attn=None,  # choices : [vanilla, intersample , multihead]
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
     p_size=120,
     stride=50,
     blocks=6,
+
     # Training
     scheduler='warmup_step',           #warmup_step, #warmup_cos   #step    #cos  #exp
     lr_decay=0.96,
@@ -32,6 +33,8 @@ args = Namespace(
     fc_reg=0.1,                                               #{ 0 , 1, 10-3 , 10-2}
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
     conv_reg=0.1,
+
+
 
     # data
     image_size=355,
@@ -58,7 +61,7 @@ args = Namespace(
     clipn=True,
     normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
-    fold='B',
+    fold='A',
     ls_bands= None,
     nl_band='merge',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
@@ -72,8 +75,8 @@ args = Namespace(
 
     # Experiment
     seed=123,
-    experiment_name='DHS_OOC_B_NL_MAELOSS_StepWarmup',
-    out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc'),
+    experiment_name='DHS_OOC_A_NL_no_crop',
+    out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc','ablation_study'),
     init_ckpt_dir=None,
     group=  None,
 

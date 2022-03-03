@@ -183,6 +183,8 @@ def main(args):
 
     dirpath = os.path.join(args.out_dir, experiment)
     os.makedirs(dirpath, exist_ok=True)
+
+
     # save data_params for later use
     data_params = dict(dataset=args.dataset, fold=args.fold, ls_bands=args.ls_bands, nl_band=args.nl_band,
                        label_name=args.label_name,
@@ -190,8 +192,15 @@ def main(args):
                        groupby=args.group,img_size=args.image_size)
 
     params_filepath = os.path.join(dirpath, 'data_params.json')
+
+    #save the experiment path also
+    data_params.update(exp_path=dirpath)
     with open(params_filepath, 'w') as config_file:
         json.dump(data_params, config_file, indent=4)
+
+
+
+
 
     '''
     # saving resnet model params
