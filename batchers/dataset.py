@@ -62,7 +62,7 @@ class Batcher():
     def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label,include_buildings=False, buildings_records=None,
                  normalize='DHS',
                  augment=False, clipn=True,
-                 batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None,img_size=355):
+                 batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None,img_size=355,crop=args.crop):
 
         '''
         initializes the loader as follows :
@@ -110,7 +110,7 @@ class Batcher():
         self.clipn = clipn
         self.groupby = groupby
         self.img_size = img_size
-
+        self.crop=crop
         self.cache = cache
 
         self.save_dir = save_dir
@@ -213,11 +213,12 @@ class Batcher():
         if len(ex_bands) > 0:
             for band in ex_bands:  ##TODO is this loop necessary ?vectorize
                 ex[band].set_shape([self.img_size * self.img_size])
+                ex[band] = tf.reshape(ex[band], [self.img_size, self.img_size, 1])
                 #ex[band].set_shape([448*448])
-                #ex[band] = tf.image.resize_with_crop_or_pad(ex[band], 3, 3)
+                ex[band] = tf.image.resize_with_crop_or_pad(ex[band], self.crop, self.crop)
                 #ex[band] = tf.reshape(ex[band], [448, 448])
                 #ex[band] = tf.reshape(ex[band], [355, 355])[65:-66, 65:-66]  # crop to 224x224
-                ex[band] = tf.reshape(ex[band], [self.img_size, self.img_size ,1])
+
                 #[15:-16, 15:-16]
                 #ex[band]=tf.image.resize(ex[band],[224,224])
                 #[65:-66, 65:-66]

@@ -21,7 +21,8 @@ with open(os.path.join(ROOT_DIR, 'scripts', 'train_model_slurm.sh'), 'r') as tem
         SLURM_MEM=f'{mem}G',
         SLURM_JOB_NAME=f'slurm',
         SLURM_OUTPUT_LOG=dirpath,
-        content=command)
+        content=command,
+          NO_GPUS=1,)
 
     slurm_sh_path = os.path.join(dirpath, 'slurm.sh')
     with open(slurm_sh_path, 'w') as f:
