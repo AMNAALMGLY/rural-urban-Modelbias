@@ -612,8 +612,8 @@ class Trainer:
 
             print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
         # UPDATE SWA MODEL RUNNIGN MEAN AND VARIANCE
-
-        Trainer.update_bn(trainloader, self.swa_model)
+        with autocast():
+           Trainer.update_bn(trainloader, self.swa_model)
 
         # choose the best model between the saved models in regard to r2 value or minimum loss
         if len(val_list.keys()) > 0:
@@ -701,7 +701,6 @@ class Trainer:
         else:
             self.criterion = nn.L1Loss()
 
-    @autocast
 
     @torch.no_grad()
     def update_bn(loader, model, device=None):
