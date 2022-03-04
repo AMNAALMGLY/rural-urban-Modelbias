@@ -4,6 +4,7 @@ import time
 from collections import defaultdict
 
 import numpy as np
+from torch.cuda.amp import autocast
 from torch.utils.tensorboard import SummaryWriter
 from torch.optim.lr_scheduler import ExponentialLR
 import torch
@@ -50,7 +51,7 @@ class Trainer:
         -configure optimizor:setup optim and scheduler
     """
 
-    def __init__(self, model, lr, weight_decay, loss_type, num_outputs, metric, save_dir,sched, **kwargs):
+    def __init__(self, model, lr, weight_decay, loss_type, num_outputs, metric, save_dir, sched, **kwargs):
 
         '''Initializes the Trainer.
         Args
@@ -81,7 +82,6 @@ class Trainer:
             # fc.bias.data.zero_()
             # torch.nn.init.constant_(fc.bias.data, 0.01)
 
-
             model.fc = fc
 
 
@@ -90,10 +90,9 @@ class Trainer:
             raise ValueError('please specify a value for your number of outputs for the loss function to evaluate '
                              'against')
 
-
         if args.no_of_gpus > 1:
             self.model = nn.DataParallel(self.model)
-            self.typeAs=self.model.module.fc
+            self.typeAs = self.model.module.fc
         else:
             self.typeAs = self.model.fc
         self.model.to(args.gpus)
@@ -448,9 +447,8 @@ class Trainer:
         best_path = os.path.join(self.save_dir, 'best.ckpt')
         return best_loss, best_path,
 
-    def fit(self, trainloader, validloader, batcher_test,max_epochs, gpus, class_model=None, early_stopping=True, save_every=10):
-
-
+    def fit(self, trainloader, validloader, batcher_test, max_epochs, gpus, class_model=None, early_stopping=True,
+            save_every=10):
 
         # Weighting model
         if class_model:
@@ -472,11 +470,11 @@ class Trainer:
         val_list = defaultdict(lambda x: '')
         start = time.time()
 
-        #building_sum=[]
+        # building_sum=[]
 
         for epoch in range(max_epochs):
-            #scheduler updates
-            #num_updates=epoch*len(trainloader)
+            # scheduler updates
+            # num_updates=epoch*len(trainloader)
             epoch_start = time.time()
 
             with tqdm(trainloader, unit="batch") as tepoch:
@@ -507,10 +505,9 @@ class Trainer:
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
 
+                    # b=torch.tensor(record[1]['buildings'])
 
-                    #b=torch.tensor(record[1]['buildings'])
-
-                    #building_sum.append(torch.sum(b ,dim=(1,2,3)))
+                    # building_sum.append(torch.sum(b ,dim=(1,2,3)))
             '''
             building_sum=torch.cat(building_sum,dim=0)
             print('shape of sum ',building_sum.shape)
@@ -526,7 +523,7 @@ class Trainer:
             wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
             print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str[0]} is {r2:.2f}')
             self.metric[0].reset()
-            building_sum=[]
+            building_sum = []
             with torch.no_grad():
                 valid_step = 0
                 valid_epoch_loss = 0
@@ -542,9 +539,9 @@ class Trainer:
                     if (valid_step + 1) % 20 == 0:
                         running_loss = valid_epoch_loss / (valid_step)
                         wandb.log({"valid_loss": running_loss, 'epoch': epoch})
-                   # b=torch.tensor(record[1]['buildings'])
-                    #if epoch==0:
-                     #   building_sum.append(torch.sum(b ,dim=(1,2,3)))
+                # b=torch.tensor(record[1]['buildings'])
+                # if epoch==0:
+                #   building_sum.append(torch.sum(b ,dim=(1,2,3)))
                 """
                 if epoch==0:
                     building_sum=torch.cat(building_sum,dim=0)
@@ -554,8 +551,6 @@ class Trainer:
 
                     save_results(self.save_dir, np_dict, 'building_sum_val')
                 """
-
-
 
                 avg_valid_loss = valid_epoch_loss / valid_steps
 
@@ -586,8 +581,8 @@ class Trainer:
                         print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
                         print(f'Path to best model at loss found during training: \n{save_path}')
 
-                        #AGAINST ML RULES : During best path saving test the performance
-                        r2_test=self.test(batcher_test)
+                        # AGAINST ML RULES : During best path saving test the performance
+                        r2_test = self.test(batcher_test)
 
                 elif best_loss - avg_valid_loss < 0:
                     # loss is degrading
@@ -613,7 +608,7 @@ class Trainer:
                 self.swa_model.update_parameters(self.model)
                 self.swa_scheduler.step()
             else:
-                self.scheduler.step(epoch+1)
+                self.scheduler.step(epoch + 1)
 
             print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
         # UPDATE SWA MODEL RUNNIGN MEAN AND VARIANCE
@@ -682,13 +677,14 @@ class Trainer:
             'optimizer': opt,
             'lr_scheduler': {
                 # 'exp': ExponentialLR(opt,
-                 #           gamma=args.lr_decay),
+                #           gamma=args.lr_decay),
                 # 'cos':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=args.max_epochs),
-               #'warmup_cos': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
+                # 'warmup_cos': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
                 #                                                                   max_epochs=200,
-                 #                                                                  warmup_start_lr=1e-8),
-                'warmup_step':StepLRScheduler(opt,decay_t=1,decay_rate=args.lr_decay,warmup_t=10,warmup_lr_init=1e-7),
-                 #'step': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
+                #                                                                  warmup_start_lr=1e-8),
+                'warmup_step': StepLRScheduler(opt, decay_t=1, decay_rate=args.lr_decay, warmup_t=5,
+                                               warmup_lr_init=1e-8),
+                # 'step': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min'),
                 'swa_scheduler': torch.optim.swa_utils.SWALR(opt, anneal_strategy="cos", anneal_epochs=5, swa_lr=0.05)
 
@@ -706,6 +702,7 @@ class Trainer:
             self.criterion = nn.L1Loss()
 
     @torch.no_grad()
+    @autocast
     def update_bn(loader, model, device=None):
         r"""Updates BatchNorm running_mean, running_var buffers in the model.
         It performs one pass over data in `loader` to estimate the activation
@@ -745,14 +742,14 @@ class Trainer:
         x = defaultdict()
         for input in loader:
 
-            key=list(input.keys())[0]
-            #if isinstance(input, (list, tuple)):
+            key = list(input.keys())[0]
+            # if isinstance(input, (list, tuple)):
 
-            #x['buildings']=torch.tensor( input[1]['buildings'])
-            x[key]=torch.tensor(input[key])
-            x={key :value.reshape(-1,value.shape[-1],value.shape[-2],value.shape[-3])for key , value in x.items()}
-            #x={key:value.type_as(model.fc.weight) for key , value in x.items()}
-            input =x
+            # x['buildings']=torch.tensor( input[1]['buildings'])
+            x[key] = torch.tensor(input[key])
+            x = {key: value.reshape(-1, value.shape[-1], value.shape[-2], value.shape[-3]) for key, value in x.items()}
+            # x={key:value.type_as(model.fc.weight) for key , value in x.items()}
+            input = x
             if device is not None:
                 input = input.to(device)
             model(input)
