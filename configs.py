@@ -38,7 +38,7 @@ args = Namespace(
 
     # data
     image_size=355,
-    crop=355,
+    crop=64,
     data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
 
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
