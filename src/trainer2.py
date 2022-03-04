@@ -168,7 +168,6 @@ class Trainer:
                 x[args.ls_bands] = torch.tensor(batch[0]['images'][:, :, :, :-1], )
 
                 x[args.nl_band] = torch.tensor(batch[0]['images'][:, :, :, -1]).unsqueeze(-1)
-                print('ls_band shape', x[args.nl_band].shape)
             elif args.ls_bands or args.nl_band:
                 # only one type of band
                 x['images'] = torch.tensor(batch[0]['images'])
@@ -216,7 +215,6 @@ class Trainer:
             #     value.dim() >= 3 else key:value}
 
         outputs = self.model(x)
-        print(type(outputs))
         outputs = outputs.squeeze(dim=-1)
         # Re-weighting data
         if self.class_model:
@@ -310,7 +308,6 @@ class Trainer:
                 self.opt.zero_grad()
                 for x, y, in tepoch:
                     tepoch.set_description(f"Epoch {epoch}")
-                    print('inLoader:', x.shape)
 
                     x = x.type_as(self.typeAs.weight)
                     y = y.type_as(self.typeAs.weight)
@@ -338,7 +335,7 @@ class Trainer:
 
                     preds = torch.tensor(outputs, device=args.gpus)
                     self.metric[0].to(args.gpus)
-                    print('shapes:', y.shape, preds.shape)
+
                     self.metric[0].update(preds, y)
 
             # Metric calulation and average loss
@@ -758,7 +755,6 @@ class Trainer:
             input =x
             if device is not None:
                 input = input.to(device)
-            print(model)
             model(input)
         print('......in SWA...............')
         for bn_module in momenta.keys():
