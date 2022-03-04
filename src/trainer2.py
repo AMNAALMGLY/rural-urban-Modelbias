@@ -603,17 +603,17 @@ class Trainer:
                 print(f'Saving model to {resume_path}')
 
             self.metric[0].reset()
-            if epoch >= swa_start:
-                print('in SWA scheduler')
-                self.swa_model.update_parameters(self.model)
-                self.swa_scheduler.step()
-            else:
-                self.scheduler.step(epoch + 1)
+           # if epoch >= swa_start:
+           #     print('in SWA scheduler')
+           #     self.swa_model.update_parameters(self.model)
+          #      self.swa_scheduler.step()
+         #   else:
+        #        self.scheduler.step(epoch + 1)
 
             print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
         # UPDATE SWA MODEL RUNNIGN MEAN AND VARIANCE
-        with autocast():
-           Trainer.update_bn(trainloader, self.swa_model)
+       # with autocast():
+      #     Trainer.update_bn(trainloader, self.swa_model)
 
         # choose the best model between the saved models in regard to r2 value or minimum loss
         if len(val_list.keys()) > 0:
