@@ -701,8 +701,9 @@ class Trainer:
         else:
             self.criterion = nn.L1Loss()
 
-    @torch.no_grad()
     @autocast
+
+    @torch.no_grad()
     def update_bn(loader, model, device=None):
         r"""Updates BatchNorm running_mean, running_var buffers in the model.
         It performs one pass over data in `loader` to estimate the activation
