@@ -142,7 +142,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
     wandb.config.update(params)
     # setting experiment_path
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
-                                          args.fc_reg, args.conv_reg, args.lr)
+                                          args.fc_reg, args.conv_reg, args.lr,args.p_size)
     # if doing distribution shift extperiments:
     if args.weight_model:
         class_model = get_model(args.model_name, in_channels=args.in_channels, pretrained=True)
@@ -177,7 +177,7 @@ def main(args):
     seed_everything(args.seed)
     # setting experiment_path
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
-                                          args.fc_reg, args.conv_reg, args.lr)
+                                          args.fc_reg, args.conv_reg, args.lr,args.p_size)
     if args.weight_model:
         experiment = experiment + '_weighted'
 
