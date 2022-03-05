@@ -62,7 +62,7 @@ class Batcher():
     def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label,include_buildings=False, buildings_records=None,
                  normalize='DHS',
                  augment=False, clipn=True,
-                 batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None,img_size=355,crop=args.crop):
+                 batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None,img_size=355,crop=args.crop,rand_crop=0):
 
         '''
         initializes the loader as follows :
@@ -112,7 +112,10 @@ class Batcher():
         self.img_size = img_size
         self.crop=crop
         self.cache = cache
-
+        self.rand_crop=rand_crop
+        if rand_crop:
+            max_offset=self.img_size-rand_crop
+            self.offset=np.random.randint(max_offset)
         self.save_dir = save_dir
         self.batch_size = batch_size
         self.shuffle = shuffle
@@ -214,8 +217,11 @@ class Batcher():
             for band in ex_bands:  ##TODO is this loop necessary ?vectorize
                 ex[band].set_shape([self.img_size * self.img_size])
                 ex[band] = tf.reshape(ex[band], [self.img_size, self.img_size, 1])
-                #ex[band].set_shape([448*448])
+                #Centre cropping
                 ex[band] = tf.image.resize_with_crop_or_pad(ex[band], self.crop, self.crop)
+                #Random cropping:
+                ex[band]=tf.image.crop_to_bounding_box(ex[band],self.offset,self.offset,self.rand_crop,self.rand_crop)
+
                 #ex[band] = tf.reshape(ex[band], [448, 448])
                 #ex[band] = tf.reshape(ex[band], [355, 355])[65:-66, 65:-66]  # crop to 224x224
 

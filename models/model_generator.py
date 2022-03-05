@@ -193,7 +193,7 @@ class Encoder(nn.Module):
             features.append(self.resnet_bands(x[key])[1])
             features = torch.cat(features)
         # features.append(self.resnet_ms(x['ms'])[1])
-        elif self.rand_crop:
+        elif self.rand_crop and not self.self_attn:
             print('in random cropping')
             x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
             b, num_patches, c, h, w = x_p.shape

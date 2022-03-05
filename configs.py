@@ -12,14 +12,15 @@ args = Namespace(
     # Model
 
     model_name=dict(resnet_bands='resnet18', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
-    self_attn=None,  # choices : [vanilla, intersample , multihead]
+    self_attn='multihead',  # choices : [vanilla, intersample , multihead]
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
-    p_size=355,
-    stride=355,
+    p_size=120,
+    stride=50,
     blocks=6,
-    randcrop=True,
+    randcrop=True,            #this is for cropping in the forward pass
+    rand_crop=355,               #This for cropping from the dataset specifying size    (mostly cropping size is not the same as patching size for attention)
 
     # Training
 
