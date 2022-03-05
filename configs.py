@@ -41,7 +41,7 @@ args = Namespace(
     # data
     image_size=511,
     crop=511,
-    data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_ultralarge_onlynl',
+    data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_ultralarge_onlynl/',
     #atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_ultralarge_onlynl .
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
