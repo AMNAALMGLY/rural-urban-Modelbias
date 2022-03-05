@@ -176,7 +176,7 @@ class Encoder(nn.Module):
         self.stride=stride
         self.rand_crop=rand_crop
         if self.rand_crop:
-            self.patch_number=np.random.choice(25,2)
+            self.patch_number=np.random.choice(64,1)
         # nn.MultiheadAttention(self.dim, 1)
 
     @autocast()
