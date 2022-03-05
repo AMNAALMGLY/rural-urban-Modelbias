@@ -16,16 +16,18 @@ args = Namespace(
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
-    p_size=120,
+    p_size=100,
     stride=50,
     blocks=6,
+    randcrop=True,
 
     # Training
+
     scheduler='warmup_step',           #warmup_step, #warmup_cos   #step    #cos  #exp
     lr_decay=0.96,
     batch_size=64,
     gpu=-1,
-    max_epochs=300,
+    max_epochs=200,
     epoch_thresh=150,
     patience=20,
     #A Building :wd=0

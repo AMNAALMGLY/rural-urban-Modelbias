@@ -135,7 +135,7 @@ class Layers(nn.Module):
 class Encoder(nn.Module):
     def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, attn_blocks=6,patch=100,stride=50,dim=512,
                  num_outputs=1,
-                 model_dict=None, freeze_encoder=False):
+                 model_dict=None, rand_crop=args.randcrop):
         # TODO add resnet_NL and resnet_Ms
         # TODO add multiple mlps for metadata
         """
@@ -174,6 +174,9 @@ class Encoder(nn.Module):
         self.layers = Layers(self.layer, attn_blocks)
         self.patch=patch
         self.stride=stride
+        self.rand_crop=rand_crop
+        if self.rand_crop:
+            self.patch_number=np.random.randint(24)
         # nn.MultiheadAttention(self.dim, 1)
 
     @autocast()
@@ -188,6 +191,12 @@ class Encoder(nn.Module):
                features.append(self.resnet_bands(x[key])[1])
                features=torch.cat(features)
         # features.append(self.resnet_ms(x['ms'])[1])
+        elif self.rand_crop:
+            print('in random cropping')
+            x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
+            b, num_patches, c, h, w = x_p.shape
+            features.append(self.resnet_bands(x_p[:, self.patch_number, ...].view(-1, c, h, w))[1])
+            features = torch.cat(features)
 
         # patches Experiments
         # print('image shape',x['images'].shape)
