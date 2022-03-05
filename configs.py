@@ -16,8 +16,8 @@ args = Namespace(
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
-    p_size=64,
-    stride=0,
+    p_size=100,
+    stride=50,
     blocks=6,
     randcrop=True,
 
@@ -39,10 +39,10 @@ args = Namespace(
 
 
     # data
-    image_size=355,
-    crop=355,
-    data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
-
+    image_size=511,
+    crop=511,
+    data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_ultralarge_onlynl',
+    #atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_ultralarge_onlynl .
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
