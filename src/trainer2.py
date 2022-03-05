@@ -583,6 +583,8 @@ class Trainer:
 
                         # AGAINST ML RULES : During best path saving test the performance
                         r2_test = self.test(batcher_test)
+                        wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
+
 
                 elif best_loss - avg_valid_loss < 0:
                     # loss is degrading
