@@ -142,7 +142,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
     wandb.config.update(params)
     # setting experiment_path
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
-                                          args.fc_reg, args.conv_reg, args.lr,args.p_size)
+                                          args.fc_reg, args.conv_reg, args.lr,args.rand_crop)
     # if doing distribution shift extperiments:
     if args.weight_model:
         class_model = get_model(args.model_name, in_channels=args.in_channels, pretrained=True)
@@ -177,7 +177,7 @@ def main(args):
     seed_everything(args.seed)
     # setting experiment_path
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
-                                          args.fc_reg, args.conv_reg, args.lr,args.p_size)
+                                          args.fc_reg, args.conv_reg, args.lr,args.rand_crop)
     if args.weight_model:
         experiment = experiment + '_weighted'
 
@@ -189,7 +189,7 @@ def main(args):
     data_params = dict(dataset=args.dataset, fold=args.fold, ls_bands=args.ls_bands, nl_band=args.nl_band,
                        label_name=args.label_name,
                        nl_label=args.nl_label, include_buildings=args.include_buildings, batch_size=args.batch_size,
-                       groupby=args.group,img_size=args.image_size,crop=args.crop)
+                       groupby=args.group,img_size=args.image_size,crop=args.crop,rand_crop=args.rand_crop)
 
     params_filepath = os.path.join(dirpath, 'data_params.json')
 

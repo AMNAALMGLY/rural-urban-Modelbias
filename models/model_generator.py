@@ -185,13 +185,16 @@ class Encoder(nn.Module):
     def forward(self, x):
         features = []
         key = list(x.keys())[0]
+
         # for  key in  x.keys():
         # print(f'appending {model_name} features', type(model),x[key].requires_grad)
         # feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
         # features.append(feature)
+
         if not self.self_attn:
             features.append(self.resnet_bands(x[key])[1])
             features = torch.cat(features)
+
         # features.append(self.resnet_ms(x['ms'])[1])
         elif self.rand_crop and not self.self_attn:
             print('in random cropping')
