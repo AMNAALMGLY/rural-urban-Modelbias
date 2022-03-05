@@ -177,7 +177,7 @@ class Encoder(nn.Module):
         self.stride = stride
         self.rand_crop = rand_crop
         if self.rand_crop:
-            num_batches = ((args.img_size - self.patch) / self.stride) + 1
+            num_batches = int((args.img_size - self.patch) / self.stride) + 1
             self.patch_number = np.random.choice(num_batches, 1)
         # nn.MultiheadAttention(self.dim, 1)
 
