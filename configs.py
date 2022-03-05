@@ -17,7 +17,7 @@ args = Namespace(
     model_init=['imagenet', 'imagenet','imagenet', None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
     p_size=100,
-    stride=50,
+    stride=100,
     blocks=6,
     randcrop=True,
 
@@ -78,7 +78,7 @@ args = Namespace(
 
     # Experiment
     seed=123,
-    experiment_name='DHS_OOC_A_NL_randcrop_64**2',
+    experiment_name='DHS_OOC_A_NL_randcrop_100_511',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc','ablation_study'),
     init_ckpt_dir=None,
     group=  None,
