@@ -133,7 +133,8 @@ class Layers(nn.Module):
 
 
 class Encoder(nn.Module):
-    def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, attn_blocks=6,patch=100,stride=50,dim=512,
+    def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, attn_blocks=6,
+                 patch=100, stride=50, dim=512,
                  num_outputs=1,
                  model_dict=None, rand_crop=args.randcrop):
         # TODO add resnet_NL and resnet_Ms
@@ -164,32 +165,33 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-       # self.positionalE = PositionalEncoding2D(self.fc_in_dim)
-        self.positionalE=GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
+        # self.positionalE = PositionalEncoding2D(self.fc_in_dim)
+        self.positionalE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
         # self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
         self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 2), nn.GELU(),
                                 nn.Linear(self.fc_in_dim // 2, self.fc_in_dim))
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
         self.layers = Layers(self.layer, attn_blocks)
-        self.patch=patch
-        self.stride=stride
-        self.rand_crop=rand_crop
+        self.patch = patch
+        self.stride = stride
+        self.rand_crop = rand_crop
         if self.rand_crop:
-            self.patch_number=np.random.choice(64,1)
+            num_batches = ((args.img_size - self.patch) / self.stride) + 1
+            self.patch_number = np.random.choice(num_batches, 1)
         # nn.MultiheadAttention(self.dim, 1)
 
     @autocast()
     def forward(self, x):
         features = []
-        key=list(x.keys())[0]
+        key = list(x.keys())[0]
         # for  key in  x.keys():
         # print(f'appending {model_name} features', type(model),x[key].requires_grad)
         # feature = torch.tensor(self.models[model_name](x[key])[1], device=args.gpus)
         # features.append(feature)
         if not self.self_attn:
-               features.append(self.resnet_bands(x[key])[1])
-               features=torch.cat(features)
+            features.append(self.resnet_bands(x[key])[1])
+            features = torch.cat(features)
         # features.append(self.resnet_ms(x['ms'])[1])
         elif self.rand_crop:
             print('in random cropping')
@@ -197,7 +199,7 @@ class Encoder(nn.Module):
             b, num_patches, c, h, w = x_p.shape
             for i in self.patch_number:
                 features.append(self.resnet_bands(x_p[:, i, ...].view(-1, c, h, w))[1])
-            #features = torch.cat(features)
+            # features = torch.cat(features)
             features = torch.stack((features), dim=1)
             features = torch.mean(features, dim=1, keepdim=False)
 
@@ -208,7 +210,7 @@ class Encoder(nn.Module):
         # print('images ', x['images'])
         else:
             print('in attention')
-            x_p = img_to_patch_strided(x[key], p=self.patch,s=self.stride)
+            x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
             # x_p2=img_to_patch_strided(x['buildings'], p=120,s=100)
 
             print('patches shape :', x_p.shape)
@@ -255,8 +257,6 @@ class Encoder(nn.Module):
             features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
                                  p2=int(num_patches ** 0.5))
             assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
-
-
 
             if self.self_attn == 'vanilla':
                 attn, _ = attention(features, features, features)  # bxnxd
