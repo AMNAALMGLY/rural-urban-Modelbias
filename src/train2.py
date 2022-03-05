@@ -246,17 +246,17 @@ def main(args):
         batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                                 args.nl_label, args.include_buildings, paths_train_b, args.normalize, args.augment,
                                 args.clipn, args.batch_size, groupby=args.group,
-                                cache=True, shuffle=True,img_size=args.image_size,crop=args.crop)
+                                cache=True, shuffle=True,img_size=args.image_size,crop=args.crop,rand_crop=args.rand_crop)
 
         batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                                 args.nl_label, args.include_buildings, paths_valid_b, args.normalize, False, args.clipn,
                                 args.batch_size, groupby=args.group,
-                                cache=True, shuffle=False,img_size=args.image_size,crop=args.crop)
+                                cache=True, shuffle=False,img_size=args.image_size,crop=args.crop,rand_crop=args.rand_crop)
 
         batcher_test = Batcher(paths_test, {'urban_rural': tf.float32}, args.ls_bands, args.nl_band, args.label_name,
                                args.nl_label, args.include_buildings, paths_test_b, args.normalize, False, args.clipn,
                                args.batch_size, groupby='rural',
-                               cache=True, shuffle=False,img_size=args.image_size,crop=args.crop)
+                               cache=True, shuffle=False,img_size=args.image_size,crop=args.crop,rand_crop=args.rand_crop)
         '''
         batcher_all= Batcher(get_paths(args.dataset, 'all', args.fold, args.data_path), args.scaler_features_keys,'ms', None, 'wealthpooled',
                                 None, False, None, args.normalize, False,
