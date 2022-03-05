@@ -256,10 +256,10 @@ class Batcher():
             img = tf.concat([ex[band] for band in ex_bands], axis=2)
             if not self.rand_crop:
                 assert tuple(img.shape) == (
-                args.crop, args.crop, args.in_channels), 'shape of image is not as expected'
+                args.crop, args.crop, args.in_channels[0]), 'shape of image is not as expected'
             else:
                 assert tuple(img.shape) == (
-                args.rand_crop, args.rand_crop, args.in_channels), 'shape of image is not as expected'
+                args.rand_crop, args.rand_crop, args.in_channels[0]), 'shape of image is not as expected'
 
 
 
