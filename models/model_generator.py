@@ -176,7 +176,7 @@ class Encoder(nn.Module):
         self.stride=stride
         self.rand_crop=rand_crop
         if self.rand_crop:
-            self.patch_number=np.random.randint(24)
+            self.patch_number=np.random.choice(25,2)
         # nn.MultiheadAttention(self.dim, 1)
 
     @autocast()
@@ -195,8 +195,11 @@ class Encoder(nn.Module):
             print('in random cropping')
             x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
             b, num_patches, c, h, w = x_p.shape
-            features.append(self.resnet_bands(x_p[:, self.patch_number, ...].view(-1, c, h, w))[1])
-            features = torch.cat(features)
+            for i in self.patch_number:
+                features.append(self.resnet_bands(x_p[:, i, ...].view(-1, c, h, w))[1])
+            #features = torch.cat(features)
+            features = torch.stack((features), dim=1)
+            features = torch.mean(features, dim=1, keepdim=False)
 
         # patches Experiments
         # print('image shape',x['images'].shape)
