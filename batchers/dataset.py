@@ -114,7 +114,7 @@ class Batcher():
         self.cache = cache
         self.rand_crop=rand_crop
         if rand_crop:
-            max_offset=self.img_size-rand_crop
+            max_offset=self.crop-rand_crop
             self.offset=np.random.randint(max_offset)
         self.save_dir = save_dir
         self.batch_size = batch_size
