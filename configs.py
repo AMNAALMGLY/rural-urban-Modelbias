@@ -21,6 +21,7 @@ args = Namespace(
     blocks=6,
     randcrop=False,            #this is for cropping in the forward pass
     rand_crop=355,               #This for cropping from the dataset specifying size    (mostly cropping size is not the same as patching size for attention)
+    offset=50,
 
     # Training
 

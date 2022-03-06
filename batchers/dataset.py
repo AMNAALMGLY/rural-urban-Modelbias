@@ -62,7 +62,7 @@ class Batcher():
     def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label,include_buildings=False, buildings_records=None,
                  normalize='DHS',
                  augment=False, clipn=True,
-                 batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None,img_size=355,crop=args.crop,rand_crop=0):
+                 batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None,img_size=355,crop=args.crop,rand_crop=0,offset=0):
 
         '''
         initializes the loader as follows :
@@ -115,7 +115,8 @@ class Batcher():
         self.rand_crop=rand_crop
         if rand_crop:
             max_offset=self.crop-rand_crop
-            self.offset=np.random.randint(max_offset)
+            #self.offset=np.random.randint(max_offset)
+            self.offset=min(offset,max_offset)
         self.save_dir = save_dir
         self.batch_size = batch_size
         self.shuffle = shuffle
