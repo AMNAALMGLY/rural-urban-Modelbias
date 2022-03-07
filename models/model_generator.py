@@ -112,7 +112,7 @@ class EncoderLayer(nn.Module):
         self.size = size  # d_model or embed_dim
 
     def forward(self, x):
-        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x)[1])  # bs, n ,d
+        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x)[0])  # bs, n ,d
 
         return self.sublayer[1](x, self.feed_forward)  # bs, n , d_model
 
@@ -387,20 +387,20 @@ def attention(query, key, value, dropout=None):
     print('scores shape', scores.shape)
     assert scores.shape == (b, h, n, n), 'the shape is not as expected'
     p_attn = F.softmax(scores, dim=-1)
-    scores_identity=torch.ones_like(scores)
-    scores_identity=scores_identity.type_as(scores)
-    p_attn_identity=F.softmax(scores_identity, dim=-1)
-    scores_random= torch.randn_like(scores)
+    scores_identity = torch.ones_like(scores)
+    scores_identity = scores_identity.type_as(scores)
+    p_attn_identity = F.softmax(scores_identity, dim=-1)
+    scores_random = torch.randn_like(scores)
     scores_random = scores_random.type_as(scores)
 
     p_attn_random = F.softmax(scores_random, dim=-1)
 
     out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
-    out_ident=einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
-    out_random=einsum('b h i j, b h i d -> b h i d', p_attn_random, value)
+    out_ident = einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
+    out_random = einsum('b h i j, b h i d -> b h i d', p_attn_random, value)
     print('output before rearrange ', out.shape)
 
-    return out, out_ident,out_random,p_attn,p_attn_identity,p_attn_random
+    return out, out_ident, out_random, p_attn, p_attn_identity, p_attn_random
 
 
 def intersample_attention(query, key, value):
@@ -435,7 +435,7 @@ class MultiHeadedAttention(nn.Module):
         self.d_k = d_model // h
         self.h = h
         self.linears = clones(nn.Linear(d_model, d_model), 4)
-        self.attn = None
+        self.attn, self.ident_attn, self.rand_attn = None, None, None
         self.dropout = nn.Dropout(p=dropout)
 
     def forward(self, query, key, value):
@@ -447,19 +447,21 @@ class MultiHeadedAttention(nn.Module):
                              for l, x in zip(self.linears, (query, key, value))]
 
         # 2) Apply attention on all the projected vectors in batch.
-        x, y,z,self.attn ,identattn, randattn= attention(query, key, value,
-                                 )
-
+        x, y, z, self.attn, self.ident_attn, self.rand_attn = attention(query, key, value,
+                                                                        )
+        print('Attention weights : ',self.attn)
+        print('identity weights ',self.ident_attn,)
+        print('random weights ',self.rand_attn)
         # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
         x = rearrange(x, 'b h n d -> b n (h d)', h=self.h)
         y = rearrange(y, 'b h n d -> b n (h d)', h=self.h)
         z = rearrange(z, 'b h n d -> b n (h d)', h=self.h)
 
-        print('output of attn ', x.shape)
+
         # x = x.transpose(1, 2).contiguous().view(
         #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
         # x=x.reshape(b,n,h*d)
-        return self.linears[-1](x)  ,self.linears[-1](y),self.linears[-1](z)# bs , n , d_model
+        return self.linears[-1](x), self.linears[-1](y), self.linears[-1](z)  # bs , n , d_model
 
 
 def clones(module, N):

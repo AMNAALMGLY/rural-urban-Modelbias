@@ -231,8 +231,6 @@ def main(args):
             data_params = json.load(f)
 
         json_path = os.path.join(OUTPUTS_ROOT_DIR, model_dir, 'encoder_params.json')
-        with open(json_path, 'r') as f:
-            model_params = json.load(f)
 
         paths = get_paths(data_params['dataset'], 'all', 'A', args.data_path)
         if data_params['include_buildings']:
