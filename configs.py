@@ -12,7 +12,7 @@ args = Namespace(
     # Model
 
     model_name=dict(resnet_bands='resnext', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
-    self_attn=None,  # choices : [vanilla, intersample , multihead]
+    self_attn='multihead',  # choices : [vanilla, intersample , multihead]
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
@@ -41,9 +41,9 @@ args = Namespace(
 
 
     # data
-    image_size=511,
-    crop=511,
-    data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_ultralarge_onlynl/',
+    image_size=355,
+    crop=355,
+    data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_ultralarge_onlynl .
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
@@ -67,8 +67,8 @@ args = Namespace(
     normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
     fold='A',
-    ls_bands= None,
-    nl_band='merge',  # [None , merge , split]
+    ls_bands= 'ms',
+    nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
     include_buildings=False,
     scaler_features_keys={'urban_rural': tf.float32},
@@ -80,7 +80,7 @@ args = Namespace(
 
     # Experiment
     seed=123,
-    experiment_name='DHS_OOC_A_NL_randcrop_511_resnext',
+    experiment_name='DHS_OOC_A_ms_attn_355',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc','ablation_study'),
     init_ckpt_dir=None,
     group=  None,
@@ -116,7 +116,7 @@ if args.input == 'locs':
     args.in_channels = 2
 '''
 
-args.in_channels = [1]
+args.in_channels = [7]
 '''
 if args.ls_bands:
   args.in_channels.append(args.bands_channels.get(args.ls_bands, 0))
