@@ -9,7 +9,7 @@ from torch.cuda.amp import autocast
 
 from configs import args
 from models.preact_resnet import PreActResNet18, PreActResNet34, PreActResNet50
-from models.resnet import resnet18, resnet34, resnet50, mlp
+from models.resnet import resnet18, resnet34, resnet50, mlp, resnext50_32x4d
 from models.spaceEncoder import GridCellSpatialRelationEncoder
 from utils.utils import load_from_checkpoint
 import torch.nn.functional as F
@@ -18,6 +18,7 @@ model_type = dict(resnet18=PreActResNet18,
                   resnet34=resnet34,
                   resnet50=resnet50,
                   mlp=mlp,
+                  resnext=resnext50_32x4d
                   )
 
 
@@ -112,7 +113,7 @@ class EncoderLayer(nn.Module):
         self.size = size  # d_model or embed_dim
 
     def forward(self, x):
-        #x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x)[0])  # bs, n ,d
+        # x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x)[0])  # bs, n ,d
 
         return self.sublayer[1](x, self.feed_forward)  # bs, n , d_model
 
@@ -450,14 +451,13 @@ class MultiHeadedAttention(nn.Module):
         # 2) Apply attention on all the projected vectors in batch.
         x, y, z, self.attn, self.ident_attn, self.rand_attn = attention(query, key, value,
                                                                         )
-        print('Attention weights : ',self.attn)
-        print('identity weights ',self.ident_attn,)
-        print('random weights ',self.rand_attn)
+        print('Attention weights : ', self.attn)
+        print('identity weights ', self.ident_attn, )
+        print('random weights ', self.rand_attn)
         # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
         x = rearrange(x, 'b h n d -> b n (h d)', h=self.h)
         y = rearrange(y, 'b h n d -> b n (h d)', h=self.h)
         z = rearrange(z, 'b h n d -> b n (h d)', h=self.h)
-
 
         # x = x.transpose(1, 2).contiguous().view(
         #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model

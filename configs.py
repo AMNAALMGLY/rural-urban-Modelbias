@@ -11,7 +11,7 @@ args = Namespace(
 
     # Model
 
-    model_name=dict(resnet_bands='resnet18', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
+    model_name=dict(resnet_bands='resnext', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
     self_attn=None,  # choices : [vanilla, intersample , multihead]
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],
@@ -21,7 +21,7 @@ args = Namespace(
     blocks=6,
     randcrop=False,            #this is for cropping in the forward pass
     rand_crop=355,               #This for cropping from the dataset specifying size    (mostly cropping size is not the same as patching size for attention)
-    offset=50,
+    offset=150,
 
     # Training
 
@@ -80,7 +80,7 @@ args = Namespace(
 
     # Experiment
     seed=123,
-    experiment_name='DHS_OOC_A_NL_randcrop_511',
+    experiment_name='DHS_OOC_A_NL_randcrop_511_resnext',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc','ablation_study'),
     init_ckpt_dir=None,
     group=  None,

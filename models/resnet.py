@@ -25,6 +25,7 @@ model_urls = {
     "resnet34": "https://download.pytorch.org/models/resnet34-b627a593.pth",
     # "resnet50":'https://zenodo.org/record/4728033/files/seco_resnet50_100k.ckpt?download=1',
     'resnet50': "https://download.pytorch.org/models/resnet50-0676ba61.pth",
+    "resnext50_32x4d": "https://download.pytorch.org/models/resnext50_32x4d-7cdf4587.pth",
 
 }
 
@@ -426,7 +427,16 @@ def resnet50(in_channels: int, pretrained: bool = False, progress: bool = True, 
     """
     return _resnet("resnet50", Bottleneck, in_channels, [3, 4, 6, 3], pretrained, progress, **kwargs)
 
-
+def resnext50_32x4d(in_channels:int,pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+    r"""ResNeXt-50 32x4d model from
+    `"Aggregated Residual Transformation for Deep Neural Networks" <https://arxiv.org/pdf/1611.05431.pdf>`_.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+    """
+    kwargs["groups"] = 32
+    kwargs["width_per_group"] = 4
+    return _resnet("resnext50_32x4d", Bottleneck,in_channels, [3, 4, 6, 3], pretrained, progress, **kwargs)
 def init_first_layer_weights(in_channels: int, rgb_weights,
                              hs_weight_init: str):
     '''Initializes the weights for filters in the first conv layer.
