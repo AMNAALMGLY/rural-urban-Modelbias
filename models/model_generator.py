@@ -195,7 +195,7 @@ class Encoder(nn.Module):
         if not self.self_attn:
             features.append(self.resnet_bands(x[key])[1])
             features = torch.cat(features)
-            features = self.layers(features)
+            #features = self.layers(features)
 
         # features.append(self.resnet_ms(x['ms'])[1])
         elif self.rand_crop and not self.self_attn:

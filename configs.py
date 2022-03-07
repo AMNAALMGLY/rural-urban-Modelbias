@@ -27,7 +27,7 @@ args = Namespace(
 
     scheduler='warmup_step',           #warmup_step, #warmup_cos   #step    #cos  #exp
     lr_decay=0.96,
-    batch_size=64,
+    batch_size=128,
     gpu=-1,
     max_epochs=200,
     epoch_thresh=150,
