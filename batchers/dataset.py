@@ -113,6 +113,7 @@ class Batcher():
         self.crop=crop
         self.cache = cache
         self.rand_crop=rand_crop
+        self.offset=offset
         if rand_crop:
             max_offset=self.crop-rand_crop
             #self.offset=np.random.randint(max_offset)
@@ -221,7 +222,8 @@ class Batcher():
                 #Centre cropping
                 ex[band] = tf.image.resize_with_crop_or_pad(ex[band], self.crop, self.crop)
                 #Random cropping:
-                ex[band]=tf.image.crop_to_bounding_box(ex[band],self.offset,self.offset,self.rand_crop,self.rand_crop)
+                if self.rand_crop:
+                       ex[band]=tf.image.crop_to_bounding_box(ex[band],self.offset,self.offset,self.rand_crop,self.rand_crop)
 
                 #ex[band] = tf.reshape(ex[band], [448, 448])
                 #ex[band] = tf.reshape(ex[band], [355, 355])[65:-66, 65:-66]  # crop to 224x224

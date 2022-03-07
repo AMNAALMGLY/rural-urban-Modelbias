@@ -137,22 +137,7 @@ def run_extraction_on_models(model_dir: str,
         # initalizating
         np_dict = defaultdict()
         for i, record in enumerate(batcher):
-            '''
-            if data_params['include_buildings']:
-                if data_params['ls_bands'] or data_params['nl_band']:
-                    x = torch.tensor(record[0]['images'], )
-                    b = torch.tensor(record[1]['buildings'], )
-                    x = torch.cat((x, b), dim=-1)
-                else:
-                    x=torch.tensor(record[1]['buildings'], )
 
-
-            else:
-                x = torch.tensor(record['images'])
-
-            x = x.type_as(model.conv1.weight)
-            x = x.reshape(-1, x.shape[-1], x.shape[-3], x.shape[-2])  # [batch_size ,in_channels, H ,W]
-            '''
             x = defaultdict()
             if data_params['include_buildings']:
                 if data_params['ls_bands'] and data_params['nl_band']:
@@ -163,16 +148,11 @@ def run_extraction_on_models(model_dir: str,
                 elif data_params['ls_bands'] or data_params['nl_band']:
                     # only one type of band
                     x['images'] = torch.tensor(record[0]['images'], device=args.gpus)
-                if args.metadata:  # TODO change this to data_params[metadata]
-                    for meta in args.metadata:
-                        if meta == 'country':
-                            meta = DHS_COUNTRIES.index(record[0][meta])
-                        x[meta] = torch.tensor(record[0][meta], device=args.gpus)
 
                 x['buildings'] = torch.tensor(record[1]['buildings'], device=args.gpus)
 
             else:
-                if args.ls_bands and args.nl_band:
+                if data_params['ls_bands'] and data_params['nl_band']:
                     # 2 bands split them inot seperate inputs
                     # assumes for now it is only merged nl_bands
                     x[data_params['ls_bands']] = torch.tensor(record['images'][:, :, :-1], device=args.gpus)
@@ -180,11 +160,7 @@ def run_extraction_on_models(model_dir: str,
                 elif data_params['ls_bands'] or data_params['nl_band']:
                     # only one type of band
                     x['images'] = torch.tensor(record['images'], device=args.gpus)
-                if args.metadata:
-                    for meta in args.metadata:
-                        if meta == 'country':
-                            meta = DHS_COUNTRIES.index(record[meta])
-                        x[meta] = torch.tensor(record[meta], device=args.gpus)
+
             # x = {key: value.type_as(encoder.fc.weight) for key, value in x.items()}
             for key, value in x.items():
                 x[key] = value.reshape(-1, value.shape[-1], value.shape[-3],
@@ -231,6 +207,8 @@ def main(args):
             data_params = json.load(f)
 
         json_path = os.path.join(OUTPUTS_ROOT_DIR, model_dir, 'encoder_params.json')
+        with open(json_path, 'r') as f:
+            model_params = json.load(f)
 
         paths = get_paths(data_params['dataset'], 'all', 'A', args.data_path)
         if data_params['include_buildings']:
