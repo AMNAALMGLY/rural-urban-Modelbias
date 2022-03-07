@@ -113,7 +113,7 @@ class EncoderLayer(nn.Module):
         self.size = size  # d_model or embed_dim
 
     def forward(self, x):
-        # x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x)[0])  # bs, n ,d
+        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x)[0])  # bs, n ,d
 
         return self.sublayer[1](x, self.feed_forward)  # bs, n , d_model
 
@@ -193,9 +193,17 @@ class Encoder(nn.Module):
         # features.append(feature)
 
         if not self.self_attn:
-            features.append(self.resnet_bands(x[key])[1])
-            features = torch.cat(features)
-            #features = self.layers(features)
+            #features.append(self.resnet_bands(x[key])[1])
+            #features = torch.cat(features)
+            x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
+            b, num_patches, c, h, w = x_p.shape
+            for i in self.patch_number:
+                features.append(self.resnet_bands(x_p[:, i, ...].view(-1, c, h, w))[1])
+            # features = torch.cat(features)
+            features = torch.stack((features), dim=1)
+            features = torch.mean(features, dim=1, keepdim=False)
+
+
 
         # features.append(self.resnet_ms(x['ms'])[1])
         elif self.rand_crop and not self.self_attn:
@@ -221,7 +229,6 @@ class Encoder(nn.Module):
             print('patches shape :', x_p.shape)
             b, num_patches, c, h, w = x_p.shape
 
-            # b, num_patches2, c2, h2, w2 = x_p2.shape    #num_patches2=num_patches assumption
 
             features2 = []
             for p in range(num_patches):
