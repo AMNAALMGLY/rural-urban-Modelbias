@@ -80,7 +80,7 @@ args = Namespace(
 
     # Experiment
     seed=123,
-    experiment_name='DHS_OOC_A_NL_NOattn_355_PE25',
+    experiment_name='DHS_OOC_B_NL_NOattn_355_PE25',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc','ablation_study'),
     init_ckpt_dir=None,
     group=  None,
