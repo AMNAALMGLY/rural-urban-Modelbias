@@ -26,13 +26,13 @@ OUTPUTS_ROOT_DIR = args.out_dir
 
 DHS_MODELS = [
     # put paths to DHS models here (relative to OUTPUTS_ROOT_DIR)
-    # 'DHS_OOC_A_nl_random_weighted_b32_fc01_conv01_lr0001',
-    # 'DHS_OOC_B_nl_random_weighted_b32_fc01_conv01_lr0001',
-    # 'DHS_OOC_C_nl_random_weighted_b32_fc01_conv01_lr0001',
-    # 'DHS_OOC_D_nl_random_weighted_b32_fc01_conv01_lr0001',
-    #  'DHS_OOC_E_nl_random_weighted_b32_fc01_conv01_lr0001',
+     'DHS_OOC_A_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
+     'DHS_OOC_B_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
+     'DHS_OOC_C_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
+     'DHS_OOC_D_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
+      'DHS_OOC_E_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
     # 'DHS_OOC_A_building_larger_p120_b32_fce-05_conve-05_lr0001/',
-     'DHS_OOC_B_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
+    # 'DHS_OOC_B_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
     # 'DHS_OOC_C_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
     # 'DHS_OOC_D_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
     # 'DHS_OOC_E_BUILD_larger_PE120_b32_fc1_conv1_lr0001/',
@@ -106,10 +106,11 @@ def run_extraction_on_models(model_dir: str,
     #for key, value in model_params['model_dict'].items():
      #        encoder_params[key] = get_model(**value)
     for key, value in model_params.items():
-             if key=='self_attn':
-                 encoder_params[key]=value
-             else:
-               encoder_params[key] = get_model(**value)
+
+        if 'resnet' in key:
+            encoder_params[key] = get_model(**value)
+        else:
+            encoder_params[key] = value
     # model = get_model(**model_params)
     #encoder = Encoder(encoder_params,model_params['self_attn'])
     encoder=Encoder(**encoder_params)
@@ -221,7 +222,7 @@ def main(args):
                           data_params['nl_label'], data_params['include_buildings'], paths_b, normalize='DHS',
                           augment=False, clipn=True,
                           batch_size=128, groupby=data_params['groupby'],
-                          cache=False, shuffle=False)  # assumes no scalar features are present
+                          cache=False, shuffle=False,img_size=data_params['img_size'],crop=data_params['crop'],rand_crop=data_params['rand_crop'],offset=data_params['offset'])  # assumes no scalar features are present
 
         ## TODO fix in the future
         print('===Current Config ===')

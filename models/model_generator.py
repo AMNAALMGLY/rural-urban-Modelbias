@@ -137,7 +137,7 @@ class Encoder(nn.Module):
     def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, attn_blocks=6,
                  patch=100, stride=50, dim=512,
                  num_outputs=1,
-                 model_dict=None, rand_crop=args.randcrop):
+                 model_dict=None, rand_crop=False):
         # TODO add resnet_NL and resnet_Ms
         # TODO add multiple mlps for metadata
         """

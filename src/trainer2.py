@@ -679,15 +679,15 @@ class Trainer:
         return {
             'optimizer': opt,
             'lr_scheduler': {
-                # 'exp': ExponentialLR(opt,
-                #           gamma=args.lr_decay),
-                # 'cos':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=args.max_epochs),
-                # 'warmup_cos': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
-                #                                                                   max_epochs=200,
-                #                                                                  warmup_start_lr=1e-8),
+                'exp': ExponentialLR(opt,
+                           gamma=args.lr_decay),
+                 'cos':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=args.max_epochs),
+                 'warmup_cos': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
+                                                                                   max_epochs=200,
+                                                                              warmup_start_lr=1e-8),
                 'warmup_step': StepLRScheduler(opt, decay_t=1, decay_rate=args.lr_decay, warmup_t=5,
                                                warmup_lr_init=1e-8),
-                # 'step': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
+                 'step': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min'),
                 'swa_scheduler': torch.optim.swa_utils.SWALR(opt, anneal_strategy="cos", anneal_epochs=5, swa_lr=0.05)
 
