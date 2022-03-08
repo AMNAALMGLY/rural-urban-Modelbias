@@ -182,7 +182,7 @@ class Encoder(nn.Module):
             self.patch_number = np.random.choice(num_batches, 1)
         # nn.MultiheadAttention(self.dim, 1)
 
-    @autocast()
+   # @autocast()
     def forward(self, x):
         features = []
         key = list(x.keys())[0]
@@ -197,7 +197,7 @@ class Encoder(nn.Module):
             #features = torch.cat(features)
             x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
             b, num_patches, c, h, w = x_p.shape
-            for i in self.patch_number:
+            for i in range(num_patches):
                 features.append(self.resnet_bands(x_p[:, i, ...].view(-1, c, h, w))[1])
             # features = torch.cat(features)
             features = torch.stack((features), dim=1)
