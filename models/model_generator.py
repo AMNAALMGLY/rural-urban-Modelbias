@@ -193,15 +193,17 @@ class Encoder(nn.Module):
         # features.append(feature)
 
         if not self.self_attn:
-            #features.append(self.resnet_bands(x[key])[1])
+            features.append(self.resnet_bands(x[key])[1])
             #features = torch.cat(features)
-            x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
-            b, num_patches, c, h, w = x_p.shape
-            for i in range(num_patches):
-                features.append(self.resnet_bands(x_p[:, i, ...].view(-1, c, h, w))[1])
-            # features = torch.cat(features)
-            features = torch.stack((features), dim=1)
-            features = torch.mean(features, dim=1, keepdim=False)
+            #x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
+            #b, num_patches, c, h, w = x_p.shape
+
+
+            #for i in range(num_patches):
+             #   features.append(self.resnet_bands(x_p[:, i, ...].view(-1, c, h, w))[1])
+            features = torch.cat(features)
+            #features = torch.stack((features), dim=1)
+            #features = torch.mean(features, dim=1, keepdim=False)
 
 
 
@@ -469,7 +471,7 @@ class MultiHeadedAttention(nn.Module):
         # x = x.transpose(1, 2).contiguous().view(
         #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
         # x=x.reshape(b,n,h*d)
-        return self.linears[-1](x), self.linears[-1](y), self.linears[-1](z)  # bs , n , d_model
+        return self.linears[-1](x),y, z # bs , n , d_model
 
 
 def clones(module, N):

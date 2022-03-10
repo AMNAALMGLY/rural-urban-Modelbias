@@ -12,7 +12,7 @@ args = Namespace(
     # Model
 
     model_name=dict(resnet_bands='resnet18', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
-    self_attn=None,  # choices : [vanilla, intersample , multihead]
+    self_attn='multihead',  # choices : [vanilla, intersample , multihead]
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
@@ -25,18 +25,18 @@ args = Namespace(
 
     # Training
 
-    scheduler='warmup_step',           #warmup_step, #warmup_cos   #step    #cos  #exp
+    scheduler='step',           #warmup_step, #warmup_cos   #step    #cos  #exp
     lr_decay=0.96,
-    batch_size=128,
+    batch_size=64,
     gpu=-1,
     max_epochs=200,
     epoch_thresh=150,
     patience=20,
     #A Building :wd=0
     lr=.0001,  # lr0001         #0.0001 nl,ms                     #    {1 × 10−5, 3 x 10-5 , 10-4 }
-    fc_reg=0.01,                                               #{ 0 , 1, 10-3 , 10-2}
+    fc_reg=0,                                               #{ 0 , 1, 10-3 , 10-2}
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=0.01,
+    conv_reg=0,
 
 
 
@@ -66,7 +66,7 @@ args = Namespace(
     clipn=True,
     normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
-    fold='B',
+    fold='A',
     ls_bands= None,
     nl_band='merge',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
@@ -80,7 +80,7 @@ args = Namespace(
 
     # Experiment
     seed=123,
-    experiment_name='DHS_OOC_B_NL_NOattn_355_PE25',
+    experiment_name='DHS_OOC_A_NL_attn_355_step',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc','ablation_study'),
     init_ckpt_dir=None,
     group=  None,
