@@ -566,6 +566,7 @@ class Trainer:
                 # AGAINST ML RULES : moniter test values
                 r2_test ,test_loss= self.test(batcher_test)
                 wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
+                wandb.log({f'loss test': test_loss, 'epoch': epoch})
 
 
                 # early stopping with loss
@@ -663,7 +664,7 @@ class Trainer:
             self.model.eval()
             r2_test = []
             for record in batcher_test:
-                test_epoch_loss+=self.test_step(record,)
+                test_epoch_loss+=self.test_step(record,).item()
                 test_step+=1
 
             for i, m in enumerate(self.metric):
