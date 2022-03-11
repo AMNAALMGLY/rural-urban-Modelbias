@@ -662,10 +662,9 @@ class Trainer:
             print('--------------------------Testing-------------------- ')
             #self.model.eval()
 
-
             r2_test = []
             for i, m in enumerate(self.metric):
-                m.reset()
+
                 r2_test.append((m.compute()) ** 2 if self.metric_str[i] == 'r2' else m.compute())
 
                 wandb.log({f'{self.metric_str[i]} Test': r2_test[i], })
