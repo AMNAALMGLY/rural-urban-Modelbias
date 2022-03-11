@@ -271,7 +271,7 @@ class Trainer:
         return subshift_loss
 
     def test_step(self, batch, ):
-        loss, _ = self._shared_step(batch, self.metric)
+        loss, _ = self._shared_step(batch, self.metric,is_training=False)
 
         return loss
 
@@ -563,8 +563,8 @@ class Trainer:
                 wandb.log({f'{self.metric_str[0]} valid': r2_valid, 'epoch': epoch})
                 wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
                 self.metric[0].reset()
-                # AGAINST ML RULES : During best path saving test the performance
-                r2_test = self.test(batcher_test)
+                # AGAINST ML RULES : moniter test values
+                r2_test ,test_loss= self.test(batcher_test)
                 wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
 
 
@@ -588,7 +588,7 @@ class Trainer:
                         print(f'Path to best model at loss found during training: \n{save_path}')
 
                         # AGAINST ML RULES : During best path saving test the performance
-                       # r2_test = self.test(batcher_test)
+                        #r2_test,test_loss = self.test(batcher_test)
                         #wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
 
 
@@ -660,18 +660,21 @@ class Trainer:
             test_step = 0
             test_epoch_loss = 0
             print('--------------------------Testing-------------------- ')
-            #self.model.eval()
-
+            self.model.eval()
             r2_test = []
+            for record in batcher_test:
+                test_epoch_loss+=self.test_step(record,)
+                test_step+=1
+
             for i, m in enumerate(self.metric):
 
-                r2_test.append((m.compute()) ** 2 if self.metric_str[i] == 'r2' else m.compute())
+                    r2_test.append((m.compute()) ** 2 if self.metric_str[i] == 'r2' else m.compute())
 
-                wandb.log({f'{self.metric_str[i]} Test': r2_test[i], })
+                    #wandb.log({f'{self.metric_str[i]} Test': r2_test[i], })
 
-                m.reset()
+                    m.reset()
 
-        return r2_test[0]
+        return r2_test[0],(test_epoch_loss/test_step)
 
     def configure_optimizers(self):
         opt = torch.optim.Adam(self.model.parameters(), lr=self.lr,
