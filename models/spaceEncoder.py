@@ -7,6 +7,8 @@ import numpy as np
 import math
 from einops import rearrange
 
+from configs import args
+
 """
 A Set of position encoder
 """
@@ -44,7 +46,7 @@ class GridCellSpatialRelationEncoder(nn.Module):
     def __init__(self, spa_embed_dim, coord_dim=2, frequency_num=128,
                  max_radius=10000, min_radius=10,
                  freq_init="geometric",
-                 ffn=None, device="cuda"):
+                 ffn=None, device=args.gpus):
         """
         Args:
             spa_embed_dim: the output spatial relation embedding dimention
