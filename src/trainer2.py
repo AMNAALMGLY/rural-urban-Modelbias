@@ -562,7 +562,7 @@ class Trainer:
                 print(f'Validation {self.metric_str[0]}is {r2_valid:.2f} and loss {avg_valid_loss}')
                 wandb.log({f'{self.metric_str[0]} valid': r2_valid, 'epoch': epoch})
                 wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
-
+                self.metric[0].reset()
                 # AGAINST ML RULES : During best path saving test the performance
                 r2_test = self.test(batcher_test)
                 wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
