@@ -563,6 +563,11 @@ class Trainer:
                 wandb.log({f'{self.metric_str[0]} valid': r2_valid, 'epoch': epoch})
                 wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
 
+                # AGAINST ML RULES : During best path saving test the performance
+                r2_test = self.test(batcher_test)
+                wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
+
+
                 # early stopping with loss
                 if best_loss - avg_valid_loss >= 0:
                     print('in loss improving loop by ')
@@ -583,8 +588,8 @@ class Trainer:
                         print(f'Path to best model at loss found during training: \n{save_path}')
 
                         # AGAINST ML RULES : During best path saving test the performance
-                        r2_test = self.test(batcher_test)
-                        wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
+                       # r2_test = self.test(batcher_test)
+                        #wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
 
 
                 elif best_loss - avg_valid_loss < 0:
@@ -655,22 +660,19 @@ class Trainer:
             test_step = 0
             test_epoch_loss = 0
             print('--------------------------Testing-------------------- ')
-            self.model.eval()
-            for i, record in enumerate(batcher_test):
-                test_loss = self.test_step(record)
-                test_epoch_loss += test_loss.item()
-                test_step += 1
+            #self.model.eval()
 
-            avg_test_loss = test_epoch_loss / test_step
+
             r2_test = []
             for i, m in enumerate(self.metric):
+                m.reset()
                 r2_test.append((m.compute()) ** 2 if self.metric_str[i] == 'r2' else m.compute())
 
                 wandb.log({f'{self.metric_str[i]} Test': r2_test[i], })
-                wandb.log({"test_loss": avg_test_loss})
+
                 m.reset()
 
-        return r2_test
+        return r2_test[0]
 
     def configure_optimizers(self):
         opt = torch.optim.Adam(self.model.parameters(), lr=self.lr,
