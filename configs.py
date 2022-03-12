@@ -12,7 +12,7 @@ args = Namespace(
     # Model
 
     model_name=dict(resnet_bands='resnet18', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
-    self_attn='multihead',  # choices : [vanilla, intersample , multihead]
+    self_attn=None,  # choices : [vanilla, intersample , multihead]
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
@@ -20,8 +20,8 @@ args = Namespace(
     stride=50,
     blocks=6,
     randcrop=False,            #this is for cropping in the forward pass
-    rand_crop=355,               #This for cropping from the dataset specifying size    (mostly cropping size is not the same as patching size for attention)
-    offset=150,
+    rand_crop=224,               #This for cropping from the dataset specifying size    (mostly cropping size is not the same as patching size for attention)
+    offset=0,
 
     # Training
 
@@ -80,7 +80,7 @@ args = Namespace(
 
     # Experiment
     seed=123,
-    experiment_name='DHS_OOC_A_NL_attn_355_step',
+    experiment_name='DHS_OOC_A_NL_Noise_validation_offset0',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc','ablation_study'),
     init_ckpt_dir=None,
     group=  None,

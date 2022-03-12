@@ -555,6 +555,7 @@ class Batcher():
                 img = tf.concat([img_nonl, img[:, :, -2:]], axis=2)
         return img
     '''
+
     def __iter__(self):
         '''
         implement iterator of the  dataset
