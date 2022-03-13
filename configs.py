@@ -21,7 +21,7 @@ args = Namespace(
     blocks=6,
     randcrop=False,            #this is for cropping in the forward pass
     rand_crop=224,               #This for cropping from the dataset specifying size    (mostly cropping size is not the same as patching size for attention)
-    offset=0,
+    offset=250,
 
     # Training
 
@@ -80,7 +80,7 @@ args = Namespace(
 
     # Experiment
     seed=123,
-    experiment_name='DHS_OOC_A_NL_Noise_validation_offset0',
+    experiment_name='DHS_OOC_A_NL_Noise_validation_offset250_test',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc','ablation_study'),
     init_ckpt_dir=None,
     group=  None,
