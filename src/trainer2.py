@@ -558,13 +558,14 @@ class Trainer:
                 # tune.report(mean_loss=avg_valid_loss)
 
                 r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
-
+                self.metric[0].reset()
                 print(f'Validation {self.metric_str[0]}is {r2_valid:.2f} and loss {avg_valid_loss}')
                 wandb.log({f'{self.metric_str[0]} valid': r2_valid, 'epoch': epoch})
                 wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
-                #self.metric[0].reset()
+
                 # AGAINST ML RULES : moniter test values
                 r2_test ,test_loss= self.test(batcher_test)
+
                 wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
                 wandb.log({f'loss test': test_loss, 'epoch': epoch})
 
@@ -664,7 +665,7 @@ class Trainer:
             self.model.eval()
             r2_test = []
             for record in batcher_test:
-                test_epoch_loss+=self.test_step(record,).item()
+                test_epoch_loss+=self.test_step(record).item()
                 test_step+=1
 
             for i, m in enumerate(self.metric):
@@ -673,7 +674,7 @@ class Trainer:
 
                     #wandb.log({f'{self.metric_str[i]} Test': r2_test[i], })
 
-                    m.reset()
+
 
         return r2_test[0],(test_epoch_loss/test_step)
 
