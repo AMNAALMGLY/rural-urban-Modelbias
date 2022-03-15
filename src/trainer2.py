@@ -708,7 +708,7 @@ class Trainer:
             self.criterion = nn.BCEWithLogitsLoss()
 
         else:
-            self.criterion = nn.L1Loss()
+            self.criterion = nn.MSELoss()
 
 
     @torch.no_grad()

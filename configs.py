@@ -20,12 +20,12 @@ args = Namespace(
     stride=50,
     blocks=6,
     randcrop=False,            #this is for cropping in the forward pass
-    rand_crop=224,               #This for cropping from the dataset specifying size    (mostly cropping size is not the same as patching size for attention)
-    offset=250,
+    rand_crop=0,               #This for cropping from the dataset specifying size    (mostly cropping size is not the same as patching size for attention)
+    offset=0,
 
     # Training
 
-    scheduler='step',           #warmup_step, #warmup_cos   #step    #cos  #exp
+    scheduler='warmup_cos',           #warmup_step, #warmup_cos   #step    #cos  #exp
     lr_decay=0.96,
     batch_size=64,
     gpu=-1,
@@ -34,15 +34,15 @@ args = Namespace(
     patience=20,
     #A Building :wd=0
     lr=.0001,  # lr0001         #0.0001 nl,ms                     #    {1 × 10−5, 3 x 10-5 , 10-4 }
-    fc_reg=0,                                               #{ 0 , 1, 10-3 , 10-2}
+    fc_reg=0.01,                                               #{ 0 , 1, 10-3 , 10-2}
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=0,
+    conv_reg=0.01,
 
 
 
     # data
     image_size=511,
-    crop=511,
+    crop=355,
     data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_ultralarge_onlynl/',
     #atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_ultralarge_onlynl .
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
@@ -80,7 +80,7 @@ args = Namespace(
 
     # Experiment
     seed=123,
-    experiment_name='DHS_OOC_A_NL_Noise_validation_offset250_test',
+    experiment_name='DHS_OOC_A_NL_Noise_validation_center',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc','ablation_study'),
     init_ckpt_dir=None,
     group=  None,

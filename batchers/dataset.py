@@ -114,10 +114,10 @@ class Batcher():
         self.cache = cache
         self.rand_crop=rand_crop
         self.offset=offset
-        if rand_crop:
-            max_offset=self.crop-rand_crop
+        #if rand_crop:
+         #   max_offset=self.crop-rand_crop
             #self.offset=np.random.randint(max_offset)
-            self.offset=min(offset,max_offset)
+          #  self.offset=min(offset,max_offset)
         self.save_dir = save_dir
         self.batch_size = batch_size
         self.shuffle = shuffle
@@ -220,7 +220,8 @@ class Batcher():
                 ex[band].set_shape([self.img_size * self.img_size])
                 ex[band] = tf.reshape(ex[band], [self.img_size, self.img_size, 1])
                 #Centre cropping
-                ex[band] = tf.image.resize_with_crop_or_pad(ex[band], self.crop, self.crop)
+                if self.crop < self.img_size:
+                          ex[band] = tf.image.resize_with_crop_or_pad(ex[band], self.crop, self.crop)
                 #Random cropping:
                 if self.rand_crop:
                        ex[band]=tf.image.crop_to_bounding_box(ex[band],self.offset,self.offset,self.rand_crop,self.rand_crop)
