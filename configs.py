@@ -20,7 +20,7 @@ args = Namespace(
     stride=50,
     blocks=6,
     randcrop=False,            #this is for cropping in the forward pass
-    rand_crop=0,               #This for cropping from the dataset specifying size    (mostly cropping size is not the same as patching size for attention)
+    rand_crop=355,               #This for cropping from the dataset specifying size    (mostly cropping size is not the same as patching size for attention)
     offset=0,
 
     # Training
@@ -42,7 +42,7 @@ args = Namespace(
 
     # data
     image_size=511,
-    crop=355,
+    crop=480,
     data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_ultralarge_onlynl/',
     #atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_ultralarge_onlynl .
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
@@ -80,7 +80,7 @@ args = Namespace(
 
     # Experiment
     seed=123,
-    experiment_name='DHS_OOC_A_NL_Noise_validation_center',
+    experiment_name='DHS_OOC_A_NL_Noise_validation_offset0-nei480',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc','ablation_study'),
     init_ckpt_dir=None,
     group=  None,
