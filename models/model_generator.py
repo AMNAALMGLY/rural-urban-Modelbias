@@ -470,9 +470,9 @@ class MultiHeadedAttention(nn.Module):
         # 2) Apply attention on all the projected vectors in batch.
         x, y, z, self.attn, self.ident_attn, self.rand_attn = attention(query, key, value,
                                                                         )
-        print('Attention weights : ', self.attn)
-        print('identity weights ', self.ident_attn, )
-        print('random weights ', self.rand_attn)
+        #print('Attention weights : ', self.attn)
+        #print('identity weights ', self.ident_attn, )
+        #print('random weights ', self.rand_attn)
         # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
         x = rearrange(x, 'b h n d -> b n (h d)', h=self.h)
         y = rearrange(y, 'b h n d -> b n (h d)', h=self.h)

@@ -48,6 +48,36 @@ DHS_MODELS = [
     #'DHS_OOC_C_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
     #'DHS_OOC_D_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
     #'DHS_OOC_E_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
+"""
+'DHS_OOC_A_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+'DHS_OOC_B_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+'DHS_OOC_C_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+'DHS_OOC_D_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+'DHS_OOC_E_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+'DHS_OOC_A_NL_Noise_center_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
+'DHS_OOC_B_NL_Noise_center_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
+'DHS_OOC_C_NL_Noise_center_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
+'DHS_OOC_D_NL_Noise_center_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
+'DHS_OOC_E_NL_Noise_center_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
+
+'DHS_OOC_A_NL_Noise_center_uni_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
+'DHS_OOC_B_NL_Noise_center_uni_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
+'DHS_OOC_C_NL_Noise_center_uni_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
+'DHS_OOC_D_NL_Noise_center_uni_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
+'DHS_OOC_E_NL_Noise_center_uni_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
+
+'DHS_OOC_A_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+'DHS_OOC_B_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+'DHS_OOC_C_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+'DHS_OOC_D_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+'DHS_OOC_E_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+
+'DHS_OOC_A_NL_Noise_offset0_uni_attn_b64_fc01_conv01_lr0001_crop355',
+'DHS_OOC_B_NL_Noise_offset0_uni_attn_b64_fc01_conv01_lr0001_crop355',
+'DHS_OOC_C_NL_Noise_offset0_uni_attn_b64_fc01_conv01_lr0001_crop355',
+'DHS_OOC_D_NL_Noise_offset0_uni_attn_b64_fc01_conv01_lr0001_crop355',
+'DHS_OOC_E_NL_Noise_offset0_uni_attn_b64_fc01_conv01_lr0001_crop355',
+"""
     # DHS_OOC_A_encoder_b_nl_concat
     #  'DHS_OOC_A_ms_samescaled_b64_fc01_conv01_lr0001',
     # 'DHS_OOC_B_ms_samescaled_b64_fc001_conv001_lr0001',
@@ -58,7 +88,7 @@ DHS_MODELS = [
     # 'DHS_OOC_B_nl_random_b32_fc1.0_conv1.0_lr0001',
     #  'DHS_OOC_c_nl_random_b32_fc1.0_conv1.0_lr0001',
     # 'DHS_OOC_D_nl_random_b32_fc1.0_conv1.0_lr0001',
-    #  '/DHS_OOC_E_nl_random_b32_fc1.0_conv1.0_lr0001',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
+    #  '/DHS_OOC_E_nl_random_b32_fc1.0_conv1.0_lr0001',
     # 'DHS_OOC_A_nl_random_b_b32_fc1.0_conv1.0_lr0001',
     # 'DHS_OOC_B_nl_random_b_b32_fc1.0_conv1.0_lr0001',
     # 'DHS_OOC_C_nl_random_b_b32_fc1.0_conv1.0_lr0001',
