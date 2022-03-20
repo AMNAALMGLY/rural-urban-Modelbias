@@ -114,8 +114,11 @@ class EncoderLayer(nn.Module):
 
     def forward(self, x):
         x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x)[0])  # bs, n ,d
+        y = self.sublayer[0](x, lambda x: self.self_attn(x, x, x)[1])  # bs, n ,d
+        z = self.sublayer[0](x, lambda x: self.self_attn(x, x, x)[2])  # bs, n ,d
 
-        return self.sublayer[1](x, self.feed_forward)  # bs, n , d_model
+        return self.sublayer[1](x, self.feed_forward), self.sublayer[1](y, self.feed_forward), self.sublayer[1](z,
+                                                                                                                self.feed_forward)  # bs, n , d_model
 
 
 class Layers(nn.Module):
@@ -129,8 +132,8 @@ class Layers(nn.Module):
     def forward(self, x):
         "Pass the input through each layer in turn."
         for layer in self.layers:
-            x = layer(x)
-        return self.norm(x)  # bs , n , d_model
+            x, y, z = layer(x)
+        return self.norm(x), self.norm(y), self.norm(z)  # bs , n , d_model
 
 
 class Encoder(nn.Module):
@@ -167,7 +170,7 @@ class Encoder(nn.Module):
         self.Mlp = Mlp
 
         self.positionalE = PositionalEncoding2D(self.fc_in_dim)
-        #self.positionalE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
+        # self.positionalE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
         # self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
         self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 2), nn.GELU(),
@@ -182,7 +185,7 @@ class Encoder(nn.Module):
             self.patch_number = np.random.choice(num_batches, 1)
         # nn.MultiheadAttention(self.dim, 1)
 
-   # @autocast()
+    # @autocast()
     def forward(self, x):
         features = []
         key = list(x.keys())[0]
@@ -194,16 +197,15 @@ class Encoder(nn.Module):
 
         if not self.self_attn:
             features.append(self.resnet_bands(x[key])[1])
-            #features = torch.cat(features)
-            #x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
-            #b, num_patches, c, h, w = x_p.shape
+            # features = torch.cat(features)
+            # x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
+            # b, num_patches, c, h, w = x_p.shape
 
-
-            #for i in range(num_patches):
-             #   features.append(self.resnet_bands(x_p[:, i, ...].view(-1, c, h, w))[1])
+            # for i in range(num_patches):
+            #   features.append(self.resnet_bands(x_p[:, i, ...].view(-1, c, h, w))[1])
             features = torch.cat(features)
-            #features = torch.stack((features), dim=1)
-            #features = torch.mean(features, dim=1, keepdim=False)
+            # features = torch.stack((features), dim=1)
+            # features = torch.mean(features, dim=1, keepdim=False)
 
 
 
@@ -230,7 +232,6 @@ class Encoder(nn.Module):
 
             print('patches shape :', x_p.shape)
             b, num_patches, c, h, w = x_p.shape
-
 
             features2 = []
             for p in range(num_patches):
@@ -278,9 +279,18 @@ class Encoder(nn.Module):
 
                 attn, _ = intersample_attention(features, features, features)  # bxnxd
             elif self.self_attn == 'multihead':
-                print(' inside multi head attention')
+                print(' inside  attention')
 
-                features = self.layers(features)
+                features, _, _ = self.layers(features)
+
+            elif self.self_attn == 'multihead_uniform':
+                print(' inside uniform attention')
+
+                _, features, _ = self.layers(features)
+            elif self.self_attn == 'multihead_random':
+                print(' inside random attention')
+
+                _, _, features = self.layers(features)
 
                 # self.multi_head.to(args.gpus)
                 # attn = self.multi_head(features, features, features)
@@ -471,7 +481,8 @@ class MultiHeadedAttention(nn.Module):
         # x = x.transpose(1, 2).contiguous().view(
         #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
         # x=x.reshape(b,n,h*d)
-        return self.linears[-1](x),y, z # bs , n , d_model
+
+        return self.linears[-1](x), y, z  # bs , n , d_model
 
 
 def clones(module, N):
