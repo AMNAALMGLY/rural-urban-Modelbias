@@ -171,10 +171,10 @@ class GridCellSpatialRelationEncoder(nn.Module):
         rel_coord = torch.empty((batch_size, x * y, 2))
         # Relative position embedding :
 
-        center_coord = coords[:, ((x*y)- 1) // 2, :].unsqueeze(1)  # shape [batch, 1 , 2]   #TODO NOT sure about this
+        center_coord = coords[:, ((x*y)- 1) // 2, :]# shape [batch, 1 , 2]   #TODO NOT sure about this
         print(center_coord,center_coord.shape)
         for i in range(x * y):  # num of context points
-            coord = coords[:, i, :].unsqueeze(1)
+            coord = coords[:, i, :]
             print('coord',coord,coord.shape)
             rel_coord[:, i, :] = coord - center_coord
         print('relative coordinates:',rel_coord[0],rel_coord.shape)
