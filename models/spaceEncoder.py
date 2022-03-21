@@ -161,12 +161,23 @@ class GridCellSpatialRelationEncoder(nn.Module):
             raise RuntimeError("The input tensor has to be 3d!")
         batch_size, x, y, orig_ch = tensor.shape
 
-        pos= torch.arange(float(x),)
-        paired=torch.cartesian_prod(pos,pos)
-        print('paired',paired.shape)
-        paired=paired.unsqueeze(0)
-        coords=paired.repeat((batch_size,1,1))
-        print(coords.shape)
+        pos = torch.arange(float(x), )
+        paired = torch.cartesian_prod(pos, pos)
+        print('paired', paired.shape)
+        paired = paired.unsqueeze(0)
+        coords = paired.repeat((batch_size, 1, 1))
+
+        print(coords.shape)  # expected [batch_size, num_context_pts,2]
+        rel_coord = torch.empty((batch_size, x * y, 2))
+        # Relative position embedding :
+
+        center_coord = coords[:, len(pos) - 1 // 2, :]  # shape [batch, 1 , 2]   #TODO NOT sure about this
+        for i in range(x * y):  # num of context points
+            coord = coords[:, i, :]
+            rel_coord[:, i, :] = coord - center_coord
+        print('relative coordinates:',rel_coord[0],rel_coord.shape)
+        # coords: shape (batch_size, num_context_sample, 2)
+
         '''
         pos_x = torch.arange(float(x), device=tensor.device)
         pos_x=torch.unsqueeze(pos_x,dim=0)
@@ -176,7 +187,9 @@ class GridCellSpatialRelationEncoder(nn.Module):
         pos_y = pos_y.repeat((batch_size, 1))
         #coords=torch.empty((batch_size,x*y,2))
         '''
-        spr_embeds = self.make_input_embeds(coords.numpy())
+        #spr_embeds = self.make_input_embeds(coords.numpy())
+        spr_embeds = self.make_input_embeds(rel_coord.numpy())
+
 
         # # loop over all batches
         # spr_embeds = []
@@ -194,13 +207,12 @@ class GridCellSpatialRelationEncoder(nn.Module):
         # sprenc = torch.einsum("bnd,dk->bnk", (spr_embeds, self.post_mat))
         # sprenc = self.f_act(self.dropout(self.post_linear(spr_embeds)))
 
-
         if self.ffn is not None:
             return self.ffn(spr_embeds)
         else:
-            #rearrange first
+            # rearrange first
             print(spr_embeds.shape)
-            spr_embeds=rearrange(spr_embeds, 'b (p1 p2) d -> b p1 p2 d', p1=x ,
-                             p2=y )
-            print('embed shape',spr_embeds.shape)
-            return spr_embeds+tensor
+            spr_embeds = rearrange(spr_embeds, 'b (p1 p2) d -> b p1 p2 d', p1=x,
+                                   p2=y)
+            print('embed shape', spr_embeds.shape)
+            return spr_embeds + tensor

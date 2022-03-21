@@ -172,7 +172,7 @@ class Encoder(nn.Module):
         self.positionalE = PositionalEncoding2D(self.fc_in_dim)
         # self.positionalE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
         # self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
-        self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
+        self.multi_head = MultiHeadedAttention_adapt(h=1, d_model=self.fc_in_dim)
         self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 2), nn.GELU(),
                                 nn.Linear(self.fc_in_dim // 2, self.fc_in_dim))
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
@@ -470,9 +470,9 @@ class MultiHeadedAttention(nn.Module):
         # 2) Apply attention on all the projected vectors in batch.
         x, y, z, self.attn, self.ident_attn, self.rand_attn = attention(query, key, value,
                                                                         )
-        #print('Attention weights : ', self.attn)
-        #print('identity weights ', self.ident_attn, )
-        #print('random weights ', self.rand_attn)
+        # print('Attention weights : ', self.attn)
+        # print('identity weights ', self.ident_attn, )
+        # print('random weights ', self.rand_attn)
         # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
         x = rearrange(x, 'b h n d -> b n (h d)', h=self.h)
         y = rearrange(y, 'b h n d -> b n (h d)', h=self.h)
@@ -526,5 +526,78 @@ def img_to_patch_strided(img, p=100, s=50, padding=False):
     return patches
 
 
-def add_noise(x):
-    return x + torch.randn_like(x)
+class MultiHeadedAttention_adapt(nn.Module):
+    def __init__(self, h, d_model, dropout=0.1):
+        "Take in model size and number of heads."
+        super(MultiHeadedAttention_adapt, self).__init__()
+        assert d_model % h == 0
+        # We assume d_v always equals d_k
+        print('in multiheadedAttention')
+        self.d_k = d_model // h
+        self.h = h
+        self.linears = clones(nn.Linear(d_model, d_model), 4)
+        self.attn, self.ident_attn, self.rand_attn = None, None, None
+        self.dropout = nn.Dropout(p=dropout)
+
+    def forward(self, query, key, value):
+        nbatches = query.size(0)
+        nPatches = query.size(1)
+        # extract_center_patch
+        query = query[:, (nPatches - 1) // 2, :]
+        assert  tuple(query.shape)==(nbatches,1,self.d_k)
+        # 1) Do all the linear projections in batch from d_model => h x d_k
+
+        query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
+                             for l, x in zip(self.linears, (query, key, value))]
+
+        # 2) Apply attention on all the projected vectors in batch.
+        x, y, z, self.attn, self.ident_attn, self.rand_attn = attention_adapt(query, key, value,
+                                                                        )
+        # print('Attention weights : ', self.attn)
+        # print('identity weights ', self.ident_attn, )
+        # print('random weights ', self.rand_attn)
+        # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
+        x = rearrange(x, 'b h n d -> b n (h d)', h=self.h)
+        y = rearrange(y, 'b h n d -> b n (h d)', h=self.h)
+        z = rearrange(z, 'b h n d -> b n (h d)', h=self.h)
+
+        # x = x.transpose(1, 2).contiguous().view(
+        #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
+        # x=x.reshape(b,n,h*d)
+
+        return self.linears[-1](x), y, z  # bs , n , d_model
+def attention_adapt(query, key, value, dropout=None):
+    "Compute 'Scaled Dot Product Attention'"
+    # query: bs, h,n, embed_dim
+    # key: bs, h,n, embed_dim
+    # value: bs, h, n,embed_dim
+    '''
+    d_k = query.size(-1)
+    scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
+    print('scores shape', scores.shape)
+    p_attn = F.softmax(scores, dim=-1)
+    print('softmax', p_attn.shape)
+    if dropout is not None:
+        p_attn = dropout(p_attn)  # bs , n , n
+    output = torch.matmul(p_attn, value)  # bs, n , embed_dim
+    return output, p_attn
+    '''
+    b, h, n, d = key.shape
+    scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
+    print('scores shape', scores.shape)
+    assert scores.shape == (b, h, 1, n), 'the shape is not as expected'
+    p_attn = F.softmax(scores, dim=-1)
+    scores_identity = torch.ones_like(scores)
+    scores_identity = scores_identity.type_as(scores)
+    p_attn_identity = F.softmax(scores_identity, dim=-1)
+    scores_random = torch.randn_like(scores)
+    scores_random = scores_random.type_as(scores)
+
+    p_attn_random = F.softmax(scores_random, dim=-1)
+
+    out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
+    out_ident = einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
+    out_random = einsum('b h i j, b h i d -> b h i d', p_attn_random, value)
+    print('output before rearrange ', out.shape)
+
+    return out, out_ident, out_random, p_attn, p_attn_identity, p_attn_random
