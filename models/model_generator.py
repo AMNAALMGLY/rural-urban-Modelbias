@@ -169,7 +169,7 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-        #self.positionalE = PositionalEncoding2D(self.fc_in_dim)
+        # self.positionalE = PositionalEncoding2D(self.fc_in_dim)
         self.positionalE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
         # self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
         self.multi_head = MultiHeadedAttention_adapt(h=1, d_model=self.fc_in_dim)
@@ -416,9 +416,9 @@ def attention(query, key, value, dropout=None):
 
     p_attn_random = F.softmax(scores_random, dim=-1)
 
-    out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
-    out_ident = einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
-    out_random = einsum('b h i j, b h i d -> b h i d', p_attn_random, value)
+    out = einsum('b h i j, b h j d -> b h i d', p_attn, value)
+    out_ident = einsum('b h i j, b h j d -> b h i d', p_attn_identity, value)
+    out_random = einsum('b h i j, b h j d -> b h i d', p_attn_random, value)
     print('output before rearrange ', out.shape)
 
     return out, out_ident, out_random, p_attn, p_attn_identity, p_attn_random
@@ -544,7 +544,7 @@ class MultiHeadedAttention_adapt(nn.Module):
         nPatches = query.size(1)
         # extract_center_patch
         query = query[:, (nPatches - 1) // 2, :].unsqueeze(1)
-        assert  tuple(query.shape)==(nbatches,1,self.d_k)
+        assert tuple(query.shape) == (nbatches, 1, self.d_k)
         # 1) Do all the linear projections in batch from d_model => h x d_k
 
         query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
@@ -552,7 +552,7 @@ class MultiHeadedAttention_adapt(nn.Module):
 
         # 2) Apply attention on all the projected vectors in batch.
         x, y, z, self.attn, self.ident_attn, self.rand_attn = attention_adapt(query, key, value,
-                                                                        )
+                                                                              )
         # print('Attention weights : ', self.attn)
         # print('identity weights ', self.ident_attn, )
         # print('random weights ', self.rand_attn)
@@ -566,6 +566,8 @@ class MultiHeadedAttention_adapt(nn.Module):
         # x=x.reshape(b,n,h*d)
 
         return self.linears[-1](x), y, z  # bs , n , d_model
+
+
 def attention_adapt(query, key, value, dropout=None):
     "Compute 'Scaled Dot Product Attention'"
     # query: bs, h,n, embed_dim
