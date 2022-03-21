@@ -543,7 +543,7 @@ class MultiHeadedAttention_adapt(nn.Module):
         nbatches = query.size(0)
         nPatches = query.size(1)
         # extract_center_patch
-        query = query[:, (nPatches - 1) // 2, :]
+        query = query[:, (nPatches - 1) // 2, :].unsqueeze(1)
         assert  tuple(query.shape)==(nbatches,1,self.d_k)
         # 1) Do all the linear projections in batch from d_model => h x d_k
 
