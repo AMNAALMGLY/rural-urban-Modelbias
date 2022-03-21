@@ -174,7 +174,7 @@ class GridCellSpatialRelationEncoder(nn.Module):
         center_coord = coords[:, ((x*y)- 1) // 2, :].unsqueeze(1)  # shape [batch, 1 , 2]   #TODO NOT sure about this
         print(center_coord,center_coord.shape)
         for i in range(x * y):  # num of context points
-            coord = coords[:, i, :]
+            coord = coords[:, i, :].unsqueeze(1)
             print('coord',coord,coord.shape)
             rel_coord[:, i, :] = coord - center_coord
         print('relative coordinates:',rel_coord[0],rel_coord.shape)
