@@ -48,14 +48,14 @@ DHS_MODELS = [
     # 'DHS_OOC_C_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
     # 'DHS_OOC_D_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
     # 'DHS_OOC_E_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
-    """
-    'DHS_OOC_A_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
-    'DHS_OOC_B_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
-    'DHS_OOC_C_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
-    'DHS_OOC_D_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
-    'DHS_OOC_E_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
 
-    """
+ #   'DHS_OOC_A_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+  #  'DHS_OOC_B_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+   # 'DHS_OOC_C_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+   # 'DHS_OOC_D_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+   # 'DHS_OOC_E_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+
+
     'DHS_OOC_A_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
     'DHS_OOC_B_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
     'DHS_OOC_C_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
