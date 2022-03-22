@@ -26,58 +26,73 @@ OUTPUTS_ROOT_DIR = args.out_dir
 
 DHS_MODELS = [
     # put paths to DHS models here (relative to OUTPUTS_ROOT_DIR)
-     'DHS_OOC_A_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
-     'DHS_OOC_B_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
-     'DHS_OOC_C_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
-     'DHS_OOC_D_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
-      'DHS_OOC_E_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
+    #    'DHS_OOC_A_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
+    #   'DHS_OOC_B_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
+    #   'DHS_OOC_C_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
+    #  'DHS_OOC_D_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
+  #  'DHS_OOC_E_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
     # 'DHS_OOC_A_building_larger_p120_b32_fce-05_conve-05_lr0001/',
     # 'DHS_OOC_B_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
     # 'DHS_OOC_C_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
     # 'DHS_OOC_D_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
     # 'DHS_OOC_E_BUILD_larger_PE120_b32_fc1_conv1_lr0001/',
 
-     #'DHS_OOC_A_NL_larger_PE120_b32_fc1.0_conv1.0_lr0001/',
-     #'DHS_OOC_B_NL_larger_PE120_b32_fc1.0_conv1.0_lr0001//',
-     #'DHS_OOC_C_NL_larger_PE120_b32_fc01_conv01_lr0001/',
-     #'DHS_OOC_D_NL_larger_PE120_b32_fc1_conv1_lr0001/',
-     #'DHS_OOC_E_NL_larger_PE120_b32_fc01_conv01_lr0001/',
+    # 'DHS_OOC_A_NL_larger_PE120_b32_fc1.0_conv1.0_lr0001/',
+    # 'DHS_OOC_B_NL_larger_PE120_b32_fc1.0_conv1.0_lr0001//',
+    # 'DHS_OOC_C_NL_larger_PE120_b32_fc01_conv01_lr0001/',
+    # 'DHS_OOC_D_NL_larger_PE120_b32_fc1_conv1_lr0001/',
+    # 'DHS_OOC_E_NL_larger_PE120_b32_fc01_conv01_lr0001/',
 
-    #'DHS_OOC_A_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
-    #'DHS_OOC_B_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
-    #'DHS_OOC_C_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
-    #'DHS_OOC_D_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
-    #'DHS_OOC_E_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
-"""
-'DHS_OOC_A_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
-'DHS_OOC_B_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
-'DHS_OOC_C_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
-'DHS_OOC_D_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
-'DHS_OOC_E_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
-'DHS_OOC_A_NL_Noise_center_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
-'DHS_OOC_B_NL_Noise_center_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
-'DHS_OOC_C_NL_Noise_center_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
-'DHS_OOC_D_NL_Noise_center_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
-'DHS_OOC_E_NL_Noise_center_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
+    # 'DHS_OOC_A_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
+    # 'DHS_OOC_B_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
+    # 'DHS_OOC_C_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
+    # 'DHS_OOC_D_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
+    # 'DHS_OOC_E_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
+    """
+    'DHS_OOC_A_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+    'DHS_OOC_B_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+    'DHS_OOC_C_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+    'DHS_OOC_D_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+    'DHS_OOC_E_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
 
-'DHS_OOC_A_NL_Noise_center_uni_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
-'DHS_OOC_B_NL_Noise_center_uni_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
-'DHS_OOC_C_NL_Noise_center_uni_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
-'DHS_OOC_D_NL_Noise_center_uni_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
-'DHS_OOC_E_NL_Noise_center_uni_attn_nooffset_b64_fc01_conv01_lr0001_crop0',
+    """
+    'DHS_OOC_A_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
+    'DHS_OOC_B_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
+    'DHS_OOC_C_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
+    'DHS_OOC_D_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
+    'DHS_OOC_E_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
 
-'DHS_OOC_A_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
-'DHS_OOC_B_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
-'DHS_OOC_C_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
-'DHS_OOC_D_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
-'DHS_OOC_E_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+    'DHS_OOC_A_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
+    'DHS_OOC_B_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
+    'DHS_OOC_C_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
+    'DHS_OOC_D_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
+    'DHS_OOC_E_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
 
-'DHS_OOC_A_NL_Noise_offset0_uni_attn_b64_fc01_conv01_lr0001_crop355',
-'DHS_OOC_B_NL_Noise_offset0_uni_attn_b64_fc01_conv01_lr0001_crop355',
-'DHS_OOC_C_NL_Noise_offset0_uni_attn_b64_fc01_conv01_lr0001_crop355',
-'DHS_OOC_D_NL_Noise_offset0_uni_attn_b64_fc01_conv01_lr0001_crop355',
-'DHS_OOC_E_NL_Noise_offset0_uni_attn_b64_fc01_conv01_lr0001_crop355',
-"""
+    'DHS_OOC_A_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+     'DHS_OOC_B_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+     'DHS_OOC_C_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+     'DHS_OOC_D_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+     'DHS_OOC_E_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+
+    'DHS_OOC_A_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+     'DHS_OOC_B_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+     'DHS_OOC_C_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+     'DHS_OOC_D_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+     'DHS_OOC_E_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+
+    'DHS_OOC_A_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+    'DHS_OOC_B_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+    'DHS_OOC_C_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+    'DHS_OOC_D_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+    'DHS_OOC_E_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+
+    'DHS_OOC_A_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+    'DHS_OOC_B_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+    'DHS_OOC_C_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+    'DHS_OOC_D_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+    'DHS_OOC_E_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+
+
     # DHS_OOC_A_encoder_b_nl_concat
     #  'DHS_OOC_A_ms_samescaled_b64_fc01_conv01_lr0001',
     # 'DHS_OOC_B_ms_samescaled_b64_fc001_conv001_lr0001',
@@ -132,8 +147,8 @@ def run_extraction_on_models(model_dir: str,
     encoder_params = defaultdict()
     # model params is a dictionary of dictionary that have 2 main keys(
     # model_dict(which is a dict of models itself) and self_attn)
-    #for key, value in model_params['model_dict'].items():
-     #        encoder_params[key] = get_model(**value)
+    # for key, value in model_params['model_dict'].items():
+    #        encoder_params[key] = get_model(**value)
     for key, value in model_params.items():
 
         if 'resnet' in key:
@@ -141,8 +156,8 @@ def run_extraction_on_models(model_dir: str,
         else:
             encoder_params[key] = value
     # model = get_model(**model_params)
-    #encoder = Encoder(encoder_params,model_params['self_attn'])
-    encoder=Encoder(**encoder_params)
+    # encoder = Encoder(encoder_params,model_params['self_attn'])
+    encoder = Encoder(**encoder_params)
     # redefine the model according to num_outputs
     fc = nn.Linear(encoder.fc.in_features, args.num_outputs)
     print('fc shape', encoder.fc.in_features)
@@ -222,8 +237,6 @@ def run_extraction_on_models(model_dir: str,
     save_results(save_dir, np_dict, save_filename, )
 
 
-
-
 def main(args):
     for model_dir in DHS_MODELS:
         # TODO check existing
@@ -251,7 +264,9 @@ def main(args):
                           data_params['nl_label'], data_params['include_buildings'], paths_b, normalize='DHS',
                           augment=False, clipn=True,
                           batch_size=128, groupby=data_params['groupby'],
-                          cache=False, shuffle=False,img_size=data_params['img_size'],crop=data_params['crop'],rand_crop=data_params['rand_crop'],offset=data_params['offset'])  # assumes no scalar features are present
+                          cache=False, shuffle=False, img_size=data_params['img_size'], crop=data_params['crop'],
+                          rand_crop=data_params['rand_crop'],
+                          offset=data_params['offset'])  # assumes no scalar features are present
 
         ## TODO fix in the future
         print('===Current Config ===')
