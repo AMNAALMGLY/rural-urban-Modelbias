@@ -163,35 +163,27 @@ class GridCellSpatialRelationEncoder(nn.Module):
 
         pos = torch.arange(float(x), )
         paired = torch.cartesian_prod(pos, pos)
-        print('paired', paired.shape)
+        # print('paired', paired.shape)
         paired = paired.unsqueeze(0)
         coords = paired.repeat((batch_size, 1, 1))
-
-        #print(coords.shape)  # expected [batch_size, num_context_pts,2]
+        assert tuple(coords.shape) == (batch_size, x * y, 2), 'shape of coordinates is not as expected '
+        # print(coords.shape)  # expected [batch_size, num_context_pts,2]
         rel_coord = torch.empty((batch_size, x * y, 2))
         # Relative position embedding :
 
-        center_coord = coords[:, ((x*y)- 1) // 2, :]# shape [batch, 1 , 2]   #TODO NOT sure about this
-        print(center_coord,center_coord.shape)
+        center_coord = coords[:, ((x * y) - 1) // 2, :]  # shape [batch, 1 , 2]   #TODO NOT sure about this
+        # print(center_coord,center_coord.shape)
         for i in range(x * y):  # num of context points
             coord = coords[:, i, :]
-            print('coord',coord,coord.shape)
+
             rel_coord[:, i, :] = coord - center_coord
-        print('relative coordinates:',rel_coord[0],rel_coord.shape)
+        # print('relative coordinates:',rel_coord[0],rel_coord.shape)
+        assert tuple(rel_coord.shape) == (batch_size, x * y, 2), 'shape of relative coordinates is not as expected'
+
         # coords: shape (batch_size, num_context_sample, 2)
 
-        '''
-        pos_x = torch.arange(float(x), device=tensor.device)
-        pos_x=torch.unsqueeze(pos_x,dim=0)
-        pos_x=pos_x.repeat((batch_size,1))
-        pos_y = torch.arange(float(y), device=tensor.device)
-        pos_y = torch.unsqueeze(pos_y, dim=0)
-        pos_y = pos_y.repeat((batch_size, 1))
-        #coords=torch.empty((batch_size,x*y,2))
-        '''
-        #spr_embeds = self.make_input_embeds(coords.numpy())
+        # spr_embeds = self.make_input_embeds(coords.numpy())
         spr_embeds = self.make_input_embeds(rel_coord.numpy())
-
 
         # # loop over all batches
         # spr_embeds = []

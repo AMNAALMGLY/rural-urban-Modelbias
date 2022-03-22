@@ -169,14 +169,21 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-        # self.positionalE = PositionalEncoding2D(self.fc_in_dim)
-        self.positionalE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
-        # self.pe=torch.empty((args.batch_size,4,self.dim),requires_grad=True)
-        self.multi_head = MultiHeadedAttention_adapt(h=1, d_model=self.fc_in_dim)
+        self.positionalE = PositionalEncoding2D(self.fc_in_dim)
+        self.spaceE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
+
+        self.multi_head_adapt = MultiHeadedAttention_adapt(h=1, d_model=self.fc_in_dim)
+        self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
+
         self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 2), nn.GELU(),
                                 nn.Linear(self.fc_in_dim // 2, self.fc_in_dim))
+
         self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
         self.layers = Layers(self.layer, attn_blocks)
+
+        self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt, feed_forward=self.ff)
+        self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
+
         self.patch = patch
         self.stride = stride
         self.rand_crop = rand_crop
@@ -260,42 +267,58 @@ class Encoder(nn.Module):
             #    assert 2 >= number_of_fts >= 1, 'number of features should be at least one'
             #    features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
             #
-
             assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
 
             features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
                                  p2=int(num_patches ** 0.5))
 
-            features = self.positionalE(features)
-            assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
-                                             self.fc_in_dim), 'positional encoding shape is not as expected'
-            features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
-                                 p2=int(num_patches ** 0.5))
-            assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
+            if self.attn == 'multihead_space':
+                print(' inside space  attention')
+                features = self.spaceE(features)
+                assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
+                                                 self.fc_in_dim), 'positional encoding shape is not as expected'
+                features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
+                                     p2=int(num_patches ** 0.5))
+                assert tuple(features.shape) == (
+                    b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
+                features, _, _ = self.layers_adapt(features)
+                assert tuple(features.shape) == (b, 1, self.fc_in_dim), 'output of space attention layer is not correct'
 
-            if self.self_attn == 'vanilla':
-                attn, _ = attention(features, features, features)  # bxnxd
-            elif self.self_attn == 'intersample':
+            # if self.self_attn == 'vanilla':
+            #    attn, _ = attention(features, features, features)  # bxnxd
+            # elif self.self_attn == 'intersample':
 
-                attn, _ = intersample_attention(features, features, features)  # bxnxd
+            #   attn, _ = intersample_attention(features, features, features)  # bxnxd
             elif self.self_attn == 'multihead':
-                print(' inside  attention')
-
+                print(' inside postional attention')
+                features = self.positionalE(features)
+                assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
+                                                 self.fc_in_dim), 'positional encoding shape is not as expected'
+                features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
+                                     p2=int(num_patches ** 0.5))
+                assert tuple(features.shape) == (
+                    b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
                 features, _, _ = self.layers(features)
+                assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of positional attention ' \
+                                                                                  'layer is not correct '
+
 
             elif self.self_attn == 'multihead_uniform':
                 print(' inside uniform attention')
 
                 _, features, _ = self.layers(features)
+                assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of uniform attention ' \
+                                                                                  'layer is not correct '
+
             elif self.self_attn == 'multihead_random':
                 print(' inside random attention')
 
                 _, _, features = self.layers(features)
+                assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of random attention ' \
+                                                                                  'layer is not correct '
 
-                # self.multi_head.to(args.gpus)
-                # attn = self.multi_head(features, features, features)
-            features = torch.mean(features, dim=1, keepdim=False)
-            # print('attention shape', attn.shape)
+            features = torch.mean(features, dim=1, keepdim=False) if features.size(
+                1) > 1 else features = features.squeeze(1)
 
         # return self.fc(self.relu(self.dropout(torch.cat(features))))
         return self.fc(self.relu(self.dropout(features)))
@@ -561,10 +584,6 @@ class MultiHeadedAttention_adapt(nn.Module):
         y = rearrange(y, 'b h n d -> b n (h d)', h=self.h)
         z = rearrange(z, 'b h n d -> b n (h d)', h=self.h)
 
-        # x = x.transpose(1, 2).contiguous().view(
-        #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
-        # x=x.reshape(b,n,h*d)
-
         return self.linears[-1](x), y, z  # bs , n , d_model
 
 
@@ -573,17 +592,7 @@ def attention_adapt(query, key, value, dropout=None):
     # query: bs, h,n, embed_dim
     # key: bs, h,n, embed_dim
     # value: bs, h, n,embed_dim
-    '''
-    d_k = query.size(-1)
-    scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
-    print('scores shape', scores.shape)
-    p_attn = F.softmax(scores, dim=-1)
-    print('softmax', p_attn.shape)
-    if dropout is not None:
-        p_attn = dropout(p_attn)  # bs , n , n
-    output = torch.matmul(p_attn, value)  # bs, n , embed_dim
-    return output, p_attn
-    '''
+
     b, h, n, d = key.shape
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
     print('scores shape', scores.shape)

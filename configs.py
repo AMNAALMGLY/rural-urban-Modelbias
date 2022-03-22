@@ -12,15 +12,15 @@ args = Namespace(
     # Model
 
     model_name=dict(resnet_bands='resnet18', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
-    self_attn=None,  # choices : [vanilla, intersample , multihead]
+    self_attn='multihead_space',  # choices : [multihead, multihead_space , multihead_uniform,multihead_random]
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
     p_size=120,
-    stride=50,
+    stride=115,
     blocks=6,
     randcrop=False,            #this is for cropping in the forward pass
-    rand_crop=355,               #This for cropping from the dataset specifying size    (mostly cropping size is not the same as patching size for attention)
+    rand_crop=0,               #This for cropping from the dataset specifying size    (mostly cropping size is not the same as patching size for attention)
     offset=0,
 
     # Training
@@ -34,15 +34,15 @@ args = Namespace(
     patience=20,
     #A Building :wd=0
     lr=.0001,  # lr0001         #0.0001 nl,ms                     #    {1 × 10−5, 3 x 10-5 , 10-4 }
-    fc_reg=0.01,                                               #{ 0 , 1, 10-3 , 10-2}
+    fc_reg=0.00001,                                               #{ 0 , 1, 10-3 , 10-2}
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
-    conv_reg=0.01,
+    conv_reg=0.00001,
 
 
 
     # data
     image_size=511,
-    crop=480,
+    crop=355,
     data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_ultralarge_onlynl/',
     #atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_ultralarge_onlynl .
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
@@ -66,7 +66,7 @@ args = Namespace(
     clipn=True,
     normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
-    fold='A',
+    fold='B',
     ls_bands= None,
     nl_band='merge',  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
@@ -80,7 +80,7 @@ args = Namespace(
 
     # Experiment
     seed=123,
-    experiment_name='DHS_OOC_A_NL_Noise_validation_offset0-nei480',
+    experiment_name='DHS_OOC_B_NL_center_attn_relative',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc','ablation_study'),
     init_ckpt_dir=None,
     group=  None,
