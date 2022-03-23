@@ -308,14 +308,14 @@ class Encoder(nn.Module):
             elif self.self_attn == 'multihead_uniform':
                 print(' inside uniform attention')
 
-                _, features, _ = self.layers(features)
+                _, features, _ = self.layers(features,features,features)
                 assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of uniform attention ' \
                                                                                   'layer is not correct '
 
             elif self.self_attn == 'multihead_random':
                 print(' inside random attention')
 
-                _, _, features = self.layers(features)
+                _, _, features = self.layers(features,features,features)
                 assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of random attention ' \
                                                                                   'layer is not correct '
 
