@@ -112,10 +112,10 @@ class EncoderLayer(nn.Module):
         self.sublayer = clones(SublayerConnection(size, dropout), 2)
         self.size = size  # d_model or embed_dim
 
-    def forward(self, x):
-        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x)[0])  # bs, n ,d
-        y = self.sublayer[0](x, lambda x: self.self_attn(x, x, x)[1])  # bs, n ,d
-        z = self.sublayer[0](x, lambda x: self.self_attn(x, x, x)[2])  # bs, n ,d
+    def forward(self, q, k, v):
+        x = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[0])  # bs, n ,d
+        y = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[1])  # bs, n ,d
+        z = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[2])  # bs, n ,d
 
         return self.sublayer[1](x, self.feed_forward), self.sublayer[1](y, self.feed_forward), self.sublayer[1](z,
                                                                                                                 self.feed_forward)  # bs, n , d_model
@@ -129,10 +129,10 @@ class Layers(nn.Module):
         self.layers = clones(layer, N)
         self.norm = LayerNorm(layer.size)
 
-    def forward(self, x):
+    def forward(self, q, k, v):
         "Pass the input through each layer in turn."
         for layer in self.layers:
-            x, y, z = layer(x)
+            x, y, z = layer(q, k, v)
         return self.norm(x), self.norm(y), self.norm(z)  # bs , n , d_model
 
 
@@ -233,14 +233,13 @@ class Encoder(nn.Module):
         # x['buildings']=torch.cat((x['buildings'],x['images']),dim=1)
         # print('images ', x['images'])
         else:
-            print('in attention')
+            print('in attention with patches')
             x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
             # x_p2=img_to_patch_strided(x['buildings'], p=120,s=100)
 
             print('patches shape :', x_p.shape)
             b, num_patches, c, h, w = x_p.shape
 
-            features2 = []
             for p in range(num_patches):
                 features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
             # features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c2, h2, w2))[1])
@@ -281,7 +280,10 @@ class Encoder(nn.Module):
                                      p2=int(num_patches ** 0.5))
                 assert tuple(features.shape) == (
                     b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
-                features, _, _ = self.layers_adapt(features)
+
+                query = features[:, (num_patches - 1) // 2, :].unsqueeze(1)  # just take the center patch
+
+                features, _, _ = self.layers_adapt(query, features, features)
                 print('features,', features.shape)
                 assert tuple(features.shape) == (b, 1, self.fc_in_dim), 'output of space attention layer is not correct'
 
@@ -299,7 +301,7 @@ class Encoder(nn.Module):
                                      p2=int(num_patches ** 0.5))
                 assert tuple(features.shape) == (
                     b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
-                features, _, _ = self.layers(features)
+                features, _, _ = self.layers(features, features, features)
                 assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of positional attention ' \
                                                                                   'layer is not correct '
 
@@ -560,9 +562,9 @@ class MultiHeadedAttention_adapt(nn.Module):
 
     def forward(self, query, key, value):
         nbatches = query.size(0)
-        nPatches = query.size(1)
+        nPatches = key.size(1)
         # extract_center_patch
-        query = query[:, (nPatches - 1) // 2, :].unsqueeze(1)
+        # query = query[:, (nPatches - 1) // 2, :].unsqueeze(1)
         assert tuple(query.shape) == (nbatches, 1, self.d_k)
         # 1) Do all the linear projections in batch from d_model => h x d_k
 
