@@ -282,7 +282,7 @@ class Encoder(nn.Module):
                 assert tuple(features.shape) == (
                     b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
                 features, _, _ = self.layers_adapt(features)
-                print('features,' , features.shape)
+                print('features,', features.shape)
                 assert tuple(features.shape) == (b, 1, self.fc_in_dim), 'output of space attention layer is not correct'
 
             # if self.self_attn == 'vanilla':
@@ -566,19 +566,19 @@ class MultiHeadedAttention_adapt(nn.Module):
 
         query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
                              for l, x in zip(self.linears, (query, key, value))]
+        assert tuple(query.shape) == (nbatches, self.h, 1, self.d_k)
+        assert tuple(key.shape) == (nbatches, self.h, nPatches, self.d_k)
+        assert tuple(value.shape) == (nbatches, self.h, nPatches, self.d_k)
 
         # 2) Apply attention on all the projected vectors in batch.
-        x, y, z, self.attn, self.ident_attn, self.rand_attn = attention_adapt(query, key, value,
-                                                                              )
-        # print('Attention weights : ', self.attn)
-        # print('identity weights ', self.ident_attn, )
-        # print('random weights ', self.rand_attn)
-        # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
-        x = rearrange(x, 'b h n d -> b n (h d)', h=self.h)
-        y = rearrange(y, 'b h n d -> b n (h d)', h=self.h)
-        z = rearrange(z, 'b h n d -> b n (h d)', h=self.h)
+        x = attention_adapt(query, key, value)
 
-        return self.linears[-1](x), y, z  # bs , n , d_model
+
+        # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
+        x = rearrange(x, 'b h n d -> b n (h d)', h=self.h, n=1)
+        assert tuple(x.shape) == (nbatches, 1, self.d_model)
+
+        return self.linears[-1](x),  # bs , n , d_model
 
 
 def attention_adapt(query, key, value, dropout=None):
@@ -592,17 +592,9 @@ def attention_adapt(query, key, value, dropout=None):
     # print('scores shape', scores.shape)
     assert scores.shape == (b, h, 1, n), 'the shape is not as expected'
     p_attn = F.softmax(scores, dim=-1)
-    scores_identity = torch.ones_like(scores)
-    scores_identity = scores_identity.type_as(scores)
-    p_attn_identity = F.softmax(scores_identity, dim=-1)
-    scores_random = torch.randn_like(scores)
-    scores_random = scores_random.type_as(scores)
 
-    p_attn_random = F.softmax(scores_random, dim=-1)
 
     out = einsum('b h i j, b h j d -> b h i d', p_attn, value)
-    out_ident = einsum('b h i j, b h j d -> b h i d', p_attn_identity, value)
-    out_random = einsum('b h i j, b h j d -> b h i d', p_attn_random, value)
-    print('output before rearrange ', out.shape)
+    print('output attention ', out.shape)
 
-    return out, out_ident, out_random, p_attn, p_attn_identity, p_attn_random
+    return out
