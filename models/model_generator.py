@@ -266,13 +266,14 @@ class Encoder(nn.Module):
             #    assert 2 >= number_of_fts >= 1, 'number of features should be at least one'
             #    features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
             #
-            assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape is not as expected'
+            assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape of features after resnet is not as expected'
 
-            features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
-                                 p2=int(num_patches ** 0.5))
 
             if self.self_attn == 'multihead_space':
                 print(' inside space  attention')
+                features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
+                                     p2=int(num_patches ** 0.5))
+
                 features = self.spaceE(features)
                 assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
                                                  self.fc_in_dim), 'positional encoding shape is not as expected'
@@ -293,6 +294,9 @@ class Encoder(nn.Module):
             #   attn, _ = intersample_attention(features, features, features)  # bxnxd
             elif self.self_attn == 'multihead':
                 print(' inside postional attention')
+                features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
+                                     p2=int(num_patches ** 0.5))
+
                 features = self.positionalE(features)
                 assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
                                                  self.fc_in_dim), 'positional encoding shape is not as expected'
@@ -314,6 +318,8 @@ class Encoder(nn.Module):
 
             elif self.self_attn == 'multihead_random':
                 print(' inside random attention')
+
+
 
                 _, _, features = self.layers(features,features,features)
                 assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of random attention ' \
