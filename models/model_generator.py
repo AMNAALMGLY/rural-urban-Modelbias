@@ -551,6 +551,7 @@ class MultiHeadedAttention_adapt(nn.Module):
         # We assume d_v always equals d_k
         print('in multiheadedAttention')
         self.d_k = d_model // h
+
         self.h = h
         self.linears = clones(nn.Linear(d_model, d_model), 4)
         self.attn, self.ident_attn, self.rand_attn = None, None, None
@@ -576,7 +577,7 @@ class MultiHeadedAttention_adapt(nn.Module):
 
         # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
         x = rearrange(x, 'b h n d -> b n (h d)', h=self.h, n=1)
-        assert tuple(x.shape) == (nbatches, 1, self.d_model)
+        assert tuple(x.shape) == (nbatches, 1, (self.d_k)*self.h)
 
         return self.linears[-1](x),  # bs , n , d_model
 
