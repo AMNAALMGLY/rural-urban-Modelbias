@@ -282,6 +282,7 @@ class Encoder(nn.Module):
                 assert tuple(features.shape) == (
                     b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
                 features, _, _ = self.layers_adapt(features)
+                print('features,' , features.shape)
                 assert tuple(features.shape) == (b, 1, self.fc_in_dim), 'output of space attention layer is not correct'
 
             # if self.self_attn == 'vanilla':
@@ -418,17 +419,7 @@ def attention(query, key, value, dropout=None):
     # query: bs, h,n, embed_dim
     # key: bs, h,n, embed_dim
     # value: bs, h, n,embed_dim
-    '''
-    d_k = query.size(-1)
-    scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
-    print('scores shape', scores.shape)
-    p_attn = F.softmax(scores, dim=-1)
-    print('softmax', p_attn.shape)
-    if dropout is not None:
-        p_attn = dropout(p_attn)  # bs , n , n
-    output = torch.matmul(p_attn, value)  # bs, n , embed_dim
-    return output, p_attn
-    '''
+
     b, h, n, d = query.shape
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
     print('scores shape', scores.shape)
