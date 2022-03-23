@@ -284,7 +284,6 @@ class Encoder(nn.Module):
                 query = features[:, (num_patches - 1) // 2, :].unsqueeze(1)  # just take the center patch
 
                 features, _, _ = self.layers_adapt(query, features, features)
-                print('features,', features.shape)
                 assert tuple(features.shape) == (b, 1, self.fc_in_dim), 'output of space attention layer is not correct'
 
             # if self.self_attn == 'vanilla':
@@ -439,7 +438,6 @@ def attention(query, key, value, dropout=None):
     out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
     out_ident = einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
     out_random = einsum('b h i j, b h i d -> b h i d', p_attn_random, value)
-    print('output attention ', out.shape)
 
     return out, out_ident, out_random, p_attn, p_attn_identity, p_attn_random
 
@@ -611,6 +609,6 @@ def attention_adapt(query, key, value, dropout=None):
 
     out_ident = einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
     out_random = einsum('b h i j, b h i d -> b h i d', p_attn_random, value)
-    print('output attention ', out.shape)
+    #print('output attention ', out.shape)
 
     return out, out_ident, out_random, p_attn, p_attn_identity, p_attn_random
