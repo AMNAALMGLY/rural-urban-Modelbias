@@ -425,18 +425,19 @@ def attention(query, key, value, dropout=None):
     print('scores shape', scores.shape)
     assert scores.shape == (b, h, n, n), 'the shape is not as expected'
     p_attn = F.softmax(scores, dim=-1)
+
     scores_identity = torch.ones_like(scores)
     scores_identity = scores_identity.type_as(scores)
     p_attn_identity = F.softmax(scores_identity, dim=-1)
+
     scores_random = torch.randn_like(scores)
     scores_random = scores_random.type_as(scores)
-
     p_attn_random = F.softmax(scores_random, dim=-1)
 
     out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
     out_ident = einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
     out_random = einsum('b h i j, b h i d -> b h i d', p_attn_random, value)
-    print('output before rearrange ', out.shape)
+    print('output attention ', out.shape)
 
     return out, out_ident, out_random, p_attn, p_attn_identity, p_attn_random
 
@@ -572,14 +573,17 @@ class MultiHeadedAttention_adapt(nn.Module):
         assert tuple(value.shape) == (nbatches, self.h, nPatches, self.d_k)
 
         # 2) Apply attention on all the projected vectors in batch.
-        x = attention_adapt(query, key, value)
-
+        x, y, z, self.attn, self.ident_attn, self.rand_attn = attention_adapt(query, key, value,
+                                                                              )
 
         # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
         x = rearrange(x, 'b h n d -> b n (h d)', h=self.h, n=1)
-        assert tuple(x.shape) == (nbatches, 1, (self.d_k)*self.h)
+        assert tuple(x.shape) == (nbatches, 1, (self.d_k) * self.h)
 
-        return self.linears[-1](x),  # bs , n , d_model
+        y = rearrange(y, 'b h n d -> b n (h d)', h=self.h)
+        z = rearrange(z, 'b h n d -> b n (h d)', h=self.h)
+
+        return self.linears[-1](x), y, z  # bs , n , d_model
 
 
 def attention_adapt(query, key, value, dropout=None):
@@ -590,12 +594,21 @@ def attention_adapt(query, key, value, dropout=None):
 
     b, h, n, d = key.shape
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
-    # print('scores shape', scores.shape)
     assert scores.shape == (b, h, 1, n), 'the shape is not as expected'
     p_attn = F.softmax(scores, dim=-1)
 
+    scores_identity = torch.ones_like(scores)
+    scores_identity = scores_identity.type_as(scores)
+    p_attn_identity = F.softmax(scores_identity, dim=-1)
+
+    scores_random = torch.randn_like(scores)
+    scores_random = scores_random.type_as(scores)
+    p_attn_random = F.softmax(scores_random, dim=-1)
 
     out = einsum('b h i j, b h j d -> b h i d', p_attn, value)
+
+    out_ident = einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
+    out_random = einsum('b h i j, b h i d -> b h i d', p_attn_random, value)
     print('output attention ', out.shape)
 
-    return out
+    return out, out_ident, out_random, p_attn, p_attn_identity, p_attn_random
