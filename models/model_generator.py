@@ -272,7 +272,7 @@ class Encoder(nn.Module):
             features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
                                  p2=int(num_patches ** 0.5))
 
-            if self.attn == 'multihead_space':
+            if self.self_attn == 'multihead_space':
                 print(' inside space  attention')
                 features = self.spaceE(features)
                 assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
