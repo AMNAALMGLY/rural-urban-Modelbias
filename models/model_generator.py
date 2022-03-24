@@ -64,7 +64,7 @@ class SublayerConnection(nn.Module):
         "Apply residual connection to any sublayer with the same size."
         # x: bs, n, d_model
 
-        return  self.dropout(sublayer(self.norm(x)))  # x: bs, n, d_model
+        return  x+self.dropout(sublayer(self.norm(x)))  # x: bs, n, d_model
 
 
 class PositionalEncoding2D(nn.Module):
