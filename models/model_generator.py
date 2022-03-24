@@ -64,7 +64,7 @@ class SublayerConnection(nn.Module):
         "Apply residual connection to any sublayer with the same size."
         # x: bs, n, d_model
 
-        return x + self.dropout(sublayer(self.norm(x)))  # x: bs, n, d_model
+        return  self.dropout(sublayer(self.norm(x)))  # x: bs, n, d_model
 
 
 class PositionalEncoding2D(nn.Module):
@@ -266,8 +266,8 @@ class Encoder(nn.Module):
             #    assert 2 >= number_of_fts >= 1, 'number of features should be at least one'
             #    features.append(self.Mlp(torch.cat([x[args.metadata[0]], x[args.metadata[1]]], dim=-1))[1])
             #
-            assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'shape of features after resnet is not as expected'
-
+            assert tuple(features.shape) == (
+            b, num_patches, self.fc_in_dim), 'shape of features after resnet is not as expected'
 
             if self.self_attn == 'multihead_space':
                 print(' inside space  attention')
@@ -312,16 +312,14 @@ class Encoder(nn.Module):
             elif self.self_attn == 'multihead_uniform':
                 print(' inside uniform attention')
 
-                _, features, _ = self.layers(features,features,features)
+                _, features, _ = self.layers(features, features, features)
                 assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of uniform attention ' \
                                                                                   'layer is not correct '
 
             elif self.self_attn == 'multihead_random':
                 print(' inside random attention')
 
-
-
-                _, _, features = self.layers(features,features,features)
+                _, _, features = self.layers(features, features, features)
                 assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of random attention ' \
                                                                                   'layer is not correct '
 
@@ -615,6 +613,6 @@ def attention_adapt(query, key, value, dropout=None):
 
     out_ident = einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
     out_random = einsum('b h i j, b h i d -> b h i d', p_attn_random, value)
-    #print('output attention ', out.shape)
+    # print('output attention ', out.shape)
 
     return out, out_ident, out_random, p_attn, p_attn_identity, p_attn_random
