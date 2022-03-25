@@ -113,7 +113,7 @@ class EncoderLayer(nn.Module):
         self.size = size  # d_model or embed_dim
 
     def forward(self, q, k, v):
-        x = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[0])  # bs, n ,d
+        x = self.sublayer[0](k, lambda q: self.self_attn(q, k, v)[0])  # bs, n ,d
         y = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[1])  # bs, n ,d
         z = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[2])  # bs, n ,d
 
@@ -288,7 +288,7 @@ class Encoder(nn.Module):
                 query = features[:, (num_patches - 1) // 2, :].unsqueeze(1)  # just take the center patch
 
                 features, _, _ = self.layers_adapt(query, features, features)
-                assert tuple(features.shape) == (b, 1, self.fc_in_dim), 'output of space attention layer is not correct'
+                assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of space attention layer is not correct'
 
             # if self.self_attn == 'vanilla':
             #    attn, _ = attention(features, features, features)  # bxnxd
@@ -570,7 +570,7 @@ class MultiHeadedAttention_adapt(nn.Module):
         nPatches = key.size(1)
         # extract_center_patch
         # query = query[:, (nPatches - 1) // 2, :].unsqueeze(1)
-        assert tuple(query.shape) == (nbatches, 1, self.d_k)
+        assert tuple(query.shape) == (nbatches, n, self.d_k)
         # 1) Do all the linear projections in batch from d_model => h x d_k
 
         query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
@@ -612,7 +612,7 @@ def attention_adapt(query, key, value, dropout=None):
     scores_random = scores_random.type_as(scores)
     p_attn_random = F.softmax(scores_random, dim=-1)
 
-    out = einsum('b h i j, b h j d -> b h i d', p_attn, value)
+    out = einsum('b h i j, b h j d -> b h j d', p_attn, value)
 
     out_ident = einsum('b h i j, b h j d -> b h i d', p_attn_identity, value)
     out_random = einsum('b h i j, b h j d -> b h i d', p_attn_random, value)
