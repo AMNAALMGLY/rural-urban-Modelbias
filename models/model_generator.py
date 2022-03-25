@@ -614,8 +614,8 @@ def attention_adapt(query, key, value, dropout=None):
 
     out = einsum('b h i j, b h j d -> b h i d', p_attn, value)
 
-    out_ident = einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
-    out_random = einsum('b h i j, b h i d -> b h i d', p_attn_random, value)
+    out_ident = einsum('b h i j, b h j d -> b h i d', p_attn_identity, value)
+    out_random = einsum('b h i j, b h j d -> b h i d', p_attn_random, value)
     # print('output attention ', out.shape)
 
     return out, out_ident, out_random, p_attn, p_attn_identity, p_attn_random
