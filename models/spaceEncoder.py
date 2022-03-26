@@ -153,34 +153,33 @@ class GridCellSpatialRelationEncoder(nn.Module):
         """
         Given a list of coords (deltaX, deltaY), give their spatial relation embedding
         Args:
-            coords: a python list with shape (batch_size, num_context_pt, coord_dim)
+            tensor: input features to encode with shape (batch_size, num_context_pt, coord_dim)
         Return:
-            sprenc: Tensor shape (batch_size, num_context_pt, spa_embed_dim)
+            sprenc: input tesnor added to the encoding ->Tensor shape (batch_size, num_context_pt, spa_embed_dim)
         """
         if len(tensor.shape) != 4:
             raise RuntimeError("The input tensor has to be 3d!")
-        batch_size, x, y, orig_ch = tensor.shape
+        batch_size, x, orig_ch = tensor.shape
 
-        pos = torch.arange(float(x), )
+        pos = torch.arange(float(x ** 0.5), )
         paired = torch.cartesian_prod(pos, pos)
-        # print('paired', paired.shape)
+
         paired = paired.unsqueeze(0)
         coords = paired.repeat((batch_size, 1, 1))
-        assert tuple(coords.shape) == (batch_size, x * y, 2), 'shape of coordinates is not as expected '
+        assert tuple(coords.shape) == (batch_size, x, 2), 'shape of coordinates is not as expected '
         # print(coords.shape)  # expected [batch_size, num_context_pts,2]
-        rel_coord = torch.empty((batch_size, x * y, 2))
-        # Relative position embedding :
 
-        center_coord = coords[:, ((x * y) - 1) // 2, :]  # shape [batch, 1 , 2]   #TODO NOT sure about this
+        # Relative coordinates :
+        rel_coord = torch.empty((batch_size, x * x, 2))
+
+        center_coord = coords[:, ((x) - 1) // 2, :]  # shape [batch, 1 , 2]
         # print(center_coord,center_coord.shape)
-        for i in range(x * y):  # num of context points
+        for i in range(x):  # num of context points
             coord = coords[:, i, :]
 
             rel_coord[:, i, :] = coord - center_coord
         # print('relative coordinates:',rel_coord[0],rel_coord.shape)
-        assert tuple(rel_coord.shape) == (batch_size, x * y, 2), 'shape of relative coordinates is not as expected'
-
-        # coords: shape (batch_size, num_context_sample, 2)
+        assert tuple(rel_coord.shape) == (batch_size, x, 2), 'shape of relative coordinates is not as expected'
 
         # spr_embeds = self.make_input_embeds(coords.numpy())
         spr_embeds = self.make_input_embeds(rel_coord.numpy())
@@ -204,9 +203,8 @@ class GridCellSpatialRelationEncoder(nn.Module):
         if self.ffn is not None:
             return self.ffn(spr_embeds)
         else:
-            # rearrange first
-            print(spr_embeds.shape)
-            spr_embeds = rearrange(spr_embeds, 'b (p1 p2) d -> b p1 p2 d', p1=x,
-                                   p2=y)
+
+            # spr_embeds = rearrange(spr_embeds, 'b (p1 p2) d -> b p1 p2 d', p1=x,
+            #                       p2=y)
             print('embed shape', spr_embeds.shape)
             return spr_embeds + tensor
