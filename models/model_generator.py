@@ -488,3 +488,55 @@ class PositionalEncoding2D(nn.Module):
         emb[:, :, : self.channels] = emb_x
         emb[:, :, self.channels: 2 * self.channels] = emb_y
         return emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1) + tensor
+
+
+class geoAttention(nn.Module):
+    def __init__(self, dim=512,
+                 num_outputs=1,
+                 ):
+        # TODO add resnet_NL and resnet_Ms
+        # TODO add multiple mlps for metadata
+        """
+            Args:
+
+                resnet_bands (nn.Module): Encoder layer of the self attention
+                resnet_build (nn.Module): Encoder layer of intersample attention
+                MLp (int): Number of features, this is required by LayerNorm
+            """
+        super(geoAttention, self).__init__()
+
+        self.fc_in_dim = dim
+        self.fc = nn.Linear(dim, num_outputs, device=args.gpus)  # combines both together
+
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(p=0.1)
+        self.linear = nn.Linear(dim * 2, dim)
+        # MultiHeadedAttention(h=1,d_model=512)
+        self.dim = dim
+
+        self.multi_head = MultiHeadedAttention(h=1, d_model=dim * 2)
+
+        # nn.MultiheadAttention(self.dim, 1)
+
+    def forward(self, x):
+        # features = torch.stack((x),dim=1)
+        b, d = x.shape
+        features = x.reshape(b, 1, d)
+
+        print('features_concat_shape', features.shape)
+
+        print('in attention')
+
+        self.multi_head.to(args.gpus)
+        attn, _ = self.multi_head(features, features, features)
+
+        print('attention shape', attn.shape)
+        features = features + attn  # residual connection
+        print('features shape', features.shape)
+        features = torch.sum(features, dim=1, keepdim=False)
+        # features = features.view(-1, self.fc_in_dim)
+        print('features shape after sum', features.shape)
+
+        print('shape of fc', self.relu(self.dropout(self.linear(features))).shape)
+        return self.fc(self.relu(self.dropout(self.linear(features))))
+

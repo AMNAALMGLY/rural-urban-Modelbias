@@ -1,3 +1,7 @@
+
+"""The transformer code follows the Annotated Transformer implementation.
+See https://nlp.seas.harvard.edu/2018/04/03/attention.html"""
+
 import torch
 import torch.nn as nn
 from torch.nn import init
