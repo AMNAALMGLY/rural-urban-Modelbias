@@ -154,6 +154,13 @@ class Batcher():
         ex = tf.io.parse_single_example(example, features=keys_to_features)
         ex[band].set_shape([self.img_size * self.img_size])
         ex[band] = tf.reshape(ex[band], [self.img_size, self.img_size,1])
+        # Centre cropping
+        if self.crop < self.img_size:
+            ex[band] = tf.image.resize_with_crop_or_pad(ex[band], self.crop, self.crop)
+        # Random cropping:
+        if self.rand_crop:
+            ex[band] = tf.image.crop_to_bounding_box(ex[band], self.offset, self.offset, self.rand_crop, self.rand_crop)
+
         #ex[band]=tf.expand_dims(ex[band],axis=-1)
         #print('size before reshape ',ex[band].shape)
         #ex[band] = tf.image.resize(ex[band], [224, 224 ])

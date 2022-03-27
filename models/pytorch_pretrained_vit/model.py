@@ -186,6 +186,6 @@ def vit_B_32(pretrained=False, in_channels=1,**kwargs):
     NOTE: this model has valid 21k classifier head and no representation (pre-logits) layer
     """
     #model_kwargs = dict(atch_size=32, embed_dim=384, depth=12, num_heads=6, **kwargs)
-    model = ViT(in_channels=in_channels,pretrained=pretrained,name='B_32_imagenet1k',)
+    model = ViT(in_channels=in_channels,pretrained=pretrained,name='B_32',)
 
     return model
