@@ -210,7 +210,7 @@ class Encoder(nn.Module):
                 print(query.shape)
                 features, _, _ = self.layers_adapt(query, features, features)
                 assert tuple(features.shape) == (
-                    b, num_patches, self.fc_in_dim), 'output of space attention layer is not correct'
+                    b, 1, self.fc_in_dim), 'output of space attention layer is not correct'
 
 
             elif self.self_attn == 'multihead':
