@@ -159,15 +159,14 @@ class ViT(nn.Module):
         Args:
             x (tensor): `b,c,fh,fw`
         """
-        print('img orig',x.shape)
         b, c, fh, fw = x.shape
         x = self.patch_embedding(x)  # b,d,gh,gw
-        print(x.shape)
+
         x = x.flatten(2).transpose(1, 2)  # b,gh*gw,d
-        print(x.shape)
+
         if hasattr(self, 'class_token'):
             x = torch.cat((self.class_token.expand(b, -1, -1), x), dim=1)  # b,gh*gw+1,d
-            print(x.shape)
+
         if hasattr(self, 'positional_embedding'):
             x = self.positional_embedding(x)  # b,gh*gw+1,d
 
@@ -175,7 +174,7 @@ class ViT(nn.Module):
         if hasattr(self, 'pre_logits'):
             x = self.pre_logits(x)
             x = torch.tanh(x)
-        features = x[:, 0] #b,d
+        features = self.norm(x)[:, 0] #b,d
         if hasattr(self, 'fc'):
             x = self.norm(x)[:, 0]  # b,d
             x = self.fc(x)  # b,num_classes
