@@ -21,6 +21,7 @@ class PositionalEmbedding1D(nn.Module):
 
     def forward(self, x):
         """Input has shape `(batch_size, seq_len, emb_dim)`"""
+        print('VIT input & pos_embedding',x.shape,self.pos_embedding.shape)
         return x + self.pos_embedding
 
 
