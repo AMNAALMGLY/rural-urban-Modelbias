@@ -12,6 +12,8 @@ from torch.cuda.amp import autocast
 
 from configs import args
 from models.preact_resnet import PreActResNet18, PreActResNet34, PreActResNet50
+from models.vit import vit_small_patch32_224
+from models.pytorch_pretrained_vit.model import  vit_B_32
 from models.resnet import resnet18, resnet34, resnet50, mlp, resnext50_32x4d
 from models.spaceEncoder import GridCellSpatialRelationEncoder
 from utils.utils import load_from_checkpoint
@@ -21,13 +23,16 @@ model_type = dict(resnet18=PreActResNet18,
                   resnet34=resnet34,
                   resnet50=resnet50,
                   mlp=mlp,
-                  resnext=resnext50_32x4d
+                  resnext=resnext50_32x4d,
+                  vit=vit_B_32
                   )
 
 
 def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
     model_fn = model_type[model_name]
-
+    #if model_name == 'vit':
+     #   model = model_fn()
+    #else:
     model = model_fn(in_channels, pretrained)
     if ckpt_path:
         model = load_from_checkpoint(ckpt_path, model)
@@ -202,10 +207,10 @@ class Encoder(nn.Module):
 
                 features = self.spaceE(features)
 
-                #assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
-                 #                                self.fc_in_dim), 'positional encoding shape is not as expected'
-                #features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
-                 #                    p2=int(num_patches ** 0.5))
+                # assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
+                #                                self.fc_in_dim), 'positional encoding shape is not as expected'
+                # features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
+                #                    p2=int(num_patches ** 0.5))
                 assert tuple(features.shape) == (
                     b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
 
@@ -331,8 +336,8 @@ def attention_adapt(query, key, value, dropout=None):
     b, h, n, d = key.shape
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
     assert scores.shape == (b, h, 1, n), 'the shape is not as expected'
-    tmp=0.0001
-    p_attn = F.softmax(scores/tmp, dim=-1)
+    tmp = 0.0001
+    p_attn = F.softmax(scores / tmp, dim=-1)
 
     scores_identity = torch.ones_like(scores)
     scores_identity = scores_identity.type_as(scores)
@@ -543,4 +548,3 @@ class geoAttention(nn.Module):
 
         print('shape of fc', self.relu(self.dropout(self.linear(features))).shape)
         return self.fc(self.relu(self.dropout(self.linear(features))))
-

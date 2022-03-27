@@ -11,7 +11,7 @@ args = Namespace(
 
     # Model
 
-    model_name=dict(resnet_bands='resnet18', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
+    model_name=dict(resnet_bands='vit', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
     self_attn='multihead_space',  # choices : [multihead, multihead_space , multihead_uniform,multihead_random]
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],

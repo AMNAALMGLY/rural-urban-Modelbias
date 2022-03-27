@@ -26,18 +26,24 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD
-from .helpers import build_model_with_cfg, named_apply, adapt_input_conv
-from .layers import PatchEmbed, Mlp, DropPath, trunc_normal_, lecun_normal_
-from .registry import register_model
+#from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD
+from vit_utils.h import build_model_with_cfg, named_apply, adapt_input_conv
+from vit_utils.layers import PatchEmbed, Mlp, DropPath, trunc_normal_, lecun_normal_
+from vit_utils.registry import register_model
 
 _logger = logging.getLogger(__name__)
-
+DEFAULT_CROP_PCT = 0.875
+IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
+IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
+IMAGENET_INCEPTION_MEAN = (0.5, 0.5, 0.5)
+IMAGENET_INCEPTION_STD = (0.5, 0.5, 0.5)
+IMAGENET_DPN_MEAN = (124 / 255, 117 / 255, 104 / 255)
+IMAGENET_DPN_STD = tuple([1 / (.0167 * 255)] * 3)
 
 def _cfg(url='', **kwargs):
     return {
         'url': url,
-        'num_classes': 1000, 'input_size': (3, 224, 224), 'pool_size': None,
+        'num_classes': 1000, 'input_size': (1, 224, 224), 'pool_size': None,
         'crop_pct': .9, 'interpolation': 'bicubic', 'fixed_input_size': True,
         'mean': IMAGENET_INCEPTION_MEAN, 'std': IMAGENET_INCEPTION_STD,
         'first_conv': 'patch_embed.proj', 'classifier': 'head',
@@ -250,7 +256,7 @@ class VisionTransformer(nn.Module):
         - https://arxiv.org/abs/2012.12877
     """
 
-    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dim=768, depth=12,
+    def __init__(self, img_size=224, patch_size=16, in_chans=1, num_classes=1000, embed_dim=768, depth=12,
                  num_heads=12, mlp_ratio=4., qkv_bias=True, representation_size=None, distilled=False,
                  drop_rate=0., attn_drop_rate=0., drop_path_rate=0., embed_layer=PatchEmbed, norm_layer=None,
                  act_layer=None, weight_init=''):
@@ -1008,6 +1014,3 @@ def vit_base_patch16_224_miil(pretrained=False, **kwargs):
     model_kwargs = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, qkv_bias=False, **kwargs)
     model = _create_vision_transformer('vit_base_patch16_224_miil', pretrained=pretrained, **model_kwargs)
     return model
-
-Blog
-About
