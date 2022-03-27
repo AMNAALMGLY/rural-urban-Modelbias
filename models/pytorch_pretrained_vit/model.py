@@ -85,7 +85,7 @@ class ViT(nn.Module):
             if num_classes is None:
                 num_classes = PRETRAINED_MODELS[name]['num_classes']
         self.image_size = image_size
-
+        print('img sze model',image_size)
         # Image and patch sizes
         h, w = as_tuple(image_size)  # image sizes
         fh, fw = as_tuple(patches)  # patch sizes
@@ -159,6 +159,7 @@ class ViT(nn.Module):
         Args:
             x (tensor): `b,c,fh,fw`
         """
+        print('img orig',x.shape)
         b, c, fh, fw = x.shape
         x = self.patch_embedding(x)  # b,d,gh,gw
         print(x.shape)
