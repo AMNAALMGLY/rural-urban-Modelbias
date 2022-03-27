@@ -66,6 +66,7 @@ def load_pretrained_weights(
 
     # Load state dict
     ret = model.load_state_dict(state_dict, strict=False)
+
     if strict:
         assert set(ret.missing_keys) == set(expected_missing_keys), \
             'Missing keys when loading pretrained weights: {}'.format(ret.missing_keys)

@@ -125,7 +125,7 @@ class ViT(nn.Module):
 
         # Load pretrained model
         if pretrained:
-            pretrained_num_channels = 1
+            pretrained_num_channels = 3
             pretrained_num_classes = PRETRAINED_MODELS[name]['num_classes']
             pretrained_image_size = PRETRAINED_MODELS[name]['image_size']
             load_pretrained_weights(
