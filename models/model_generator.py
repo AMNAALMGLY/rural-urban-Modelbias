@@ -78,7 +78,7 @@ class EncoderLayer(nn.Module):
         self.size = size  # d_model or embed_dim
 
     def forward(self, q, k, v):
-        x = self.sublayer[0](k, lambda q: self.self_attn(q, k, v)[0])  # bs, n ,d
+        x = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[0])  # bs, n ,d
         y = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[1])  # bs, n ,d
         z = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[2])  # bs, n ,d
 
