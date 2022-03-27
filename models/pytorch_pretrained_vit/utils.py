@@ -49,8 +49,7 @@ def load_pretrained_weights(
     state_dict['patch_embedding.weight'] = nn.Parameter(
     init_first_layer_weights(1, state_dict['patch_embedding.weight'], args.hs_weight_init))
 
-    state_dict['patch_embedding.bias'] = nn.Parameter(
-        init_first_layer_weights(1, state_dict['patch_embedding.bias'], args.hs_weight_init))
+
     print(state_dict.keys())
     # Modifications to load partial state dict
     expected_missing_keys = []
