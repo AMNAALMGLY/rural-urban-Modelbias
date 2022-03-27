@@ -161,7 +161,7 @@ class GridCellSpatialRelationEncoder(nn.Module):
         Return:
             sprenc: input tesnor added to the encoding ->Tensor shape (batch_size, num_context_pt, spa_embed_dim)
         """
-        if len(tensor.shape) != 4:
+        if len(tensor.shape) != 3:
             raise RuntimeError("The input tensor has to be 3d!")
         batch_size, x, orig_ch = tensor.shape
 
@@ -174,7 +174,7 @@ class GridCellSpatialRelationEncoder(nn.Module):
         # print(coords.shape)  # expected [batch_size, num_context_pts,2]
 
         # Relative coordinates :
-        rel_coord = torch.empty((batch_size, x * x, 2))
+        rel_coord = torch.empty((batch_size, x , 2))
 
         center_coord = coords[:, ((x) - 1) // 2, :]  # shape [batch, 1 , 2]
         # print(center_coord,center_coord.shape)
