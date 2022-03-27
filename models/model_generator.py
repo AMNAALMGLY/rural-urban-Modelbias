@@ -12,7 +12,7 @@ from torch.cuda.amp import autocast
 
 from configs import args
 from models.preact_resnet import PreActResNet18, PreActResNet34, PreActResNet50
-from models.vit import vit_small_patch32_224
+#from models.vit import vit_small_patch32_224
 from models.pytorch_pretrained_vit.model import  vit_B_32
 from models.resnet import resnet18, resnet34, resnet50, mlp, resnext50_32x4d
 from models.spaceEncoder import GridCellSpatialRelationEncoder
