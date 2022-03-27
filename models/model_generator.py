@@ -1,3 +1,6 @@
+"""The transformer code follows the Annotated Transformer implementation.
+See https://nlp.seas.harvard.edu/2018/04/03/attention.html"""
+
 import copy
 import math
 
