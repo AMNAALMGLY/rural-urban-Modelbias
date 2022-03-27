@@ -252,11 +252,11 @@ class Encoder(nn.Module):
                 assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of random attention ' \
                                                                                   'layer is not correct '
 
-        if features.size(
-                1) > 1:
-            features = torch.mean(features, dim=1, keepdim=False)
-        else:
-            features = features.squeeze(1)
+            if features.size(
+                    1) > 1:
+                features = torch.mean(features, dim=1, keepdim=False)
+            else:
+                features = features.squeeze(1)
 
         # return self.fc(self.relu(self.dropout(torch.cat(features))))
         return self.fc(self.relu(self.dropout(features)))
