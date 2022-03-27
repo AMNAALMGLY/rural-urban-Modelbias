@@ -3,9 +3,12 @@
 
 import numpy as np
 import torch
+from torch import nn
 from torch.utils import model_zoo
 
+from configs import args
 from .configs import PRETRAINED_MODELS
+from ..resnet import init_first_layer_weights
 
 
 def load_pretrained_weights(
@@ -42,11 +45,17 @@ def load_pretrained_weights(
             raise ValueError(f'Pretrained model for {model_name} has not yet been released')
     else:
         state_dict = torch.load(weights_path)
+    #Modification to first layer conv for inchan != 3
+    state_dict['patch_embedding.weight'] = nn.Parameter(
+    init_first_layer_weights(1, state_dict['patch_embedding.weight'], args.hs_weight_init))
 
+    state_dict['patch_embedding.bias'] = nn.Parameter(
+        init_first_layer_weights(1, state_dict['patch_embedding.bias'], args.hs_weight_init))
+    print(state_dict.keys())
     # Modifications to load partial state dict
     expected_missing_keys = []
-    if not load_first_conv and 'patch_embedding.weight' in state_dict:
-        expected_missing_keys += ['patch_embedding.weight', 'patch_embedding.bias']
+    #if not load_first_conv and 'patch_embedding.weight' in state_dict:
+     #   expected_missing_keys += ['patch_embedding.weight', 'patch_embedding.bias']
     if not load_fc and 'fc.weight' in state_dict:
         expected_missing_keys += ['fc.weight', 'fc.bias']
     if not load_repr_layer and 'pre_logits.weight' in state_dict:
