@@ -203,13 +203,13 @@ def vit_L_32(pretrained=False, in_channels=1, **kwargs):
     return model
 
 
-def vit_L_32_384(pretrained=False, in_channels=1, **kwargs):
+def vit_B_32_384(pretrained=False, in_channels=1, **kwargs):
     """ ViT-base (ViT-S/32)
     ImageNet-21k weights @ 384,384, source https://github.com/google-research/vision_transformer.
     NOTE: this model has valid 21k classifier head and no representation (pre-logits) layer
     """
     # model_kwargs = dict(atch_size=32, embed_dim=384, depth=12, num_heads=6, **kwargs)
-    model = ViT(in_channels=in_channels, pretrained=pretrained, name='L_32_imagenet1k', )
+    model = ViT(in_channels=in_channels, pretrained=pretrained, name='B_32_imagenet1k', )
 
     return model
 
@@ -221,15 +221,5 @@ def vit_B_16(pretrained=False, in_channels=1, **kwargs):
     """
     # model_kwargs = dict(atch_size=32, embed_dim=384, depth=12, num_heads=6, **kwargs)
     model = ViT(in_channels=in_channels, pretrained=pretrained, name='B_16')
-
-    return model
-
-def vit_L_16(pretrained=False, in_channels=1, **kwargs):
-    """ ViT-base (ViT-S/32)
-    ImageNet-21k weights @ 384,384, source https://github.com/google-research/vision_transformer.
-    NOTE: this model has valid 21k classifier head and no representation (pre-logits) layer
-    """
-    # model_kwargs = dict(atch_size=32, embed_dim=384, depth=12, num_heads=6, **kwargs)
-    model = ViT(in_channels=in_channels, pretrained=pretrained, name='L_16')
 
     return model
