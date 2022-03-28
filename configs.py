@@ -11,8 +11,8 @@ args = Namespace(
 
     # Model
 
-    model_name=dict(resnet_bands='vit', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
-    self_attn='multihead_space',  # choices : [multihead, multihead_space , multihead_uniform,multihead_random]
+    model_name=dict(resnet_bands='vitL', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
+    self_attn=None,  # choices : [multihead, multihead_space , multihead_uniform,multihead_random]
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],
     imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
@@ -29,7 +29,7 @@ args = Namespace(
     lr_decay=0.96,
     batch_size=64,
     gpu=-1,
-    max_epochs=200,
+    max_epochs=300,
     epoch_thresh=150,
     patience=20,
     #A Building :wd=0
@@ -42,7 +42,7 @@ args = Namespace(
 
     # data
     image_size=511,
-    crop=355,
+    crop=224,
     data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_ultralarge_onlynl/',
     #atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_ultralarge_onlynl .
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',

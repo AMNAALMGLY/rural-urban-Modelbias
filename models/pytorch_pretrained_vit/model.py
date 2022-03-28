@@ -21,7 +21,7 @@ class PositionalEmbedding1D(nn.Module):
 
     def forward(self, x):
         """Input has shape `(batch_size, seq_len, emb_dim)`"""
-        print('VIT input & pos_embedding',x.shape,self.pos_embedding.shape)
+        print('VIT input & pos_embedding', x.shape, self.pos_embedding.shape)
         return x + self.pos_embedding
 
 
@@ -62,7 +62,7 @@ class ViT(nn.Module):
         if name is None:
             check_msg = 'must specify name of pretrained model'
             assert not pretrained, check_msg
-            #assert not resize_positional_embedding, check_msg
+            # assert not resize_positional_embedding, check_msg
             if num_classes is None:
                 num_classes = 1000
             if image_size is None:
@@ -85,7 +85,7 @@ class ViT(nn.Module):
             if num_classes is None:
                 num_classes = PRETRAINED_MODELS[name]['num_classes']
         self.image_size = image_size
-        print('img sze model',image_size)
+        print('img sze model', image_size)
         # Image and patch sizes
         h, w = as_tuple(image_size)  # image sizes
         fh, fw = as_tuple(patches)  # patch sizes
@@ -174,17 +174,62 @@ class ViT(nn.Module):
         if hasattr(self, 'pre_logits'):
             x = self.pre_logits(x)
             x = torch.tanh(x)
-        features = self.norm(x)[:, 0] #b,d
+        features = self.norm(x)[:, 0]  # b,d
         if hasattr(self, 'fc'):
             x = self.norm(x)[:, 0]  # b,d
             x = self.fc(x)  # b,num_classes
-        return x,features
-def vit_B_32(pretrained=False, in_channels=1,**kwargs):
+        return x, features
+
+
+def vit_B_32(pretrained=False, in_channels=1, **kwargs):
     """ ViT-base (ViT-S/32)
     ImageNet-21k weights @ 224x224, source https://github.com/google-research/vision_transformer.
     NOTE: this model has valid 21k classifier head and no representation (pre-logits) layer
     """
-    #model_kwargs = dict(atch_size=32, embed_dim=384, depth=12, num_heads=6, **kwargs)
-    model = ViT(in_channels=in_channels,pretrained=pretrained,name='B_32',)
+    # model_kwargs = dict(atch_size=32, embed_dim=384, depth=12, num_heads=6, **kwargs)
+    model = ViT(in_channels=in_channels, pretrained=pretrained, name='B_32', )
+
+    return model
+
+
+def vit_L_32(pretrained=False, in_channels=1, **kwargs):
+    """ ViT-base (ViT-S/32)
+    ImageNet-21k weights @ 384,384, source https://github.com/google-research/vision_transformer.
+    NOTE: this model has valid 21k classifier head and no representation (pre-logits) layer
+    """
+    # model_kwargs = dict(atch_size=32, embed_dim=384, depth=12, num_heads=6, **kwargs)
+    model = ViT(in_channels=in_channels, pretrained=pretrained, name='L_32', )
+
+    return model
+
+
+def vit_L_32_384(pretrained=False, in_channels=1, **kwargs):
+    """ ViT-base (ViT-S/32)
+    ImageNet-21k weights @ 384,384, source https://github.com/google-research/vision_transformer.
+    NOTE: this model has valid 21k classifier head and no representation (pre-logits) layer
+    """
+    # model_kwargs = dict(atch_size=32, embed_dim=384, depth=12, num_heads=6, **kwargs)
+    model = ViT(in_channels=in_channels, pretrained=pretrained, name='L_32_imagenet1k', )
+
+    return model
+
+
+def vit_B_16(pretrained=False, in_channels=1, **kwargs):
+    """ ViT-base (ViT-S/32)
+    ImageNet-21k weights @ 384,384, source https://github.com/google-research/vision_transformer.
+    NOTE: this model has valid 21k classifier head and no representation (pre-logits) layer
+    """
+    # model_kwargs = dict(atch_size=32, embed_dim=384, depth=12, num_heads=6, **kwargs)
+    model = ViT(in_channels=in_channels, pretrained=pretrained, name='B_16')
+
+    return model
+
+def vit_L_16(pretrained=False, in_channels=1, **kwargs):
+    """ ViT-base (ViT-S/32)
+    ImageNet-21k weights @ 384,384, source https://github.com/google-research/vision_transformer.
+    NOTE: this model has valid 21k classifier head and no representation (pre-logits) layer
+    """
+    # model_kwargs = dict(atch_size=32, embed_dim=384, depth=12, num_heads=6, **kwargs)
+    model = ViT(in_channels=in_channels, pretrained=pretrained, name='L_16')
 
     return model
