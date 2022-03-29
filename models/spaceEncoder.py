@@ -142,8 +142,7 @@ class GridCellSpatialRelationEncoder(nn.Module):
         # coords_mat = coords_mat*math.pi/180
 
         # make sinuniod function
-        # sin for 2i, cos for 2i+1
-        # spr_embeds: (batch_size, num_context_pt, 2*frequency_num*2=input_embed_dim)
+        # sin for 2i, cos for 2i+1        # spr_embeds: (batch_size, num_context_pt, 2*frequency_num*2=input_embed_dim)
         spr_embeds[:, :, :, :, 0::2] = np.sin(spr_embeds[:, :, :, :, 0::2])  # dim 2i
         spr_embeds[:, :, :, :, 1::2] = np.cos(spr_embeds[:, :, :, :, 1::2])  # dim 2i+1
 

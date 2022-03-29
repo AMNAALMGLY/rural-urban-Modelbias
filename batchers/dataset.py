@@ -261,8 +261,8 @@ class Batcher():
                             false_fn=lambda: (ex[band] - mins['VIIRS']) / maxs['VIIRS'])
 
                     else:
-                        ex[band] = (ex[band] - mins[band]) / (maxs[band]-mins[band])
-                        #ex[band] = (ex[band] - means[band]) / stds[band]
+                        #ex[band] = (ex[band] - mins[band]) / (maxs[band]-mins[band])
+                        ex[band] = (ex[band] - means[band]) / stds[band]
 
             img = tf.concat([ex[band] for band in ex_bands], axis=2)
             if not self.rand_crop:
