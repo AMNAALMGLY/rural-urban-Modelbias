@@ -1,6 +1,9 @@
 """The transformer code follows the Annotated Transformer implementation.
 See https://nlp.seas.harvard.edu/2018/04/03/attention.html"""
 
+"""position embedding from https://github.com/tatp22/multidim-positional-encoding/blob/master/positional_encodings
+/positional_encodings.py """
+
 import copy
 import math
 
@@ -151,6 +154,9 @@ class Encoder(nn.Module):
 
         self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 2), nn.GELU(),
                                 nn.Linear(self.fc_in_dim // 2, self.fc_in_dim))
+        self.patch = patch
+        self.stride = stride
+        self.num_patches = int((355 - self.patch) / self.stride) + 1
 
         if self_attn == 'multihead_space':
 
@@ -160,13 +166,11 @@ class Encoder(nn.Module):
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
 
         elif self_attn:
-            self.positionalE = PositionalEncoding2D(self.fc_in_dim)
+            # self.positionalE = PositionalEncoding2D(self.fc_in_dim)
+            self.positionalE = Learnt_PE(self.num_patches, self.fc_in_dim)
             self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
             self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
             self.layers = Layers(self.layer, attn_blocks)
-
-        self.patch = patch
-        self.stride = stride
 
     # @autocast()
     def forward(self, x):
@@ -479,7 +483,7 @@ class PositionalEncoding2D(nn.Module):
 
         inv_freq = 1.0 / (10000 ** (torch.arange(0, channels, 2).float() / channels))  # shape:[channels/2]
         self.register_buffer("inv_freq", inv_freq)
-        self.pos_cache=None
+        self.pos_cache = None
 
     def forward(self, tensor):
         """
@@ -501,8 +505,9 @@ class PositionalEncoding2D(nn.Module):
         )
         emb[:, :, : self.channels] = emb_x
         emb[:, :, self.channels: 2 * self.channels] = emb_y
-        self.pos_cache=emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1)
-        print('position_embedding of the first channel: ',self.pos_cache[0,:,:,0],'second channel: ',self.pos_cache[0,:,:,1])
+        self.pos_cache = emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1)
+        print('position_embedding of the first channel: ', self.pos_cache[0, :, :, 0], 'second channel: ',
+              self.pos_cache[0, :, :, 1])
         return emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1) + tensor
 
 
@@ -555,3 +560,16 @@ class geoAttention(nn.Module):
 
         print('shape of fc', self.relu(self.dropout(self.linear(features))).shape)
         return self.fc(self.relu(self.dropout(self.linear(features))))
+
+
+class Learnt_PE(nn.Module):
+    """Adds (optionally learned) positional embeddings to the inputs."""
+
+    def __init__(self, seq_len, dim):
+        super().__init__()
+        self.pos_embedding = nn.Parameter(torch.zeros(1, seq_len, seq_len, dim))
+
+    def forward(self, x):
+        """Input has shape `(batch_size, seq_len,seq_len, emb_dim)`"""
+        print('learnt_embedding', self.pos_embedding[0, :, :, 0], 'second_channel', self.pos_embedding[0, :, :, 1])
+        return x + self.pos_embedding
