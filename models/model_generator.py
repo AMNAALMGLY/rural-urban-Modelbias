@@ -12,8 +12,8 @@ from torch.cuda.amp import autocast
 
 from configs import args
 from models.preact_resnet import PreActResNet18, PreActResNet34, PreActResNet50
-#from models.vit import vit_small_patch32_224
-from models.pytorch_pretrained_vit.model import  vit_B_32,vit_B_16,vit_L_32,vit_B_32_384
+# from models.vit import vit_small_patch32_224
+from models.pytorch_pretrained_vit.model import vit_B_32, vit_B_16, vit_L_32, vit_B_32_384
 from models.resnet import resnet18, resnet34, resnet50, mlp, resnext50_32x4d
 from models.spaceEncoder import GridCellSpatialRelationEncoder
 from utils.utils import load_from_checkpoint
@@ -33,9 +33,9 @@ model_type = dict(resnet18=PreActResNet18,
 
 def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
     model_fn = model_type[model_name]
-    #if model_name == 'vit':
-     #   model = model_fn()
-    #else:
+    # if model_name == 'vit':
+    #   model = model_fn()
+    # else:
     model = model_fn(in_channels, pretrained)
     if ckpt_path:
         model = load_from_checkpoint(ckpt_path, model)
@@ -274,7 +274,7 @@ def attention(query, key, value, dropout=None):
     b, h, n, d = query.shape
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
     print('scores shape', scores.shape)
-    assert tuple(scores.shape == (b, h, n, n)), 'the shape is not as expected'
+    assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
     p_attn = F.softmax(scores, dim=-1)
 
     scores_identity = torch.ones_like(scores)
@@ -339,8 +339,8 @@ def attention_adapt(query, key, value, dropout=None):
     b, h, n, d = key.shape
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
     assert scores.shape == (b, h, 1, n), 'the shape is not as expected'
-    #tmp = 0.0001
-    p_attn = F.softmax(scores , dim=-1)
+    # tmp = 0.0001
+    p_attn = F.softmax(scores, dim=-1)
 
     scores_identity = torch.ones_like(scores)
     scores_identity = scores_identity.type_as(scores)
@@ -476,7 +476,7 @@ class PositionalEncoding2D(nn.Module):
         self.org_channels = channels
         channels = int(np.ceil(channels / 4) * 2)
         self.channels = channels
-        inv_freq = 1.0 / (10000 ** (torch.arange(0, channels, 2).float() / channels))   #shape:(channels/2)
+        inv_freq = 1.0 / (10000 ** (torch.arange(0, channels, 2).float() / channels))  # shape:(channels/2)
         self.register_buffer("inv_freq", inv_freq)
 
     def forward(self, tensor):
@@ -487,12 +487,12 @@ class PositionalEncoding2D(nn.Module):
         if len(tensor.shape) != 4:
             raise RuntimeError("The input tensor has to be 4d!")
         batch_size, x, y, orig_ch = tensor.shape
-        pos_x = torch.arange(float(x), device=tensor.device).type(self.inv_freq.type())  #shape: [x]
-        pos_y = torch.arange(float(y), device=tensor.device).type(self.inv_freq.type())     #shape: [y]
-        sin_inp_x = torch.einsum("i,j->ij",  pos_x,self.inv_freq)    #shape : [x,channels/2]
-        sin_inp_y = torch.einsum("i,j->ij", pos_y, self.inv_freq)       #shape:  [y,channels/2]
-        emb_x = torch.cat((sin_inp_x.sin(), sin_inp_x.cos()), dim=-1).unsqueeze(1)    # [x,1,channels]
-        emb_y = torch.cat((sin_inp_y.sin(), sin_inp_y.cos()), dim=-1)           # [y,channels]
+        pos_x = torch.arange(float(x), device=tensor.device).type(self.inv_freq.type())  # shape: [x]
+        pos_y = torch.arange(float(y), device=tensor.device).type(self.inv_freq.type())  # shape: [y]
+        sin_inp_x = torch.einsum("i,j->ij", pos_x, self.inv_freq)  # shape : [x,channels/2]
+        sin_inp_y = torch.einsum("i,j->ij", pos_y, self.inv_freq)  # shape:  [y,channels/2]
+        emb_x = torch.cat((sin_inp_x.sin(), sin_inp_x.cos()), dim=-1).unsqueeze(1)  # [x,1,channels]
+        emb_y = torch.cat((sin_inp_y.sin(), sin_inp_y.cos()), dim=-1)  # [y,channels]
 
         emb = torch.zeros((x, y, self.channels * 2), device=tensor.device).type(
             tensor.type()
