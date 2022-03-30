@@ -277,7 +277,7 @@ def attention(query, key, value, dropout=None):
 
     b, h, n, d = query.shape
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
-    print('scores shape', scores.shape)
+    #print('scores shape', scores.shape)
     assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
     p_attn = F.softmax(scores, dim=-1)
 
@@ -440,12 +440,12 @@ def img_to_patch_strided(img, p=100, s=50, padding=False):
         print('shape after padding', img.shape)
 
     patches = img.unfold(2, p, s).unfold(3, p, s)
-    print('strided patches size :', patches.shape)  # should be b x c x num_patchesx num_patches x 100 x 100
+    #print('strided patches size :', patches.shape)  # should be b x c x num_patchesx num_patches x 100 x 100
     num_patches1, num_patches2 = patches.shape[2], patches.shape[3]
     # num_patches=((H-100)/s +1) **2
 
     patches = rearrange(patches, 'b c p1 p2 h w -> b (p1 p2) c h w ', p1=num_patches1, p2=num_patches2, h=p, w=p)
-    print('strided patch after rearrange ', patches.shape)
+    #print('strided patch after rearrange ', patches.shape)
     return patches
 
 
