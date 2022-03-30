@@ -172,18 +172,19 @@ class Encoder(nn.Module):
             self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
             self.layers = Layers(self.layer, attn_blocks)
 
-        self.init_weight()
-    @torch.no_grad
-    def init_weight(self):
+        with torch.no_grad():
+            self.init_weights()
 
-        def _init(m):
+    #@torch.no_grad
+    def init_weights(self):
+        def init(m):
             if isinstance(m, nn.Linear):
                 nn.init.xavier_uniform_(
                     m.weight)  # _trunc_normal(m.weight, std=0.02)  # from .initialization import _trunc_normal
                 if hasattr(m, 'bias') and m.bias is not None:
                     nn.init.normal_(m.bias, std=1e-6)  # nn.init.constant(m.bias, 0)
 
-        self.apply(_init)
+        self.apply(init)
         nn.init.trunc_normal_(self.positionalE.pos_embedding, std=.02)
 
     # @autocast()
