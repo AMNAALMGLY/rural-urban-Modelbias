@@ -177,14 +177,14 @@ class Encoder(nn.Module):
 
     #@torch.no_grad
     def init_weights(self):
-        def init(m):
+        def initial(m):
             if isinstance(m, nn.Linear):
                 nn.init.xavier_uniform_(
                     m.weight)  # _trunc_normal(m.weight, std=0.02)  # from .initialization import _trunc_normal
                 if hasattr(m, 'bias') and m.bias is not None:
                     nn.init.normal_(m.bias, std=1e-6)  # nn.init.constant(m.bias, 0)
 
-        self.apply(init)
+        self.apply(initial)
         nn.init.trunc_normal_(self.positionalE.pos_embedding, std=.02)
 
     # @autocast()
