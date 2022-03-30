@@ -171,10 +171,11 @@ class Encoder(nn.Module):
             self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
             self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
             self.layers = Layers(self.layer, attn_blocks)
+
         self.init_weight()
     @torch.no_grad
     def init_weight(self):
-        nn.init.trunc_normal_(self.positionalE.pos_embedding, std=.02)
+
         def _init(m):
             if isinstance(m, nn.Linear):
                 nn.init.xavier_uniform_(
@@ -183,6 +184,8 @@ class Encoder(nn.Module):
                     nn.init.normal_(m.bias, std=1e-6)  # nn.init.constant(m.bias, 0)
 
         self.apply(_init)
+        nn.init.trunc_normal_(self.positionalE.pos_embedding, std=.02)
+
     # @autocast()
     def forward(self, x):
         features = []
