@@ -476,8 +476,10 @@ class PositionalEncoding2D(nn.Module):
         self.org_channels = channels
         channels = int(np.ceil(channels / 4) * 2)
         self.channels = channels
-        inv_freq = 1.0 / (10000 ** (torch.arange(0, channels, 2).float() / channels))  # shape:(channels/2)
+
+        inv_freq = 1.0 / (10000 ** (torch.arange(0, channels, 2).float() / channels))  # shape:[channels/2]
         self.register_buffer("inv_freq", inv_freq)
+        self.pos_cache=None
 
     def forward(self, tensor):
         """
@@ -499,6 +501,8 @@ class PositionalEncoding2D(nn.Module):
         )
         emb[:, :, : self.channels] = emb_x
         emb[:, :, self.channels: 2 * self.channels] = emb_y
+        self.pos_cache=emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1)
+        print('position_embedding of the first channel: ',self.pos_cache[0,:,:,0],'second channel: ',self.pos_cache[0,:,:,1])
         return emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1) + tensor
 
 
