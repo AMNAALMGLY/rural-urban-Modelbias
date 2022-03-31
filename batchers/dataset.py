@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Callable, Tuple
 
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 import tensorflow_addons as tfa
 
@@ -21,7 +22,7 @@ AUTO: int = tf.data.experimental.AUTOTUNE
 # choose which GPU to run on
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 seed = 123
-
+labels_path=os.path.join(os.path.dirname(__file__),'dhs_final_labels.csv')
 
 # TODO split nl_band function
 class Batcher():
@@ -121,6 +122,7 @@ class Batcher():
         self.save_dir = save_dir
         self.batch_size = batch_size
         self.shuffle = shuffle
+        self.dataframe=pd.read_csv(labels_path)
         self._iterator = None
         self.ds = self.get_dataset()
 
@@ -277,8 +279,9 @@ class Batcher():
         else:
             img=img
 
-        label_ms = ex.get(self.label, float('nan'))
-
+        #label_ms = ex.get(self.label, float('nan'))
+        label_ms=self.get_sustain_labels( ex['lon'],ex['lat'],self.label).float()
+        print('labels is ',label_ms)
         if self.nl_label:
             if self.nl_label == 'mean':
                 nl = tf.reduce_mean(ex['NIGHTLIGHTS'])
@@ -323,7 +326,18 @@ class Batcher():
             idx += 1
 
     # do the tf_to dict operation to the whole dataset in numpy dtype
+    def get_sustain_labels(self,lon,lat,label):
+        #strategy 1:write them to tfrecord
+        #startegy 2 : read them directly and return them directly
+        match=self.dataframe[(self.dataframe['lat']==lat) and (self.dataframe['lon']==lon)]
 
+        if not match:
+            print('didnot find label')
+            mean=self.dataframe[label].mean()      #TODO this is so wrong
+            return mean
+        else:
+            print('found label at location ')
+            return match[label]
     def get_dataset(self,):
         '''
         performs the all steps of mapping the tfrecords to dictionaries then preprocess , and output the dataset divided by batches
