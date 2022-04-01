@@ -231,10 +231,11 @@ class Batcher():
                 #Centre cropping
                 if self.crop < self.img_size:
                           ex[band] = tf.image.resize_with_crop_or_pad(ex[band], self.crop, self.crop)
+                          print('in center cropping')
                 #Random cropping:
                 if self.rand_crop:
                        ex[band]=tf.image.crop_to_bounding_box(ex[band],self.offset,self.offset,self.rand_crop,self.rand_crop)
-
+                       print('in random cropping')
                 #ex[band] = tf.reshape(ex[band], [448, 448])
                 #ex[band] = tf.reshape(ex[band], [355, 355])[65:-66, 65:-66]  # crop to 224x224
 
@@ -267,6 +268,7 @@ class Batcher():
                         ex[band] = (ex[band] - means[band]) / stds[band]
 
             img = tf.concat([ex[band] for band in ex_bands], axis=2)
+            print('image shape',img.shape)
             if not self.rand_crop:
                 assert tuple(img.shape) == (
                 args.crop, args.crop, args.in_channels[0]), 'shape of image is not as expected'
