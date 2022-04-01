@@ -185,7 +185,8 @@ class Encoder(nn.Module):
                     nn.init.normal_(m.bias, std=1e-6)  # nn.init.constant(m.bias, 0)
 
         self.apply(initial)
-        nn.init.trunc_normal_(self.positionalE.pos_embedding, std=.02)
+        if self.self_attn:
+              nn.init.trunc_normal_(self.positionalE.pos_embedding, std=.02)
 
     # @autocast()
     def forward(self, x):

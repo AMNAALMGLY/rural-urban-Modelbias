@@ -209,7 +209,7 @@ class Trainer:
                         batch[meta] = tf.reshape(batch[meta], [-1, 1])
                     x[meta] = torch.tensor(batch[meta].numpy(), dtype=torch.int32)
             if not batch[0]['labels']:
-                label = get_sustain_labels(batch[0]['loc'][0], batch[0]['loc'][1], args.label_name)
+                label = get_sustain_labels(batch[0]['locs'][0], batch[0]['locs'][1], args.label_name)
             else:
                 label = batch[0]['labels']
             target = torch.tensor(label, )
