@@ -282,7 +282,7 @@ class Batcher():
             img=img
 
         #label_ms = ex.get(self.label, float('nan'))
-        label_ms=self.get_sustain_labels(loc[0].numpy(),loc[1].numpy(),self.label).float()
+        label_ms=self.get_sustain_labels(loc[0].float(),loc[1].float(),self.label).float()
         print('labels is ',label_ms)
         if self.nl_label:
             if self.nl_label == 'mean':
