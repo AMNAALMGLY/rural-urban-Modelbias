@@ -280,8 +280,11 @@ class Batcher():
 
         else:
             img = img
+        if self.label =='wealthpooled':
+              label_ms = ex.get(self.label, float('nan'))
 
-        label_ms = ex.get(self.label, float('nan'))
+        else:
+            label_ms=None
         #label_ms = self.get_sustain_labels(loc[0].float(), loc[1].float(), self.label).float()
         #print('labels is ', label_ms)
         if self.nl_label:
