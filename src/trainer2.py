@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 from batchers.dataset_constants_buildings import DHS_COUNTRIES
 from utils.scheduler import StepLRScheduler
-from utils.utils import Metric, save_results
+from utils.utils import Metric, save_results, get_sustain_labels
 from configs import args
 import wandb
 import pandas as pd
@@ -181,8 +181,12 @@ class Trainer:
                     x[meta] = torch.tensor(batch[0][meta], dtype=torch.int32)
                     if x[meta].dim() < 2:  # squeeze the last dimension if I have only one dimension
                         x[meta].unsqueeze_(-1)
-
-            target = torch.tensor(batch[0]['labels'], )
+            if not batch[0]['labels']:
+                label=get_sustain_labels(batch[0]['loc'][0],batch[0]['loc'][1],args.label_name)
+            else:
+                label=batch[0]['labels']
+            target = torch.tensor(label, )
+            #target = torch.tensor(batch[0]['labels'], )
             target = target.type_as(self.typeAs.weight)
             x['buildings'] = torch.tensor(batch[1]['buildings'], )
 
@@ -204,7 +208,12 @@ class Trainer:
                                                 fn_output_signature=tf.int32)
                         batch[meta] = tf.reshape(batch[meta], [-1, 1])
                     x[meta] = torch.tensor(batch[meta].numpy(), dtype=torch.int32)
-            target = torch.tensor(batch['labels'], )
+            if not batch[0]['labels']:
+                label = get_sustain_labels(batch[0]['loc'][0], batch[0]['loc'][1], args.label_name)
+            else:
+                label = batch[0]['labels']
+            target = torch.tensor(label, )
+            #target = torch.tensor(batch['labels'], )
             target = target.type_as(self.typeAs.weight)
 
         x = {key: value.type_as(self.typeAs.weight) for key, value in x.items()}

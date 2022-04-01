@@ -22,7 +22,8 @@ AUTO: int = tf.data.experimental.AUTOTUNE
 # choose which GPU to run on
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 seed = 123
-labels_path=os.path.join(os.path.dirname(__file__),'dhs_final_labels.csv')
+labels_path = os.path.join(os.path.dirname(__file__), 'dhs_final_labels.csv')
+
 
 # TODO split nl_band function
 class Batcher():
@@ -60,10 +61,12 @@ class Batcher():
 
     """
 
-    def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label,include_buildings=False, buildings_records=None,
+    def __init__(self, tfrecords, scalar_features_keys, ls_bands, nl_bands, label, nl_label, include_buildings=False,
+                 buildings_records=None,
                  normalize='DHS',
                  augment=False, clipn=True,
-                 batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None,img_size=355,crop=args.crop,rand_crop=0,offset=0):
+                 batch_size=64, groupby=None, cache=None, shuffle=False, save_dir=None, img_size=355, crop=args.crop,
+                 rand_crop=0, offset=0):
 
         '''
         initializes the loader as follows :
@@ -104,29 +107,27 @@ class Batcher():
         self.nl_bands = nl_bands
         self.label = label
         self.nl_label = nl_label
-        self.include_buildings=include_buildings
-        self.buildings_records=buildings_records
+        self.include_buildings = include_buildings
+        self.buildings_records = buildings_records
         self.normalize = normalize
         self.augment = augment
         self.clipn = clipn
         self.groupby = groupby
         self.img_size = img_size
-        self.crop=crop
+        self.crop = crop
         self.cache = cache
-        self.rand_crop=rand_crop
-        self.offset=offset
-        #if rand_crop:
-         #   max_offset=self.crop-rand_crop
-            #self.offset=np.random.randint(max_offset)
-          #  self.offset=min(offset,max_offset)
+        self.rand_crop = rand_crop
+        self.offset = offset
+        # if rand_crop:
+        #   max_offset=self.crop-rand_crop
+        # self.offset=np.random.randint(max_offset)
+        #  self.offset=min(offset,max_offset)
         self.save_dir = save_dir
         self.batch_size = batch_size
         self.shuffle = shuffle
-        self.dataframe=pd.read_csv(labels_path)
+        self.dataframe = pd.read_csv(labels_path)
         self._iterator = None
         self.ds = self.get_dataset()
-
-
 
         # TODO:check values of arguments passed
 
@@ -150,12 +151,12 @@ class Batcher():
         :param example: tf dataset example
         :return: dict
         '''
-        band='buildings'
+        band = 'buildings'
         keys_to_features = {}
         keys_to_features[band] = tf.io.FixedLenFeature(shape=[self.img_size ** 2], dtype=tf.float32)
         ex = tf.io.parse_single_example(example, features=keys_to_features)
         ex[band].set_shape([self.img_size * self.img_size])
-        ex[band] = tf.reshape(ex[band], [self.img_size, self.img_size,1])
+        ex[band] = tf.reshape(ex[band], [self.img_size, self.img_size, 1])
         # Centre cropping
         if self.crop < self.img_size:
             ex[band] = tf.image.resize_with_crop_or_pad(ex[band], self.crop, self.crop)
@@ -163,15 +164,15 @@ class Batcher():
         if self.rand_crop:
             ex[band] = tf.image.crop_to_bounding_box(ex[band], self.offset, self.offset, self.rand_crop, self.rand_crop)
 
-        #ex[band]=tf.expand_dims(ex[band],axis=-1)
-        #print('size before reshape ',ex[band].shape)
-        #ex[band] = tf.image.resize(ex[band], [224, 224 ])
-        #ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]  # crop to 224x224
+        # ex[band]=tf.expand_dims(ex[band],axis=-1)
+        # print('size before reshape ',ex[band].shape)
+        # ex[band] = tf.image.resize(ex[band], [224, 224 ])
+        # ex[band] = tf.reshape(ex[band], [255, 255])[15:-16, 15:-16]  # crop to 224x224
 
         if self.clipn:
             ex[band] = tf.nn.relu(ex[band])
-        #return {'buildings':tf.expand_dims(ex[band],axis=-1)}
-        return {'buildings':ex[band]}
+        # return {'buildings':tf.expand_dims(ex[band],axis=-1)}
+        return {'buildings': ex[band]}
 
     def tfrecords_to_dict(self, example: tf.Tensor) -> dict[str, tf.Tensor]:
 
@@ -196,7 +197,8 @@ class Batcher():
         # TODO:NIGHTLIGHT band/label
 
         bands = {'rgb': ['BLUE', 'GREEN', 'RED'], 'ms': ['BLUE', 'GREEN', 'RED', 'SWIR1', 'SWIR2', 'TEMP1', 'NIR'],
-                 'merge': ['NIGHTLIGHTS'], 'split': ['NIGHTLIGHTS'], 'center': ['NIGHTLIGHTS'], 'mean': ['NIGHTLIGHTS'],'geo':['LON','LAT']}
+                 'merge': ['NIGHTLIGHTS'], 'split': ['NIGHTLIGHTS'], 'center': ['NIGHTLIGHTS'], 'mean': ['NIGHTLIGHTS'],
+                 'geo': ['LON', 'LAT']}
 
         keys_to_features = {}
         scalar_float_keys = ['lat', 'lon', 'year']
@@ -204,8 +206,7 @@ class Batcher():
         if self.label is not None:
             scalar_float_keys.append(self.label)
 
-        ex_bands= bands.get(self.ls_bands, []) + bands.get(self.nl_bands, [])
-
+        ex_bands = bands.get(self.ls_bands, []) + bands.get(self.nl_bands, [])
 
         print('ex_bands :', ex_bands)
         for band in ex_bands:
@@ -217,8 +218,6 @@ class Batcher():
             for key, dtype in self.scalar_features_keys.items():
                 keys_to_features[key] = tf.io.FixedLenFeature(shape=[], dtype=dtype)
 
-
-
         ex = tf.io.parse_single_example(example, features=keys_to_features)
 
         loc = tf.stack([ex['lat'], ex['lon']])
@@ -228,62 +227,63 @@ class Batcher():
             for band in ex_bands:  ##TODO is this loop necessary ?vectorize
                 ex[band].set_shape([self.img_size * self.img_size])
                 ex[band] = tf.reshape(ex[band], [self.img_size, self.img_size, 1])
-                #Centre cropping
+                # Centre cropping
                 if self.crop < self.img_size:
-                          ex[band] = tf.image.resize_with_crop_or_pad(ex[band], self.crop, self.crop)
-                          print('in center cropping')
-                #Random cropping:
+                    ex[band] = tf.image.resize_with_crop_or_pad(ex[band], self.crop, self.crop)
+                    print('in center cropping')
+                # Random cropping:
                 if self.rand_crop:
-                       ex[band]=tf.image.crop_to_bounding_box(ex[band],self.offset,self.offset,self.rand_crop,self.rand_crop)
-                       print('in random cropping')
-                #ex[band] = tf.reshape(ex[band], [448, 448])
-                #ex[band] = tf.reshape(ex[band], [355, 355])[65:-66, 65:-66]  # crop to 224x224
+                    ex[band] = tf.image.crop_to_bounding_box(ex[band], self.offset, self.offset, self.rand_crop,
+                                                             self.rand_crop)
+                    print('in random cropping')
+                # ex[band] = tf.reshape(ex[band], [448, 448])
+                # ex[band] = tf.reshape(ex[band], [355, 355])[65:-66, 65:-66]  # crop to 224x224
 
-                #[15:-16, 15:-16]
-                #ex[band]=tf.image.resize(ex[band],[224,224])
-                #[65:-66, 65:-66]
-                #RESIZE FOR merging with building
-                #ex[band]= tf.image.resize_with_crop_or_pad(ex[band], 100, 100)
-                #ex[band]=tf.image.resize(ex[band], [355, 355], method='nearest')
+                # [15:-16, 15:-16]
+                # ex[band]=tf.image.resize(ex[band],[224,224])
+                # [65:-66, 65:-66]
+                # RESIZE FOR merging with building
+                # ex[band]= tf.image.resize_with_crop_or_pad(ex[band], 100, 100)
+                # ex[band]=tf.image.resize(ex[band], [355, 355], method='nearest')
                 if self.clipn:
                     ex[band] = tf.nn.relu(ex[band])
                 if self.normalize:
                     means = MEANS_DICT[self.normalize]
                     stds = STD_DEVS_DICT[self.normalize]
-                    mins=MIN_DICT[self.normalize]
-                    maxs=MAX_DICT[self.normalize]
+                    mins = MIN_DICT[self.normalize]
+                    maxs = MAX_DICT[self.normalize]
 
                     if band == 'NIGHTLIGHTS':
-                        #all_0 = tf.zeros(shape=[224, 224], dtype=tf.float32, name='all_0')
+                        # all_0 = tf.zeros(shape=[224, 224], dtype=tf.float32, name='all_0')
                         ex[band] = tf.cond(
                             year < 2012,  # true = DMSP
-                            #true_fn=lambda:  ex[band] = (ex[band] - mins['DMSP']) / (maxs['DMSP']-mins['DMSP'])
-                            #false_fn=lambda:  ex[band] = (ex[band] - mins['VIIRS']) / (maxs['VIIRS']-mins['VIIRS'])
+                            # true_fn=lambda:  ex[band] = (ex[band] - mins['DMSP']) / (maxs['DMSP']-mins['DMSP'])
+                            # false_fn=lambda:  ex[band] = (ex[band] - mins['VIIRS']) / (maxs['VIIRS']-mins['VIIRS'])
                             true_fn=lambda: (ex[band] - mins['DMSP']) / maxs['DMSP'],
-                            #true_fn=lambda: all_0,
+                            # true_fn=lambda: all_0,
                             false_fn=lambda: (ex[band] - mins['VIIRS']) / maxs['VIIRS'])
 
                     else:
-                        #ex[band] = (ex[band] - mins[band]) / (maxs[band]-mins[band])
+                        # ex[band] = (ex[band] - mins[band]) / (maxs[band]-mins[band])
                         ex[band] = (ex[band] - means[band]) / stds[band]
 
             img = tf.concat([ex[band] for band in ex_bands], axis=2)
-            print('image shape',img.shape)
+            print('image shape', img.shape)
             if not self.rand_crop:
                 assert tuple(img.shape) == (
-                args.crop, args.crop, args.in_channels[0]), 'shape of image is not as expected'
+                    args.crop, args.crop, args.in_channels[0]), 'shape of image is not as expected'
             else:
                 assert tuple(img.shape) == (
-                args.rand_crop, args.rand_crop, args.in_channels[0]), 'shape of image is not as expected'
+                    args.rand_crop, args.rand_crop, args.in_channels[0]), 'shape of image is not as expected'
 
 
 
         else:
-            img=img
+            img = img
 
-        #label_ms = ex.get(self.label, float('nan'))
-        label_ms=self.get_sustain_labels(loc[0].float(),loc[1].float(),self.label).float()
-        print('labels is ',label_ms)
+        label_ms = ex.get(self.label, float('nan'))
+        #label_ms = self.get_sustain_labels(loc[0].float(), loc[1].float(), self.label).float()
+        #print('labels is ', label_ms)
         if self.nl_label:
             if self.nl_label == 'mean':
                 nl = tf.reduce_mean(ex['NIGHTLIGHTS'])
@@ -308,8 +308,8 @@ class Batcher():
         if self.scalar_features_keys:
             for key in self.scalar_features_keys:
                 result[key] = ex[key]
-                #if key=='country':
-                 #   result[key]=result[key].numpy().decode('utf-8')
+                # if key=='country':
+                #   result[key]=result[key].numpy().decode('utf-8')
         print('finished converting to dict')
 
         return result
@@ -328,19 +328,9 @@ class Batcher():
             idx += 1
 
     # do the tf_to dict operation to the whole dataset in numpy dtype
-    def get_sustain_labels(self,lon,lat,label):
-        #strategy 1:write them to tfrecord
-        #startegy 2 : read them directly and return them directly
-        match=self.dataframe[(self.dataframe['lat']==lat) and (self.dataframe['lon']==lon)]
 
-        if not match:
-            print('didnot find label')
-            mean=self.dataframe[label].mean()      #TODO this is so wrong
-            return mean
-        else:
-            print('found label at location ')
-            return match[label]
-    def get_dataset(self,):
+
+    def get_dataset(self, ):
         '''
         performs the all steps of mapping the tfrecords to dictionaries then preprocess , and output the dataset divided by batches
 
@@ -348,13 +338,13 @@ class Batcher():
         '''
         start = time.time()
 
-        if self.shuffle  and args.buildings_records is  None: #shuffle only if you don't want to include building dataset
+        if self.shuffle and args.buildings_records is None:  # shuffle only if you don't want to include building dataset
             print('in shuffle')
             # shuffle the order of the input files, then interleave their individual records
-            dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords)\
-                .shuffle(buffer_size=1000,reshuffle_each_iteration=True).\
+            dataset = tf.data.Dataset.from_tensor_slices(self.tfrecords) \
+                .shuffle(buffer_size=1000, reshuffle_each_iteration=True). \
                 interleave(
-                 lambda file_path: tf.data.TFRecordDataset(file_path,  compression_type='GZIP',num_parallel_reads=AUTO),
+                lambda file_path: tf.data.TFRecordDataset(file_path, compression_type='GZIP', num_parallel_reads=AUTO),
                 cycle_length=5,
                 block_length=1,
                 num_parallel_calls=AUTO
@@ -369,15 +359,11 @@ class Batcher():
                 buffer_size=1024 * 1024 * 128,  # 128 MB buffer size
                 num_parallel_reads=AUTO)
 
-
-
-
         dataset = dataset.prefetch(2 * self.batch_size)
 
         dataset = dataset.map(lambda ex: self.tfrecords_to_dict(ex), num_parallel_calls=AUTO)
         if self.nl_bands == 'split':
             dataset = dataset.map(self.split_nl_band)
-
 
         if self.groupby == 'urban':
 
@@ -385,8 +371,8 @@ class Batcher():
         elif self.groupby == 'rural':
             dataset = dataset.filter(lambda ex: tf.equal(ex['urban_rural'], 0.0))
 
-        if self.include_buildings :
-            #even if there is no ls or nl bands , we want labels from the other dataset
+        if self.include_buildings:
+            # even if there is no ls or nl bands , we want labels from the other dataset
             b_dataset = tf.data.TFRecordDataset(
                 filenames=self.buildings_records,
                 compression_type='GZIP',
@@ -397,33 +383,29 @@ class Batcher():
 
             dataset = tf.data.Dataset.zip((dataset, b_dataset))
 
-
-
         if self.cache:
             dataset = dataset.cache()
             print('in cahce')
 
         if self.shuffle:
-            buffer_size=1000
-            dataset = dataset.shuffle(buffer_size=buffer_size,reshuffle_each_iteration=True)
-
+            buffer_size = 1000
+            dataset = dataset.shuffle(buffer_size=buffer_size, reshuffle_each_iteration=True)
 
         if self.augment:
             print('in augment')
             counter = tf.data.experimental.Counter()
             dataset = tf.data.Dataset.zip((dataset, (counter, counter)))
-            if self.include_buildings  :
-                if self.nl_bands or self.ls_bands:         #TODO modify for brightness for ms augmentation
+            if self.include_buildings:
+                if self.nl_bands or self.ls_bands:  # TODO modify for brightness for ms augmentation
                     dataset = dataset.map(self.b_augment, num_parallel_calls=AUTO)
                 else:
-                    dataset=dataset.map(self.build_augment,num_parallel_calls=AUTO)
+                    dataset = dataset.map(self.build_augment, num_parallel_calls=AUTO)
 
             else:
                 dataset = dataset.map(self.augment_ex, num_parallel_calls=AUTO)
 
         dataset = dataset.batch(batch_size=self.batch_size)
         print('in batching')
-
 
         dataset = dataset.prefetch(2)
         print(f'Time in getdataset: {time.time() - start}')
@@ -434,7 +416,6 @@ class Batcher():
         return batch
         '''
         return dataset
-
 
     def split_nl_band(self, ex: dict[str, tf.Tensor]) -> dict[str, tf.Tensor]:
         '''Splits the NL band into separate DMSP and VIIRS bands.
@@ -455,30 +436,27 @@ class Batcher():
         ex['images'] = tf.cond(
             year < 2012,
             # if DMSP, then add an all-0 VIIRS band to the end
-            #true_fn=lambda: tf.concat([ img,all_0,], axis=2),
+            # true_fn=lambda: tf.concat([ img,all_0,], axis=2),
             true_fn=lambda: tf.concat([img[:, :, 0:-1], all_0, img[:, :, -1:]], axis=2),
             # if VIIRS, then insert an all-0 DMSP band before the last band
             false_fn=lambda: tf.concat([img[:, :, 0:-1], all_0, img[:, :, -1:]], axis=2)
         )
         return ex
 
-
-
     def augment_ex(self, ex: dict[str, tf.Tensor], seed) -> dict[str, tf.Tensor]:
- 
+
         print('in augment ex')
         img = ex['images']
         img = tf.image.stateless_random_flip_left_right(img, seed=seed)
         img = tf.image.stateless_random_flip_up_down(img, seed=seed)
 
-        #img=tf.image.stateless_random_crop(img, size=[210, 210, args.in_channels], seed=seed)
-        #img=tf.image.central_crop(img,0.8)
-        #i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
-        angle=np.array([30*np.random.choice(10)])
+        # img=tf.image.stateless_random_crop(img, size=[210, 210, args.in_channels], seed=seed)
+        # img=tf.image.central_crop(img,0.8)
+        # i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
+        angle = np.array([30 * np.random.choice(10)])
 
-        #img=tfa.image.rotate(img,angles=30)
-        #img=tf.image.resize_with_crop_or_pad(img, 448, 448)
-
+        # img=tfa.image.rotate(img,angles=30)
+        # img=tf.image.resize_with_crop_or_pad(img, 448, 448)
 
         if self.nl_bands and self.ls_bands:
             if self.nl_bands == 'merge':
@@ -492,59 +470,60 @@ class Batcher():
 
                 img = tf.image.stateless_random_brightness(img[:, :, :-2], max_delta=0.5, seed=seed)
                 img = tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25, seed=seed)
-                #img = tf.image.stateless_random_saturation(img[:, :, :-2], lower=0.75, upper=1.25, seed=seed)
-                #img = tf.image.stateless_random_hue(img[:, :, :-2], max_delta=0.1, seed=seed)
+                # img = tf.image.stateless_random_saturation(img[:, :, :-2], lower=0.75, upper=1.25, seed=seed)
+                # img = tf.image.stateless_random_hue(img[:, :, :-2], max_delta=0.1, seed=seed)
                 img = tf.concat([img, ex['images'][:, :, -2:]], axis=-1)
 
         elif self.ls_bands:
 
             img = tf.image.stateless_random_brightness(img, max_delta=0.5, seed=seed)
             img = tf.image.stateless_random_contrast(img, lower=0.75, upper=1.25, seed=seed)
-          #  img=tf.image.stateless_random_saturation(img, lower=0.75, upper=1.25,seed=seed)
-           # img=tf.image.stateless_random_hue(img,max_delta=0.1,seed=seed)
+        #  img=tf.image.stateless_random_saturation(img, lower=0.75, upper=1.25,seed=seed)
+        # img=tf.image.stateless_random_hue(img,max_delta=0.1,seed=seed)
 
-           #img= tf.image.random_brightness(img, max_delta=0.5)
-           #img = tf.image.random_contrast(img, lower=0.75, upper=1.25)
+        # img= tf.image.random_brightness(img, max_delta=0.5)
+        # img = tf.image.random_contrast(img, lower=0.75, upper=1.25)
         print('images augment')
 
         ex['images'] = img
         return ex
-    def b_augment(self,ex,seed):
-              #TODO validate this
-        img=ex[0]['images']
-        b=ex[1]['buildings']
-        #print(img.shape,b.shape)
-        img = tf.image.stateless_random_flip_left_right(img, seed=seed)
-        img= tf.image.stateless_random_flip_up_down(img, seed=seed)
-        #i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
-        #img = tfa.image.rotate(img, angles=30 * i)
 
-       # img=tf.image.stateless_random_crop(
+    def b_augment(self, ex, seed):
+        # TODO validate this
+        img = ex[0]['images']
+        b = ex[1]['buildings']
+        # print(img.shape,b.shape)
+        img = tf.image.stateless_random_flip_left_right(img, seed=seed)
+        img = tf.image.stateless_random_flip_up_down(img, seed=seed)
+        # i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
+        # img = tfa.image.rotate(img, angles=30 * i)
+
+        # img=tf.image.stateless_random_crop(
         #    img, size=[210, 210, args.in_channels-1], seed=seed)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
         b = tf.image.stateless_random_flip_up_down(b, seed=seed)
 
-        #i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
+        # i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
 
-        #b = tfa.image.rotate(b, angles=30*i)
-      #  b = tf.image.stateless_random_crop(
-      #      b, size=[210, 210, 1], seed=seed)
+        # b = tfa.image.rotate(b, angles=30*i)
+        #  b = tf.image.stateless_random_crop(
+        #      b, size=[210, 210, 1], seed=seed)
         print('images augment')
 
-        ex[0]['images'] =img
-        ex[1]['buildings']=b
-        #print('afterAug',ex[1]['buildings'])
+        ex[0]['images'] = img
+        ex[1]['buildings'] = b
+        # print('afterAug',ex[1]['buildings'])
         return ex
-    def build_augment(self,ex,seed):
-        b=ex[1]['buildings']
+
+    def build_augment(self, ex, seed):
+        b = ex[1]['buildings']
         i = tf.random.uniform(shape=(), minval=0, maxval=10, dtype=tf.float32)
-        #b = tfa.image.rotate(b, angles=30 * i)
+        # b = tfa.image.rotate(b, angles=30 * i)
         b = tf.image.stateless_random_flip_left_right(b, seed=seed)
         b = tf.image.stateless_random_flip_up_down(b, seed=seed)
 
-        ex[1]['buildings']=b
+        ex[1]['buildings'] = b
         return ex
-
 
     '''
     def augment_ex(self, ex: dict[str, tf.Tensor]) -> dict[str, tf.Tensor]:
@@ -602,7 +581,6 @@ class Batcher():
         '''
         self._iterator = iter(self.ds.as_numpy_iterator())
 
-
     def __next__(self):
         '''
         goes to the next batch
@@ -612,4 +590,3 @@ class Batcher():
         batch = next(self._iterator)
         print(f'time in next: {time.time() - start}')
         return batch
-
