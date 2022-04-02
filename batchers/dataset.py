@@ -204,7 +204,8 @@ class Batcher():
         scalar_float_keys = ['lat', 'lon', 'year']
 
         if self.label is not None:
-            scalar_float_keys.append(self.label)
+            if self.label == 'wealthpooled':
+                scalar_float_keys.append(self.label)
 
         ex_bands = bands.get(self.ls_bands, []) + bands.get(self.nl_bands, [])
 
@@ -280,13 +281,13 @@ class Batcher():
 
         else:
             img = img
-        if self.label =='wealthpooled':
-              label_ms = ex.get(self.label, float('nan'))
+        if self.label == 'wealthpooled':
+            label_ms = ex.get(self.label, float('nan'))
 
         else:
-            label_ms=float('inf')
-        #label_ms = self.get_sustain_labels(loc[0].float(), loc[1].float(), self.label).float()
-        #print('labels is ', label_ms)
+            label_ms = float('inf')
+        # label_ms = self.get_sustain_labels(loc[0].float(), loc[1].float(), self.label).float()
+        # print('labels is ', label_ms)
         if self.nl_label:
             if self.nl_label == 'mean':
                 nl = tf.reduce_mean(ex['NIGHTLIGHTS'])
@@ -331,7 +332,6 @@ class Batcher():
             idx += 1
 
     # do the tf_to dict operation to the whole dataset in numpy dtype
-
 
     def get_dataset(self, ):
         '''
