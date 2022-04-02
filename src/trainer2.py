@@ -209,8 +209,8 @@ class Trainer:
                         batch[meta] = tf.reshape(batch[meta], [-1, 1])
                     x[meta] = torch.tensor(batch[meta].numpy(), dtype=torch.int32)
             label=torch.zeros((x['images'].shape[0]))
-            lats=batch['locs'][0]
-            longs= batch['locs'][1]
+            lats=batch['locs'][:,0]
+            longs= batch['locs'][:,1]
             if np.any(np.isnan(batch['labels'])):
                 for i in range(len(lats)):
 
