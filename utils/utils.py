@@ -179,7 +179,7 @@ def load_from_checkpoint(path, model):
 log = logging.getLogger(__name__)
 
 
-def get_sustain_labels(self,lon, lat, label):
+def get_sustain_labels(lat, lon, label):
     # strategy 1:write them to tfrecord
     # startegy 2 : read them directly and return them directly
     dataframe=pd.read_csv('../batchers/dhs_final_labels.csv')
