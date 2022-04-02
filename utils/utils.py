@@ -191,7 +191,7 @@ def get_sustain_labels(lat, lon, label):
         mean = dataframe[label].mean()  # TODO this is so wrong
         return mean
     else:
-        print('found label at location ')
+        print('found label at location')
         return match[label]
 
 def seed_everything(seed: Optional[int] = None, workers: bool = False) -> int:

@@ -208,8 +208,13 @@ class Trainer:
                                                 fn_output_signature=tf.int32)
                         batch[meta] = tf.reshape(batch[meta], [-1, 1])
                     x[meta] = torch.tensor(batch[meta].numpy(), dtype=torch.int32)
+            label=torch.zeros((x['images'].shape[0]))
+            lats=batch['locs'][0]
+            longs= batch['locs'][1]
             if np.any(np.isnan(batch['labels'])):
-                label = get_sustain_labels(batch['locs'][0], batch['locs'][1], args.label_name)
+                for i in range(len(lats)):
+
+                    label[i] = get_sustain_labels(lats[i], longs[i], args.label_name)
             else:
                 label = batch['labels']
             target = torch.tensor(label, )
