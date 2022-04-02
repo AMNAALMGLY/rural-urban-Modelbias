@@ -281,7 +281,8 @@ class Batcher():
 
         else:
             img = img
-            label_ms = ex.get(self.label, float('nan'))
+
+        label_ms = ex.get(self.label, float('nan'))
 
 
         # label_ms = self.get_sustain_labels(loc[0].float(), loc[1].float(), self.label).float()
