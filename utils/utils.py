@@ -186,7 +186,7 @@ def get_sustain_labels(lat, lon, label):
     dataframe=pd.read_csv(path)
     match = dataframe[(dataframe['lat'] == lat) & (dataframe['lon'] == lon)]
 
-    if not match:
+    if len(match.index)==0:
         print('didnot find label')
         mean = dataframe[label].mean()  # TODO this is so wrong
         return mean
