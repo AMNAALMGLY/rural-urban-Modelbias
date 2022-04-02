@@ -182,7 +182,7 @@ log = logging.getLogger(__name__)
 def get_sustain_labels(lat, lon, label):
     # strategy 1:write them to tfrecord
     # startegy 2 : read them directly and return them directly
-    path=os.path.join(os.path.dirname(os.getcwd()),'batchers','dhs_final_labels.csv')
+    path=os.path.join(os.getcwd(),'batchers','dhs_final_labels.csv')
     dataframe=pd.read_csv(path)
     match = dataframe[(dataframe['lat'] == lat.numpy()) & (dataframe['lon'] == lon.numpy())]
 
