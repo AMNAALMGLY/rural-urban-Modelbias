@@ -185,7 +185,7 @@ def get_sustain_labels(lat, lon, label):
     path=os.path.join(os.getcwd(),'batchers','dhs_final_labels.csv')
     dataframe=pd.read_csv(path)
     print(dataframe.head())
-    match =dataframe[(dataframe['lon']==lon) & (dataframe['lat']==lat)]
+    match =dataframe[(dataframe['lon']==36.793354) & (dataframe['lat']==-1.315849)]
     print(match.head())
     print(lat,lon)
 
