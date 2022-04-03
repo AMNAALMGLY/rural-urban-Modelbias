@@ -69,7 +69,7 @@ class SublayerConnection(nn.Module):
     Note for code simplicity the norm is first as opposed to last.
     """
 
-    def __init__(self, size, dropout=0.1):
+    def __init__(self, size, dropout=0):
         super(SublayerConnection, self).__init__()
         self.norm = LayerNorm(size)
         self.dropout = nn.Dropout(dropout)
@@ -84,7 +84,7 @@ class SublayerConnection(nn.Module):
 class EncoderLayer(nn.Module):
     "Encoder is made up of self-attn and feed forward (defined below)"
 
-    def __init__(self, size, self_attn, feed_forward, dropout=0.1):
+    def __init__(self, size, self_attn, feed_forward, dropout=0):
         super(EncoderLayer, self).__init__()
         self.self_attn = self_attn
         self.feed_forward = feed_forward
@@ -139,7 +139,7 @@ class Encoder(nn.Module):
         # self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
 
         self.relu = nn.ELU()
-        self.dropout = nn.Dropout(p=0.1)
+        self.dropout = nn.Dropout(p=0)
         self.self_attn = self_attn
         # MultiHeadedAttention(h=1,d_model=512)
 
@@ -314,7 +314,7 @@ def attention(query, key, value, dropout=None):
 
 
 class MultiHeadedAttention(nn.Module):
-    def __init__(self, h, d_model, dropout=0.1):
+    def __init__(self, h, d_model, dropout=0):
         "Take in model size and number of heads."
         super(MultiHeadedAttention, self).__init__()
         assert d_model % h == 0
@@ -384,7 +384,7 @@ class MultiHeadedAttention_adapt(nn.Module):
     attention if just central patch query is used
     '''
 
-    def __init__(self, h, d_model, dropout=0.1):
+    def __init__(self, h, d_model, dropout=0):
         "Take in model size and number of heads."
         super(MultiHeadedAttention_adapt, self).__init__()
         assert d_model % h == 0
@@ -546,7 +546,7 @@ class geoAttention(nn.Module):
         self.fc = nn.Linear(dim, num_outputs, device=args.gpus)  # combines both together
 
         self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(p=0.1)
+        self.dropout = nn.Dropout(p=0)
         self.linear = nn.Linear(dim * 2, dim)
         # MultiHeadedAttention(h=1,d_model=512)
         self.dim = dim
