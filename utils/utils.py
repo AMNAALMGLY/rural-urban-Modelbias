@@ -184,7 +184,7 @@ def get_sustain_labels(lat, lon, label):
     # startegy 2 : read them directly and return them directly
     path=os.path.join(os.getcwd(),'batchers','dhs_final_labels.csv')
     dataframe=pd.read_csv(path)
-    match = dataframe[(dataframe['lat'] == lat) & (dataframe['lon'] == lon)]
+    match =dataframe[(dataframe['lon']==lon) & (dataframe['lat']==lat)]
     print(lat,lon)
 
     if len(match.index)==0:
