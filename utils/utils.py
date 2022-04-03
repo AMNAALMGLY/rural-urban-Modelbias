@@ -184,11 +184,12 @@ def get_sustain_labels(lat, lon, label):
     # startegy 2 : read them directly and return them directly
     path=os.path.join(os.getcwd(),'batchers','dhs_final_labels.csv')
     dataframe=pd.read_csv(path)
-    print(dataframe.head(0))
+    print(dataframe.head())
     match =dataframe[(dataframe['lon']==lon) & (dataframe['lat']==lat)]
+    print(match.head())
     print(lat,lon)
 
-    if len(match.index)==0:
+    if len(match)==0:
         print('didnot find label')
         mean = dataframe[label].mean()  # TODO this is so wrong
         return mean
