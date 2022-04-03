@@ -213,7 +213,7 @@ class Trainer:
             longs= batch['locs'][:,1]
             if np.any(np.isnan(batch['labels'])):
                 for i in range(len(lats)):
-
+                    print('in get sustainlabels')
                     label[i] = get_sustain_labels(lats[i], longs[i], 'water_index')      #TODO change this
             else:
                 label = batch['labels']
