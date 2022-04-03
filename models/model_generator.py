@@ -156,7 +156,7 @@ class Encoder(nn.Module):
                                 nn.Linear(self.fc_in_dim // 2, self.fc_in_dim))
         self.patch = patch
         self.stride = stride
-        self.num_patches = int((355 - self.patch) / self.stride) + 1
+        self.num_patches = int((224 - self.patch) / self.stride) + 1
 
         if self_attn == 'multihead_space':
 
@@ -166,8 +166,8 @@ class Encoder(nn.Module):
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
 
         elif self_attn:
-            # self.positionalE = PositionalEncoding2D(self.fc_in_dim)
-            self.positionalE = Learnt_PE(self.num_patches, self.fc_in_dim)
+            self.positionalE = PositionalEncoding2D(self.fc_in_dim)
+            #self.positionalE = Learnt_PE(self.num_patches, self.fc_in_dim)
             self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
             self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
             self.layers = Layers(self.layer, attn_blocks)
