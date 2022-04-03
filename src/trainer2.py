@@ -214,7 +214,7 @@ class Trainer:
             if np.any(np.isnan(batch['labels'])):
                 for i in range(len(lats)):
 
-                    label[i] = get_sustain_labels(lats[i], longs[i], args.label_name)
+                    label[i] = get_sustain_labels(lats[i], longs[i], 'water_index')      #TODO change this
             else:
                 label = batch['labels']
             target = torch.tensor(label, )
