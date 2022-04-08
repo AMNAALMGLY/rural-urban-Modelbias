@@ -5,7 +5,7 @@ import argparse
 import os
 import warnings
 from glob import glob
-from typing import Iterable,Optional
+from typing import Iterable, Optional
 import logging
 import random
 from typing import Optional
@@ -14,13 +14,12 @@ import numpy as np
 import pandas as pd
 import torch
 
-
 import torchmetrics
 from collections import ChainMap
 
 from configs import args
 
-#from batchers.dataset_constants import SURVEY_NAMES,SIZES
+# from batchers.dataset_constants import SURVEY_NAMES,SIZES
 
 from batchers.dataset_constants_buildings import SURVEY_NAMES
 
@@ -76,7 +75,8 @@ def save_results(dir_path: str, np_dict: dict, filename: str
     print(f'Saving results to {npz_path}')
     np.savez_compressed(npz_path, **np_dict)
 
-def load_npz(path,verbose=True, check=None):
+
+def load_npz(path, verbose=True, check=None):
     '''
     loads a npz file into a dictionary
     :param path:
@@ -84,18 +84,17 @@ def load_npz(path,verbose=True, check=None):
     :return: dict
 
     '''
-    result={}
-    with np.load(path) as f :
-        for key , value in f.items():
-            result[key]=value
+    result = {}
+    with np.load(path) as f:
+        for key, value in f.items():
+            result[key] = value
             if verbose:
                 print(f'key {key} with shape {value.shape}')
         if check:
             for key in check:
                 assert key in result
-                assert  np.allclose(result[key],check[key])
+                assert np.allclose(result[key], check[key])
     return result
-
 
 
 def get_full_experiment_name(experiment_name: str, batch_size: int,
@@ -106,8 +105,8 @@ def get_full_experiment_name(experiment_name: str, batch_size: int,
     else:
         fc_str = str(fc_reg)
     if conv_reg < 1:
-       conv_str = str(conv_reg).replace('.', '')
-       conv_str = conv_str[1:]
+        conv_str = str(conv_reg).replace('.', '')
+        conv_str = conv_str[1:]
     else:
         conv_str = str(conv_reg)
     if lr < 1:
@@ -139,7 +138,7 @@ def get_paths(dataset: str, split: str, fold: str, root) -> np.ndarray:
     if split == 'all':
         splits = ['train', 'val', 'test']
     else:
-        splits=[split]
+        splits = [split]
     paths = []
     fold_name = SURVEY_NAMES[f'{dataset}_{fold}']
     for s in splits:
@@ -148,7 +147,7 @@ def get_paths(dataset: str, split: str, fold: str, root) -> np.ndarray:
             paths += glob(path)
 
     # TODO change to the old data
-    #assert  len(paths)==SIZES[f'{dataset}_{fold}'][split]
+    # assert  len(paths)==SIZES[f'{dataset}_{fold}'][split]
     return np.sort(paths)
 
 
@@ -169,33 +168,41 @@ def init_model(method, ckpt_path=None):
     else:
         return None, False
 
+
 def load_from_checkpoint(path, model):
-        print(f'loading the model from saved checkpoint at {path}')
-        model.load_state_dict(torch.load(path))
-        model.eval()
-        return model
+    print(f'loading the model from saved checkpoint at {path}')
+    model.load_state_dict(torch.load(path))
+    model.eval()
+    return model
 
 
 log = logging.getLogger(__name__)
 
 
 def get_sustain_labels(lat, lon, label):
-    # strategy 1:write them to tfrecord
+    #  strategy 1:write them to tfrecord
     # startegy 2 : read them directly and return them directly
     path=os.path.join(os.getcwd(),'batchers','dhs_final_labels.csv')
     dataframe=pd.read_csv(path)
-    print(dataframe.head())
-    match =dataframe[(dataframe['lon']==36.793354) & (dataframe['lat']==-1.315849)]
-    print(match.head())
+    dataframe[['lat','lon']]=dataframe[['lat','lon']].apply(lambda x : x.astype(np.float32))
+    #lon=np.round(float(lon),6)
+    #lon=np.round(lon + 0.5 * 10**(-6), 6)
+    #lat=np.round(lat + 0.5 * 10**(-6), 6)
+
+    #lat=round(float(lat),6)
+    match =dataframe[(dataframe['lon']==lon) & (dataframe['lat']==lat)]
+    #print(match.head())
     print(lat,lon)
 
     if len(match)==0:
         print('didnot find label')
         mean = dataframe[label].mean()  # TODO this is so wrong
-        return mean
+        return float(mean)
     else:
         print('found label at location')
-        return match[label]
+        return float(match[label])
+
+
 
 def seed_everything(seed: Optional[int] = None, workers: bool = False) -> int:
     """Helper functions to help with reproducibility of models.
@@ -245,6 +252,7 @@ def seed_everything(seed: Optional[int] = None, workers: bool = False) -> int:
 
     return seed
 
+
 def _warn(*args, stacklevel: int = 2, **kwargs):
     warnings.warn(*args, stacklevel=stacklevel, **kwargs)
 
@@ -255,6 +263,7 @@ def rank_zero_warn(*args, stacklevel: int = 4, **kwargs):
 
 def _select_seed_randomly(min_seed_value: int = 0, max_seed_value: int = 255) -> int:
     return random.randint(min_seed_value, max_seed_value)
+
 
 class dotdict(dict):
     """dot.notation access to dictionary attributes
@@ -332,11 +341,11 @@ def parse_arguments(parser, default_args):
 
     parser.add_argument(
         '--ls_bands', default=default_args.ls_bands,
-        #choices=[None, 'rgb', 'ms'],
+        # choices=[None, 'rgb', 'ms'],
         help='Landsat bands to use')
     parser.add_argument(
         '--nl_band', default=default_args.nl_band,
-        #choices=[None, 'merge', 'split'],
+        # choices=[None, 'merge', 'split'],
         help='nightlights band')
 
     # system
