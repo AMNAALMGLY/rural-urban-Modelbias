@@ -219,6 +219,7 @@ class Trainer:
                 label = batch['labels']
             target = torch.tensor(label, )
             #target = torch.tensor(batch['labels'], )
+            print('target values',target[:10])
             target = target.type_as(self.typeAs.weight)
 
         x = {key: value.type_as(self.typeAs.weight) for key, value in x.items()}
