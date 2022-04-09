@@ -230,7 +230,7 @@ class Trainer:
 
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
-        # Re-weighting data
+        # Re-weighting data3648765
         if self.class_model:
             Beta = self.weight_ex(x['images'], self.class_model)
 

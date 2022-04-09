@@ -293,14 +293,14 @@ def attention(query, key, value, dropout=None):
 
     b, h, n, d = query.shape
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
-    #print('scores shape', scores.shape)
+
     assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
     p_attn = F.softmax(scores, dim=-1)
-
+    print('scores ', p_attn)
     scores_identity = torch.ones_like(scores)
     scores_identity = scores_identity.type_as(scores)
     p_attn_identity = F.softmax(scores_identity, dim=-1)
-
+    print('uniform scores ', p_attn_identity)
     scores_random = torch.randn_like(scores)
     scores_random = scores_random.type_as(scores)
     p_attn_random = F.softmax(scores_random, dim=-1)
@@ -522,8 +522,8 @@ class PositionalEncoding2D(nn.Module):
         emb[:, :, : self.channels] = emb_x
         emb[:, :, self.channels: 2 * self.channels] = emb_y
         self.pos_cache = emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1)
-        print('position_embedding of the first channel: ', self.pos_cache[0, :, :, 0], 'second channel: ',
-              self.pos_cache[0, :, :, 1])
+        #print('position_embedding of the first channel: ', self.pos_cache[0, :, :, 0], 'second channel: ',
+         #     self.pos_cache[0, :, :, 1])
         return emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1) + tensor
 
 
