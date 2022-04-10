@@ -194,7 +194,7 @@ def get_sustain_labels(lat, lon, label):
     #print(match.head())
     print(lat,lon)
 
-    if len(match)==0 or np.any(np.isnan(match['labels'])):
+    if len(match)==0 or np.any(np.isnan(match[label])):
         print('didnot find label ')
         mean = dataframe[label].mean()  # TODO this is so wrong
         return float(mean)
