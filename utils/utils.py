@@ -180,23 +180,18 @@ log = logging.getLogger(__name__)
 
 path = os.path.join(os.getcwd(), 'batchers', 'dhs_final_labels.csv')
 dataframe = pd.read_csv(path)
-dataframe.loc[-1,['lat','lon']]=[12.447015,0.181769]
-dataframe.index = dataframe.index + 1  # shifting index
-dataframe = dataframe.sort_index()  # sorting by index
 dataframe[['lat', 'lon']] = dataframe[['lat', 'lon']].apply(lambda x: x.astype(np.float32))
 
-dataframe = dataframe.interpolate(method='quadratic')
 def get_sustain_labels(lats, lons, label):
     #  strategy 1:write them to tfrecord
     # startegy 2 : read them directly and return them directly
 
     match =dataframe[(dataframe['lon'].isin(list(lons))) & (dataframe['lat'].isin(list(lats)))]
-    print(list(lons),len(list(lons)))
+
     print('nan values ',match[label].isnull().sum())
-    #print(lat,lon)
     if match[label].isnull().sum() >0:
            print('in interpolation')
-           match[label]=match[label].fillna(0)
+           match[label]=match[label].interpolate(method='polynomial',order=3)
     return match[label].values
    # if len(match.index)<len(lats) or np.any(np.isnan(match[label])):
     #    print('didnot find label ')
