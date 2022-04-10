@@ -238,7 +238,7 @@ class Encoder(nn.Module):
                     b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
 
                 query = features[:, (num_patches - 1) // 2, :].unsqueeze(1)  # just take the center patch
-                print(query.shape)
+
                 features, _, _ = self.layers_adapt(query, features, features)
                 assert tuple(features.shape) == (
                     b, 1, self.fc_in_dim), 'output of space attention layer is not correct'
