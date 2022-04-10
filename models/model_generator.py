@@ -361,7 +361,7 @@ def attention_adapt(query, key, value, dropout=None):
     assert scores.shape == (b, h, 1, n), 'the shape is not as expected'
     # tmp = 0.0001
     p_attn = F.softmax(scores, dim=-1)
-
+    print('scores ',p_attn)
     scores_identity = torch.ones_like(scores)
     scores_identity = scores_identity.type_as(scores)
     p_attn_identity = F.softmax(scores_identity, dim=-1)
