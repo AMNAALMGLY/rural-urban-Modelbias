@@ -192,9 +192,9 @@ def get_sustain_labels(lats, lons, label):
 
     match =dataframe[(dataframe['lon'].isin(list(lons))) & (dataframe['lat'].isin(list(lats)))]
     print(match.head())
-    print('nan values ',match.isnull().sum())
+    print('nan values ',match[label].isnull().sum())
     #print(lat,lon)
-    if match.isnull().sum() >0:
+    if match[label].isnull().sum() >0:
            print('in interpolation')
            match=match.interpolate()
     return match[label].values
