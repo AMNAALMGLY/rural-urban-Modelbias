@@ -191,7 +191,7 @@ def get_sustain_labels(lats, lons, label):
     # startegy 2 : read them directly and return them directly
 
     match =dataframe[(dataframe['lon'].isin(list(lons))) & (dataframe['lat'].isin(list(lats)))]
-    print(match.head())
+    print(list(lons),len(list(lons)))
     print('nan values ',match[label].isnull().sum())
     #print(lat,lon)
     if match[label].isnull().sum() >0:
