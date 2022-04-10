@@ -185,7 +185,7 @@ class Encoder(nn.Module):
                     nn.init.normal_(m.bias, std=1e-6)  # nn.init.constant(m.bias, 0)
 
         self.apply(initial)
-        if self.self_attn and isinstance(self.positionalE,Learnt_PE):
+        if self.self_attn=='multihead' and isinstance(self.positionalE,Learnt_PE):
               nn.init.trunc_normal_(self.positionalE.pos_embedding, std=.02)
 
     # @autocast()
