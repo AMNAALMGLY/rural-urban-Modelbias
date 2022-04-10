@@ -178,29 +178,33 @@ def load_from_checkpoint(path, model):
 
 log = logging.getLogger(__name__)
 
+path = os.path.join(os.getcwd(), 'batchers', 'dhs_final_labels.csv')
+dataframe = pd.read_csv(path)
+dataframe.loc[-1,['lat','lon']]=[12.447015,0.181769]
+dataframe.index = dataframe.index + 1  # shifting index
+dataframe = dataframe.sort_index()  # sorting by index
+dataframe[['lat', 'lon']] = dataframe[['lat', 'lon']].apply(lambda x: x.astype(np.float32))
 
-def get_sustain_labels(lat, lon, label):
+#dataframe = dataframe.interpolate()
+def get_sustain_labels(lats, lons, label):
     #  strategy 1:write them to tfrecord
     # startegy 2 : read them directly and return them directly
-    path=os.path.join(os.getcwd(),'batchers','dhs_final_labels.csv')
-    dataframe=pd.read_csv(path)
-    dataframe[['lat','lon']]=dataframe[['lat','lon']].apply(lambda x : x.astype(np.float32))
-    #lon=np.round(float(lon),6)
-    #lon=np.round(lon + 0.5 * 10**(-6), 6)
-    #lat=np.round(lat + 0.5 * 10**(-6), 6)
 
-    #lat=round(float(lat),6)
-    match =dataframe[(dataframe['lon']==lon) & (dataframe['lat']==lat)]
-    #print(match.head())
-    print(lat,lon)
-
-    if len(match)==0 or np.any(np.isnan(match[label])):
-        print('didnot find label ')
-        mean = dataframe[label].mean()  # TODO this is so wrong
-        return float(mean)
-    else:
-        print('found label at location')
-        return float(match[label])
+    match =dataframe[(dataframe['lon'].isin(list(lons))) & (dataframe['lat'].isin(list(lats)))]
+    print(match.head())
+    print('nan values ',match.isnull().sum())
+    #print(lat,lon)
+    if match.isnull().sum() >0:
+           print('in interpolation')
+           match=match.interpolate()
+    return match[label].values
+   # if len(match.index)<len(lats) or np.any(np.isnan(match[label])):
+    #    print('didnot find label ')
+     #   mean = dataframe[label].mean()  # TODO this is so wrong
+      #  return float(mean)
+  #  else:
+   #     print('found label at location')
+    #    return float(match[label])
 
 
 

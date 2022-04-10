@@ -182,11 +182,11 @@ class Trainer:
                     if x[meta].dim() < 2:  # squeeze the last dimension if I have only one dimension
                         x[meta].unsqueeze_(-1)
             if not batch[0]['labels']:
-                label=get_sustain_labels(batch[0]['loc'][0],batch[0]['loc'][1],args.label_name)
+                label = get_sustain_labels(batch[0]['loc'][0], batch[0]['loc'][1], args.label_name)
             else:
-                label=batch[0]['labels']
+                label = batch[0]['labels']
             target = torch.tensor(label, )
-            #target = torch.tensor(batch[0]['labels'], )
+            # target = torch.tensor(batch[0]['labels'], )
             target = target.type_as(self.typeAs.weight)
             x['buildings'] = torch.tensor(batch[1]['buildings'], )
 
@@ -208,18 +208,17 @@ class Trainer:
                                                 fn_output_signature=tf.int32)
                         batch[meta] = tf.reshape(batch[meta], [-1, 1])
                     x[meta] = torch.tensor(batch[meta].numpy(), dtype=torch.int32)
-            label=torch.zeros((x['images'].shape[0]))
-            lats=batch['locs'][:,0]
-            longs= batch['locs'][:,1]
+            # label=torch.zeros((x['images'].shape[0]))
+            lats = batch['locs'][:, 0]
+            longs = batch['locs'][:, 1]
             if np.any(np.isnan(batch['labels'])):
-                for i in range(len(lats)):
-                    print('in get sustainlabels')
-                    label[i] = get_sustain_labels(lats[i], longs[i], 'water_index')      #TODO change this
+                print('in get sustainlabels')
+                label = get_sustain_labels(lats, longs, 'water_index')  # TODO change this
             else:
                 label = batch['labels']
             target = torch.tensor(label, )
-            #target = torch.tensor(batch['labels'], )
-            print('target values',target[:10])
+            # target = torch.tensor(batch['labels'], )
+            print('target values', target[:10])
             target = target.type_as(self.typeAs.weight)
 
         x = {key: value.type_as(self.typeAs.weight) for key, value in x.items()}
@@ -286,7 +285,7 @@ class Trainer:
         return subshift_loss
 
     def test_step(self, batch, ):
-        loss, _ = self._shared_step(batch, self.metric,is_training=False)
+        loss, _ = self._shared_step(batch, self.metric, is_training=False)
 
         return loss
 
@@ -579,11 +578,10 @@ class Trainer:
                 wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
 
                 # AGAINST ML RULES : moniter test values
-                r2_test ,test_loss= self.test(batcher_test)
+                r2_test, test_loss = self.test(batcher_test)
 
                 wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
                 wandb.log({f'loss test': test_loss, 'epoch': epoch})
-
 
                 # early stopping with loss
                 if best_loss - avg_valid_loss >= 0:
@@ -605,8 +603,8 @@ class Trainer:
                         print(f'Path to best model at loss found during training: \n{save_path}')
 
                         # AGAINST ML RULES : During best path saving test the performance
-                        #r2_test,test_loss = self.test(batcher_test)
-                        #wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
+                        # r2_test,test_loss = self.test(batcher_test)
+                        # wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
 
 
                 elif best_loss - avg_valid_loss < 0:
@@ -628,17 +626,17 @@ class Trainer:
                 print(f'Saving model to {resume_path}')
 
             self.metric[0].reset()
-           # if epoch >= swa_start:
-           #     print('in SWA scheduler')
-           #     self.swa_model.update_parameters(self.model)
-          #      self.swa_scheduler.step()
-         #   else:
-        #        self.scheduler.step(epoch + 1)
+            # if epoch >= swa_start:
+            #     print('in SWA scheduler')
+            #     self.swa_model.update_parameters(self.model)
+            #      self.swa_scheduler.step()
+            #   else:
+            #        self.scheduler.step(epoch + 1)
 
             print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
         # UPDATE SWA MODEL RUNNIGN MEAN AND VARIANCE
-       # with autocast():
-      #     Trainer.update_bn(trainloader, self.swa_model)
+        # with autocast():
+        #     Trainer.update_bn(trainloader, self.swa_model)
 
         # choose the best model between the saved models in regard to r2 value or minimum loss
         if len(val_list.keys()) > 0:
@@ -680,18 +678,15 @@ class Trainer:
             self.model.eval()
             r2_test = []
             for record in batcher_test:
-                test_epoch_loss+=self.test_step(record).item()
-                test_step+=1
+                test_epoch_loss += self.test_step(record).item()
+                test_step += 1
 
             for i, m in enumerate(self.metric):
+                r2_test.append((m.compute()) ** 2 if self.metric_str[i] == 'r2' else m.compute())
 
-                    r2_test.append((m.compute()) ** 2 if self.metric_str[i] == 'r2' else m.compute())
+                # wandb.log({f'{self.metric_str[i]} Test': r2_test[i], })
 
-                    #wandb.log({f'{self.metric_str[i]} Test': r2_test[i], })
-
-
-
-        return r2_test[0],(test_epoch_loss/test_step)
+        return r2_test[0], (test_epoch_loss / test_step)
 
     def configure_optimizers(self):
         opt = torch.optim.Adam(self.model.parameters(), lr=self.lr,
@@ -701,14 +696,14 @@ class Trainer:
             'optimizer': opt,
             'lr_scheduler': {
                 'exp': ExponentialLR(opt,
-                           gamma=args.lr_decay),
-                 'cos':torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=args.max_epochs),
-                 'warmup_cos': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
-                                                                                   max_epochs=300,
-                                                                              warmup_start_lr=1e-7),
+                                     gamma=args.lr_decay),
+                'cos': torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=args.max_epochs),
+                'warmup_cos': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
+                                                                                    max_epochs=300,
+                                                                                    warmup_start_lr=1e-7),
                 'warmup_step': StepLRScheduler(opt, decay_t=1, decay_rate=args.lr_decay, warmup_t=5,
                                                warmup_lr_init=1e-7),
-                 'step': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
+                'step': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min'),
                 'swa_scheduler': torch.optim.swa_utils.SWALR(opt, anneal_strategy="cos", anneal_epochs=5, swa_lr=0.05)
 
@@ -724,7 +719,6 @@ class Trainer:
 
         else:
             self.criterion = nn.MSELoss()
-
 
     @torch.no_grad()
     def update_bn(loader, model, device=None):
