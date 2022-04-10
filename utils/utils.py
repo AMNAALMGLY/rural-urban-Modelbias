@@ -181,7 +181,7 @@ log = logging.getLogger(__name__)
 path = os.path.join(os.getcwd(), 'batchers', 'dhs_final_labels.csv')
 dataframe = pd.read_csv(path)
 dataframe[['lat', 'lon']] = dataframe[['lat', 'lon']].apply(lambda x: x.astype(np.float32))
-
+dataframe=dataframe.interpolate(method='polynomial',order=3)
 def get_sustain_labels(lats, lons, label):
     #  strategy 1:write them to tfrecord
     # startegy 2 : read them directly and return them directly
