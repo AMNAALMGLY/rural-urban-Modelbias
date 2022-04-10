@@ -185,7 +185,7 @@ dataframe.index = dataframe.index + 1  # shifting index
 dataframe = dataframe.sort_index()  # sorting by index
 dataframe[['lat', 'lon']] = dataframe[['lat', 'lon']].apply(lambda x: x.astype(np.float32))
 
-#dataframe = dataframe.interpolate()
+dataframe = dataframe.interpolate(method='quadratic')
 def get_sustain_labels(lats, lons, label):
     #  strategy 1:write them to tfrecord
     # startegy 2 : read them directly and return them directly
@@ -196,7 +196,7 @@ def get_sustain_labels(lats, lons, label):
     #print(lat,lon)
     if match[label].isnull().sum() >0:
            print('in interpolation')
-           match=match.interpolate()
+           match[label]=match[label].fillna(0)
     return match[label].values
    # if len(match.index)<len(lats) or np.any(np.isnan(match[label])):
     #    print('didnot find label ')
