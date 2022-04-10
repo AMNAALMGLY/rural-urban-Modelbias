@@ -111,8 +111,8 @@ class Layers(nn.Module):
     def forward(self, q, k, v):
         "Pass the input through each layer in turn."
         for layer in self.layers:
-            x, y, z = layer(q, k, v)
-        return self.norm(x), self.norm(y), self.norm(z)  # bs , n , d_model
+            q, k, v = layer(q, k, v)
+        return self.norm(q), self.norm(k), self.norm(v)  # bs , n , d_model
 
 
 class Encoder(nn.Module):
