@@ -521,6 +521,8 @@ class Trainer:
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
 
+                    self.scheduler.step()
+
                     # b=torch.tensor(record[1]['buildings'])
 
                     # building_sum.append(torch.sum(b ,dim=(1,2,3)))
@@ -724,7 +726,7 @@ class Trainer:
             self.criterion = nn.BCEWithLogitsLoss()
 
         else:
-            self.criterion = nn.MSELoss()
+            self.criterion = nn.L1Loss()
 
     @torch.no_grad()
     def update_bn(loader, model, device=None):
