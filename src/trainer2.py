@@ -430,7 +430,7 @@ class Trainer:
                 print(f'Saving model to {resume_path}')
 
             self.metric[0].reset()
-            #self.scheduler.step()
+            # self.scheduler.step()
 
             print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
 
@@ -690,8 +690,8 @@ class Trainer:
         return r2_test[0], (test_epoch_loss / test_step)
 
     def configure_optimizers(self):
-        if args.scheduler=='cyclic':
-            torch.optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9)
+        if args.scheduler == 'cyclic':
+            opt = torch.optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9)
         else:
             opt = torch.optim.Adam(self.model.parameters(), lr=self.lr,
                                    weight_decay=self.weight_decay)
