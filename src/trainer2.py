@@ -213,7 +213,7 @@ class Trainer:
             longs = batch['locs'][:, 1]
             if np.any(np.isnan(batch['labels'])):
                 print('in get sustainlabels')
-                label = get_sustain_labels(lats, longs, 'water_index')  # TODO change this
+                label = get_sustain_labels(lats, longs, 'sanitation_index')  # TODO change this
             else:
                 label = batch['labels']
             target = torch.tensor(label, )
@@ -690,8 +690,11 @@ class Trainer:
         return r2_test[0], (test_epoch_loss / test_step)
 
     def configure_optimizers(self):
-        opt = torch.optim.Adam(self.model.parameters(), lr=self.lr,
-                               weight_decay=self.weight_decay)
+        if args.scheduler=='cyclic':
+            torch.optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9)
+        else:
+            opt = torch.optim.Adam(self.model.parameters(), lr=self.lr,
+                                   weight_decay=self.weight_decay)
 
         return {
             'optimizer': opt,
