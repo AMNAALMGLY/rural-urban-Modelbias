@@ -190,8 +190,8 @@ def get_sustain_labels(lats, lons, label):
 
     print('nan values ',match[label].isnull().sum())
     if match[label].isnull().sum() >0:
-           print('in interpolation')
-           match[label]=match[label].interpolate(method='polynomial',order=3)
+           print(match[pd.isna(match[label])]['lat'], 'the missing latitude')
+           match=match.interpolate(method='polynomial',order=3)
     return match[label].values
    # if len(match.index)<len(lats) or np.any(np.isnan(match[label])):
     #    print('didnot find label ')
