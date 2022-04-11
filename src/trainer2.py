@@ -351,6 +351,7 @@ class Trainer:
                     self.metric[0].to(args.gpus)
 
                     self.metric[0].update(preds, y)
+                    self.scheduler.step()
 
             # Metric calulation and average loss
             r2 = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
@@ -429,7 +430,7 @@ class Trainer:
                 print(f'Saving model to {resume_path}')
 
             self.metric[0].reset()
-            self.scheduler.step()
+            #self.scheduler.step()
 
             print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
 
@@ -704,7 +705,9 @@ class Trainer:
                 'warmup_step': StepLRScheduler(opt, decay_t=1, decay_rate=args.lr_decay, warmup_t=5,
                                                warmup_lr_init=1e-7),
                 'step': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
+                'cyclic': torch.optim.lr_scheduler.CyclicLR(opt, base_lr=1e-4, max_lr=self.lr),
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min'),
+
                 'swa_scheduler': torch.optim.swa_utils.SWALR(opt, anneal_strategy="cos", anneal_epochs=5, swa_lr=0.05)
 
             }
