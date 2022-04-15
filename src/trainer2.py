@@ -1,3 +1,4 @@
+
 import os
 import shutil
 import time
@@ -521,7 +522,7 @@ class Trainer:
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
 
-                    self.scheduler.step()
+
 
                     # b=torch.tensor(record[1]['buildings'])
 
@@ -629,6 +630,7 @@ class Trainer:
                 print(f'Saving model to {resume_path}')
 
             self.metric[0].reset()
+            self.scheduler.step()
             # if epoch >= swa_start:
             #     print('in SWA scheduler')
             #     self.swa_model.update_parameters(self.model)
