@@ -22,7 +22,8 @@ from models.spaceEncoder import GridCellSpatialRelationEncoder
 from utils.utils import load_from_checkpoint
 import torch.nn.functional as F
 
-model_type = dict(resnet18=PreActResNet18,
+model_type = dict(#resnet18=PreActResNet18,
+                  resnet18=resnet18,
                   resnet34=resnet34,
                   resnet50=resnet50,
                   mlp=mlp,
@@ -145,7 +146,7 @@ class Encoder(nn.Module):
 
         self.resnet_bands = resnet_bands
         self.fc_in_dim = self.resnet_bands.fc.in_features
-        self.fc = nn.Linear(self.fc_in_dim, num_outputs, device=args.gpus)  # combines both together
+        self.fc = nn.Linear(self.fc_in_dim, num_outputs).to(args.gpus)  # combines both together
         self.dim = self.fc_in_dim
 
         self.resnet_ms = resnet_ms
