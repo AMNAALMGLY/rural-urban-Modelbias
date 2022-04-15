@@ -1,10 +1,8 @@
 # resnet:credits:https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py
 
 from typing import Type, Any, Callable, Union, List, Optional
-
 import torch
 from torch import Tensor
-
 import torch.nn as nn
 from models._internally_replaced_utils import load_state_dict_from_url
 from models.utils import _log_api_usage_once
@@ -23,8 +21,8 @@ __all__ = [
 model_urls = {
     "resnet18": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
     "resnet34": "https://download.pytorch.org/models/resnet34-b627a593.pth",
-    # "resnet50":'https://zenodo.org/record/4728033/files/seco_resnet50_100k.ckpt?download=1',
-    'resnet50': "https://download.pytorch.org/models/resnet50-0676ba61.pth",
+    "resnet50":'https://zenodo.org/record/4728033/files/seco_resnet50_100k.ckpt?download=1',
+    #'resnet50': "https://download.pytorch.org/models/resnet50-0676ba61.pth",
     "resnext50_32x4d": "https://download.pytorch.org/models/resnext50_32x4d-7cdf4587.pth",
 
 }
@@ -536,3 +534,5 @@ def mlp(in_channels: int, pretrained: bool = False, progress: bool = True, **kwa
 
 
     return MLP(in_channels)
+
+#'encoder_q.0.weight'
