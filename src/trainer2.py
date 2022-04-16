@@ -182,12 +182,16 @@ class Trainer:
                     x[meta] = torch.tensor(batch[0][meta], dtype=torch.int32)
                     if x[meta].dim() < 2:  # squeeze the last dimension if I have only one dimension
                         x[meta].unsqueeze_(-1)
-            if not batch[0]['labels']:
-                label = get_sustain_labels(batch[0]['loc'][0], batch[0]['loc'][1], args.label_name)
+            lats = batch[0]['locs'][:, 0]
+            longs = batch[0]['locs'][:, 1]
+            if np.any(np.isnan(batch[0]['labels'])):
+                print('in get sustainlabels')
+                label = get_sustain_labels(lats, longs, 'sanitation_index')  # TODO change this
             else:
                 label = batch[0]['labels']
             target = torch.tensor(label, )
-            # target = torch.tensor(batch[0]['labels'], )
+            # target = torch.tensor:wq
+            # (batch[0]['labels'], )
             target = target.type_as(self.typeAs.weight)
             x['buildings'] = torch.tensor(batch[1]['buildings'], )
 
