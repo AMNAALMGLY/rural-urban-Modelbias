@@ -19,7 +19,8 @@ __all__ = [
 ]
 
 model_urls = {
-    "resnet18": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
+#    "resnet18": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
+      'resnet18':"https://zenodo.org/record/4728033/files/seco_resnet18_100k.ckpt?download=1",
     "resnet34": "https://download.pytorch.org/models/resnet34-b627a593.pth",
     "resnet50":'https://zenodo.org/record/4728033/files/seco_resnet50_100k.ckpt?download=1',
     #'resnet50': "https://download.pytorch.org/models/resnet50-0676ba61.pth",
@@ -378,8 +379,12 @@ def _resnet(
                         "layer4.1.se.excitation.2.weight"]
         """
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
-        state_dict['conv1.weight'] = nn.Parameter(
-            init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
+#        state_dict['conv1.weight'] = nn.Parameter(
+ #           init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
+        print(state_dict['state_dict']['encoder_q.0.weight'].device)
+        state_dict['state_dict']['encoder_q.0.weight']=torch.tensor(state_dict['state_dict']['encoder_q.0.weight'],device=args.gpus)
+        state_dict['state_dict']['encoder_q.0.weight'] = nn.Parameter(init_first_layer_weights(in_channels,state_dict['state_dict']['encoder_q.0.weight'],args.hs_weight_init))
+
         # print(model.state_dict())
         # if 'attn' in model.state_dict():
         '''
@@ -454,14 +459,14 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
 
     out_channels, rgb_channels, H, W = rgb_weights.shape
     print('rgb weight shape ', rgb_weights.shape)
-    rgb_weights = torch.tensor(rgb_weights)
+    rgb_weights = torch.tensor(rgb_weights,device=args.gpus)
     ms_channels = in_channels - rgb_channels
     if in_channels == 3:
         if args.include_buildings:
             with torch.no_grad():
                 mean = rgb_weights.mean()
                 std = rgb_weights.std()
-                final_weights = torch.empty((out_channels, in_channels, H, W))
+                final_weights = torch.empty((out_channels, in_channels, H, W),device=args.gpus)
                 final_weights = torch.nn.init.trunc_normal_(final_weights, mean, std)
         else:
             final_weights = rgb_weights
@@ -470,7 +475,9 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
         with torch.no_grad():
             mean = rgb_weights.mean()
             std = rgb_weights.std()
-            final_weights = torch.empty((out_channels, in_channels, H, W))
+            print(mean.device,)
+            final_weights = torch.empty((out_channels, in_channels, H, W),device=args.gpus)
+            print(final_weights.device)
             final_weights = torch.nn.init.trunc_normal_(final_weights, mean, std)
     elif in_channels > 3:
         # spectral images
