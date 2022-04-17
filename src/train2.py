@@ -293,13 +293,13 @@ def main(args):
         batcher_valid = get_eval_loader("standard", test_data, batch_size=64)
         batcher_test = None
 
-    ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
+    #ckpt, pretrained = init_model(args.model_init, args.init_ckpt_dir, )
     model_dict = defaultdict()
     encoder_params = defaultdict()
 
     for (model_key, model_name), in_channels, model_init in zip(args.model_name.items(), args.in_channels,
                                                                 args.model_init):
-        ckpt, pretrained = init_model(model_init, args.init_ckpt_dir, )
+        ckpt, pretrained = init_model(model_init, args.init_ckpt_dir, )    #you assume all have the same ckpt
 
         model_dict[model_key] = get_model(model_name=model_name, in_channels=in_channels, pretrained=pretrained,
                                           ckpt_path=ckpt)

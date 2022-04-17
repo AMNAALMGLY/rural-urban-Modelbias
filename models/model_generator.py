@@ -161,7 +161,7 @@ class Encoder(nn.Module):
         self.num_patches = int((
                                            args.crop - self.patch) / self.stride) + 1  # TODO it will produce error in loading pretrained models if args crop changed
 
-        self.fc = nn.Linear(self.fc_in_dim * self.num_patches, num_outputs).to(args.gpus)  # combines both together
+        self.fc = nn.Linear(self.fc_in_dim *( self.num_patches**2), num_outputs).to(args.gpus)  # combines both together
         if self_attn == 'multihead_space':
 
             self.spaceE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
