@@ -61,7 +61,7 @@ class LayerNorm(nn.Module):
         mean = x.mean(-1, keepdim=True)
         std = x.std(-1, keepdim=True)
 
-        return self.a_2 * (x - mean) / (std + self.eps) + self.b_2  # bs, n, d_model
+        return self.a_2 * ((x - mean) / (std + self.eps) )+ self.b_2  # bs, n, d_model
 
 
 class SublayerConnection(nn.Module):
@@ -112,7 +112,7 @@ class Layers(nn.Module):
     def forward(self, q, k, v):
         "Pass the input through each layer in turn."
         for layer in self.layers:
-            q, y, z = layer(q, k, v)                    #query , uniform query, random query
+            q, y, z = layer(q, q, q)                    #query , uniform query, random query
         return self.norm(q), self.norm(y), self.norm(z)  # bs , n , d_model
 
 
@@ -140,13 +140,13 @@ class Encoder(nn.Module):
         # self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
 
         self.relu = nn.ELU()
-        self.dropout = nn.Dropout(p=0)
+        self.dropout = nn.Dropout(p=0.1)
         self.self_attn = self_attn
         # MultiHeadedAttention(h=1,d_model=512)
 
         self.resnet_bands = resnet_bands
         self.fc_in_dim = self.resnet_bands.fc.in_features
-        self.fc = nn.Linear(self.fc_in_dim, num_outputs).to(args.gpus)  # combines both together
+
         self.dim = self.fc_in_dim
 
         self.resnet_ms = resnet_ms
@@ -157,8 +157,9 @@ class Encoder(nn.Module):
                                 nn.Linear(self.fc_in_dim // 2, self.fc_in_dim))
         self.patch = patch
         self.stride = stride
-        self.num_patches = int((224 - self.patch) / self.stride) + 1
+        self.num_patches = int((args.crop - self.patch) / self.stride) + 1 #TODO it will produce error in loading pretrained models if args crop changed
 
+        self.fc = nn.Linear(self.fc_in_dim * self.num_patches, num_outputs).to(args.gpus)  # combines both together
         if self_attn == 'multihead_space':
 
             self.spaceE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
@@ -191,6 +192,7 @@ class Encoder(nn.Module):
 
     # @autocast()
     def forward(self, x):
+        #I'm assuming that I have only one input for now
         features = []
         key = list(x.keys())[0]
 
@@ -278,7 +280,9 @@ class Encoder(nn.Module):
 
             if features.size(
                     1) > 1:
-                features = torch.mean(features, dim=1, keepdim=False)
+                #features = torch.mean(features, dim=1, keepdim=False)
+                #concat:
+                features=features.reshape(-1,self.fc*num_patches)
             else:
                 features = features.squeeze(1)
 

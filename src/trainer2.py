@@ -81,8 +81,8 @@ class Trainer:
 
             # initialization
             torch.nn.init.trunc_normal_(fc.weight.data, std=0.01)
-            # fc.bias.data.zero_()
-            # torch.nn.init.constant_(fc.bias.data, 0.01)
+            #fc.bias.data.zero_()
+            torch.nn.init.constant_(fc.bias.data, 0.01)
 
             model.fc = fc
 
@@ -180,7 +180,7 @@ class Trainer:
                         batch[0][meta] = (tf.reshape(batch[0][meta], [-1, 1])).numpy()
 
                     x[meta] = torch.tensor(batch[0][meta], dtype=torch.int32)
-                    if x[meta].dim() < 2:  # squeeze the last dimension if I have only one dimension
+                    if x[meta].dim() < 2:  # usqueeze the last dimension if I have only one dimension
                         x[meta].unsqueeze_(-1)
             lats = batch[0]['locs'][:, 0]
             longs = batch[0]['locs'][:, 1]
@@ -256,7 +256,7 @@ class Trainer:
         if self.loss_type == 'classification' and self.num_outputs > 1:
 
             preds = nn.functional.softmax(outputs, dim=1)
-            target = target.long
+            target = target.long()
 
         elif self.loss_type == 'classification' and self.num_outputs == 1:
             preds = torch.sigmoid(outputs, )
@@ -294,6 +294,351 @@ class Trainer:
 
         return loss
 
+
+    def fit(self, trainloader, validloader, batcher_test, max_epochs, gpus, class_model=None, early_stopping=True,
+            save_every=25):
+
+        # Weighting model
+        if class_model:
+            self.class_model = class_model.to(gpus)
+        else:
+            self.class_model = None
+        # log the gradients
+        wandb.watch(self.model, log='all')
+
+        swa_start = int(0.75 * max_epochs)  # swa in 25% of the training
+
+        train_steps = len(trainloader)
+
+        valid_steps = len(validloader)  # the number of batches
+        best_loss = float('inf')
+        count2 = 0  # count loss improving times
+        r2_dict = defaultdict(lambda x: '')
+        resume_path = None
+        val_list = defaultdict(lambda x: '')
+        start = time.time()
+
+        # building_sum=[]
+
+        for epoch in range(max_epochs):
+            # scheduler updates
+            # num_updates=epoch*len(trainloader)
+            epoch_start = time.time()
+
+            with tqdm(trainloader, unit="batch") as tepoch:
+                train_step = 0
+                epoch_loss = 0
+
+                print('-----------------------Training--------------------------------')
+                self.model.train()
+                self.opt.zero_grad()
+                for record in tepoch:
+                    tepoch.set_description(f"Epoch {epoch}")
+
+                    _, train_loss = self._shared_step(record, self.metric)
+                    train_loss.backward()
+                    # Implementing gradient accumlation
+                    if (train_step + 1) % args.accumlation_steps == 0:
+                        self.opt.step()
+                        self.opt.zero_grad()
+
+                    epoch_loss += train_loss.item()
+                    train_step += 1
+                    # print statistics
+                    print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item():.2f}')
+                    if (train_step + 1) % 20 == 0:
+                        running_train = epoch_loss / (train_step)
+                        wandb.log({"train_loss": running_train, 'epoch': epoch})
+
+                    tepoch.set_postfix(loss=train_loss.item())
+                    time.sleep(0.1)
+
+
+
+                    # b=torch.tensor(record[1]['buildings'])
+
+                    # building_sum.append(torch.sum(b ,dim=(1,2,3)))
+            '''
+            building_sum=torch.cat(building_sum,dim=0)
+            print('shape of sum ',building_sum.shape)
+            np_dict=defaultdict()
+            np_dict['building_sum']=building_sum.numpy()
+            
+            save_results(self.save_dir, np_dict, 'building_sum')
+            '''
+            # Metric calulation and average loss
+            r2 = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
+            wandb.log({f'{self.metric_str[0]} train': r2, 'epoch': epoch})
+            avgloss = epoch_loss / train_steps
+            wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
+            print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str[0]} is {r2:.2f}')
+            self.metric[0].reset()
+            building_sum = []
+            with torch.no_grad():
+                valid_step = 0
+                valid_epoch_loss = 0
+                print('--------------------------Validation-------------------- ')
+                self.model.eval()
+                for record in validloader:
+
+                    valid_loss = self.validation_step(record)
+                    valid_epoch_loss += valid_loss.item()
+                    valid_step += 1
+                    print(
+                        f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item():.2f}')
+                    if (valid_step + 1) % 20 == 0:
+                        running_loss = valid_epoch_loss / (valid_step)
+                        wandb.log({"valid_loss": running_loss, 'epoch': epoch})
+                # b=torch.tensor(record[1]['buildings'])
+                # if epoch==0:
+                #   building_sum.append(torch.sum(b ,dim=(1,2,3)))
+                """
+                if epoch==0:
+                    building_sum=torch.cat(building_sum,dim=0)
+                    print('shape of sum ',building_sum.shape)
+                    np_dict=defaultdict()
+                    np_dict['building_sum']=building_sum.numpy()
+
+                    save_results(self.save_dir, np_dict, 'building_sum_val')
+                """
+
+                avg_valid_loss = valid_epoch_loss / valid_steps
+
+                # tune.report(mean_loss=avg_valid_loss)
+
+                r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
+                self.metric[0].reset()
+                print(f'Validation {self.metric_str[0]}is {r2_valid:.2f} and loss {avg_valid_loss}')
+                wandb.log({f'{self.metric_str[0]} valid': r2_valid, 'epoch': epoch})
+                wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
+
+                # AGAINST ML RULES : moniter test values
+                r2_test, test_loss = self.test(batcher_test)
+
+                wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
+                wandb.log({f'loss test': test_loss, 'epoch': epoch})
+
+                # early stopping with loss
+                if best_loss - avg_valid_loss >= 0:
+                    print('in loss improving loop by ')
+                    print(best_loss - avg_valid_loss)
+                    # loss is improving
+                    counter = 0
+                    count2 += 1
+                    best_loss = avg_valid_loss
+                    # start saving after a threshold of epochs and a patience of improvement
+                    if count2 >= 1:
+                        print('in best path saving')
+                        save_path = os.path.join(self.save_dir, f'best_Epoch{epoch}.ckpt')
+                        torch.save(self.model.state_dict(), save_path)
+                        # save r2 values and loss values
+                        r2_dict[r2_valid] = save_path
+                        val_list[avg_valid_loss] = save_path
+                        print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
+                        print(f'Path to best model at loss found during training: \n{save_path}')
+
+
+
+                elif best_loss - avg_valid_loss < 0:
+                    # loss is degrading
+                    print('in loss degrading loop by :')
+                    print(best_loss - avg_valid_loss)
+                    counter += 1  # degrading tracker
+                    count2 = 0  # improving tracker
+                    if counter >= patience and early_stopping:
+                        print(f'.................Early stopping can be in this Epoch{epoch}.....................')
+                        # break
+
+            # Saving the model for later use every 10 epochs:
+            if epoch % save_every == 0:
+                resume_dir = os.path.join(self.save_dir, 'resume_points')
+                os.makedirs(resume_dir, exist_ok=True)
+                resume_path = os.path.join(resume_dir, f'Epoch{epoch}.ckpt')
+                torch.save(self.model.state_dict(), resume_path)
+                print(f'Saving model to {resume_path}')
+
+            self.metric[0].reset()
+            self.scheduler.step()
+            # if epoch >= swa_start:
+            #     print('in SWA scheduler')
+            #     self.swa_model.update_parameters(self.model)
+            #      self.swa_scheduler.step()
+            #   else:
+            #        self.scheduler.step(epoch + 1)
+
+            print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
+        # UPDATE SWA MODEL RUNNIGN MEAN AND VARIANCE
+        # with autocast():
+        #     Trainer.update_bn(trainloader, self.swa_model)
+
+        # choose the best model between the saved models in regard to r2 value or minimum loss
+        if len(val_list.keys()) > 0:
+            best_path = val_list[min(val_list.keys())]
+            print(f'loss of best model saved is {min(val_list.keys())} , path {best_path}')
+
+            shutil.move(best_path,
+                        os.path.join(self.save_dir, 'best.ckpt'))
+
+        elif len(r2_dict.keys()) > 0:
+            best_path = r2_dict[max(r2_dict.keys())]
+            print(f'{self.metric_str[0]} of best model saved is {max(r2_dict.keys())} , path {best_path}')
+
+            shutil.move(best_path,
+                        os.path.join(self.save_dir, 'best.ckpt'))
+
+
+        else:
+            # best path is the last path which is saved at resume_points dir
+            best_path = resume_path
+            print(f'loss of best model saved from resume_point is {avg_valid_loss}')
+            shutil.move(os.path.join(self.save_dir, best_path.split('/')[-2], best_path.split('/')[-1]),
+                        os.path.join(self.save_dir, 'best.ckpt'))
+
+            # better_path=best_path
+
+            print("Time Elapsed for all epochs : {:.2} H".format((time.time() - start) / 120))
+        best_path = os.path.join(self.save_dir, 'best.ckpt')
+        return best_loss, best_path,
+        # TODO implement overfit batches
+        # TODO savelast
+
+    def test(self, batcher_test):
+
+        with torch.no_grad():
+            test_step = 0
+            test_epoch_loss = 0
+            print('--------------------------Testing-------------------- ')
+            self.model.eval()
+            r2_test = []
+            for record in batcher_test:
+                test_epoch_loss += self.test_step(record).item()
+                test_step += 1
+
+            for i, m in enumerate(self.metric):
+                r2_test.append((m.compute()) ** 2 if self.metric_str[i] == 'r2' else m.compute())
+
+                # wandb.log({f'{self.metric_str[i]} Test': r2_test[i], })
+
+        return r2_test[0], (test_epoch_loss / test_step)
+
+    def configure_optimizers(self):
+        if args.scheduler == 'cyclic':
+            opt = torch.optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9)
+        else:
+            opt = torch.optim.Adam(self.model.parameters(), lr=self.lr,
+                                   weight_decay=self.weight_decay)
+
+        return {
+            'optimizer': opt,
+            'lr_scheduler': {
+                'exp': ExponentialLR(opt,
+                                     gamma=args.lr_decay),
+                'cos': torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=args.max_epochs),
+                'warmup_cos': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
+                                                                                    max_epochs=300,
+                                                                                    warmup_start_lr=1e-7),
+                'warmup_step': StepLRScheduler(opt, decay_t=1, decay_rate=args.lr_decay, warmup_t=5,
+                                               warmup_lr_init=1e-7),
+                'step': torch.optim.lr_scheduler.StepLR(opt, step_size=5, gamma=args.lr_decay, ),
+                'cyclic': torch.optim.lr_scheduler.CyclicLR(opt, base_lr=1e-4, max_lr=self.lr,cycle_momentum=False),
+                # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min'),
+
+                'swa_scheduler': torch.optim.swa_utils.SWALR(opt, anneal_strategy="cos", anneal_epochs=5, swa_lr=0.05)
+
+            }
+        }
+
+    def setup_criterion(self):
+
+        if self.loss_type == 'classification' and self.num_outputs > 1:
+            self.criterion = nn.CrossEntropyLoss()
+        elif self.loss_type == 'classification' and self.num_outputs == 1:
+            self.criterion = nn.BCEWithLogitsLoss()
+
+        else:
+            self.criterion = nn.MSELoss()
+
+    @torch.no_grad()
+    def update_bn(loader, model, device=None):
+        r"""Updates BatchNorm running_mean, running_var buffers in the model.
+        It performs one pass over data in `loader` to estimate the activation
+        statistics for BatchNorm layers in the model.
+        Args:
+            loader (torch.utils.data.DataLoader): dataset loader to compute the
+                activation statistics on. Each data batch should be either a
+                tensor, or a list/tuple whose first element is a tensor
+                containing data.
+            model (torch.nn.Module): model for which we seek to update BatchNorm
+                statistics.
+            device (torch.device, optional): If set, data will be transferred to
+                :attr:`device` before being passed into :attr:`model`.
+        Example:
+
+        .. note::
+            The `update_bn` utility assumes that each data batch in :attr:`loader`
+            is either a tensor or a list or tuple of tensors; in the latter case it
+            is assumed that :meth:`model.forward()` should be called on the first
+            element of the list or tuple corresponding to the data batch.
+        """
+        momenta = {}
+        for module in model.modules():
+            if isinstance(module, torch.nn.modules.batchnorm._BatchNorm):
+                module.running_mean = torch.zeros_like(module.running_mean)
+                module.running_var = torch.ones_like(module.running_var)
+                momenta[module] = module.momentum
+
+        if not momenta:
+            return
+
+        was_training = model.training
+        model.train()
+        for module in momenta.keys():
+            module.momentum = None
+            module.num_batches_tracked *= 0
+        x = defaultdict()
+        for input in loader:
+
+            key = list(input.keys())[0]
+            # if isinstance(input, (list, tuple)):
+
+            # x['buildings']=torch.tensor( input[1]['buildings'])
+            x[key] = torch.tensor(input[key])
+            x = {key: value.reshape(-1, value.shape[-1], value.shape[-2], value.shape[-3]) for key, value in x.items()}
+            # x={key:value.type_as(model.fc.weight) for key , value in x.items()}
+            input = x
+            if device is not None:
+                input = input.to(device)
+            model(input)
+        print('......in SWA...............')
+        for bn_module in momenta.keys():
+            bn_module.momentum = momenta[bn_module]
+        model.train(was_training)
+
+    def custom_loss(self, batch, target):
+        losses = []
+
+        sorted, indices = torch.sort(target, descending=False, dim=0)
+        batch = batch[indices]
+        target = target[indices]
+
+        # print(sorted==target)
+        quantiles_x = torch.split(batch, 5)
+        quantiles_y = torch.split(target, 5)
+        for i in range(5):
+            losses.append(torch.nn.functional.mse_loss(self.model(quantiles_x[i]).squeeze(-1), quantiles_y[i]))
+        # print('losses_list',losses)
+        return max(losses)
+
+    def weight_ex(self, x, class_model):
+        '''
+        use binary classification for finiding weights for data
+        :return: weghing factor Beta that can be added to loss function
+        '''
+
+        hx = torch.sigmoid(class_model(x))
+
+        Beta = torch.exp(hx.squeeze(-1))
+        return Beta
     def fit_wilds(self, trainloader, validloader, max_epochs, gpus, class_model=None, early_stopping=True,
                   save_every=10):
         self.model.to(gpus)
@@ -468,353 +813,6 @@ class Trainer:
         best_path = os.path.join(self.save_dir, 'best.ckpt')
         return best_loss, best_path,
 
-    def fit(self, trainloader, validloader, batcher_test, max_epochs, gpus, class_model=None, early_stopping=True,
-            save_every=10):
-
-        # Weighting model
-        if class_model:
-            self.class_model = class_model.to(gpus)
-        else:
-            self.class_model = None
-        # log the gradients
-        wandb.watch(self.model, log='all')
-
-        swa_start = int(0.75 * max_epochs)  # swa in 25% of the training
-
-        train_steps = len(trainloader)
-
-        valid_steps = len(validloader)  # the number of batches
-        best_loss = float('inf')
-        count2 = 0  # count loss improving times
-        r2_dict = defaultdict(lambda x: '')
-        resume_path = None
-        val_list = defaultdict(lambda x: '')
-        start = time.time()
-
-        # building_sum=[]
-
-        for epoch in range(max_epochs):
-            # scheduler updates
-            # num_updates=epoch*len(trainloader)
-            epoch_start = time.time()
-
-            with tqdm(trainloader, unit="batch") as tepoch:
-                train_step = 0
-                epoch_loss = 0
-
-                print('-----------------------Training--------------------------------')
-                self.model.train()
-                self.opt.zero_grad()
-                for record in tepoch:
-                    tepoch.set_description(f"Epoch {epoch}")
-
-                    _, train_loss = self._shared_step(record, self.metric)
-                    train_loss.backward()
-                    # Implementing gradient accumlation
-                    if (train_step + 1) % args.accumlation_steps == 0:
-                        self.opt.step()
-                        self.opt.zero_grad()
-
-                    epoch_loss += train_loss.item()
-                    train_step += 1
-                    # print statistics
-                    print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item():.2f}')
-                    if (train_step + 1) % 20 == 0:
-                        running_train = epoch_loss / (train_step)
-                        wandb.log({"train_loss": running_train, 'epoch': epoch})
-
-                    tepoch.set_postfix(loss=train_loss.item())
-                    time.sleep(0.1)
-
-
-
-                    # b=torch.tensor(record[1]['buildings'])
-
-                    # building_sum.append(torch.sum(b ,dim=(1,2,3)))
-            '''
-            building_sum=torch.cat(building_sum,dim=0)
-            print('shape of sum ',building_sum.shape)
-            np_dict=defaultdict()
-            np_dict['building_sum']=building_sum.numpy()
-            
-            save_results(self.save_dir, np_dict, 'building_sum')
-            '''
-            # Metric calulation and average loss
-            r2 = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
-            wandb.log({f'{self.metric_str[0]} train': r2, 'epoch': epoch})
-            avgloss = epoch_loss / train_steps
-            wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
-            print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str[0]} is {r2:.2f}')
-            self.metric[0].reset()
-            building_sum = []
-            with torch.no_grad():
-                valid_step = 0
-                valid_epoch_loss = 0
-                print('--------------------------Validation-------------------- ')
-                self.model.eval()
-                for record in validloader:
-
-                    valid_loss = self.validation_step(record)
-                    valid_epoch_loss += valid_loss.item()
-                    valid_step += 1
-                    print(
-                        f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item():.2f}')
-                    if (valid_step + 1) % 20 == 0:
-                        running_loss = valid_epoch_loss / (valid_step)
-                        wandb.log({"valid_loss": running_loss, 'epoch': epoch})
-                # b=torch.tensor(record[1]['buildings'])
-                # if epoch==0:
-                #   building_sum.append(torch.sum(b ,dim=(1,2,3)))
-                """
-                if epoch==0:
-                    building_sum=torch.cat(building_sum,dim=0)
-                    print('shape of sum ',building_sum.shape)
-                    np_dict=defaultdict()
-                    np_dict['building_sum']=building_sum.numpy()
-
-                    save_results(self.save_dir, np_dict, 'building_sum_val')
-                """
-
-                avg_valid_loss = valid_epoch_loss / valid_steps
-
-                # tune.report(mean_loss=avg_valid_loss)
-
-                r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
-                self.metric[0].reset()
-                print(f'Validation {self.metric_str[0]}is {r2_valid:.2f} and loss {avg_valid_loss}')
-                wandb.log({f'{self.metric_str[0]} valid': r2_valid, 'epoch': epoch})
-                wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
-
-                # AGAINST ML RULES : moniter test values
-                r2_test, test_loss = self.test(batcher_test)
-
-                wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
-                wandb.log({f'loss test': test_loss, 'epoch': epoch})
-
-                # early stopping with loss
-                if best_loss - avg_valid_loss >= 0:
-                    print('in loss improving loop by ')
-                    print(best_loss - avg_valid_loss)
-                    # loss is improving
-                    counter = 0
-                    count2 += 1
-                    best_loss = avg_valid_loss
-                    # start saving after a threshold of epochs and a patience of improvement
-                    if count2 >= 1:
-                        print('in best path saving')
-                        save_path = os.path.join(self.save_dir, f'best_Epoch{epoch}.ckpt')
-                        torch.save(self.model.state_dict(), save_path)
-                        # save r2 values and loss values
-                        r2_dict[r2_valid] = save_path
-                        val_list[avg_valid_loss] = save_path
-                        print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
-                        print(f'Path to best model at loss found during training: \n{save_path}')
-
-                        # AGAINST ML RULES : During best path saving test the performance
-                        # r2_test,test_loss = self.test(batcher_test)
-                        # wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
-
-
-                elif best_loss - avg_valid_loss < 0:
-                    # loss is degrading
-                    print('in loss degrading loop by :')
-                    print(best_loss - avg_valid_loss)
-                    counter += 1  # degrading tracker
-                    count2 = 0  # improving tracker
-                    if counter >= patience and early_stopping:
-                        print(f'.................Early stopping can be in this Epoch{epoch}.....................')
-                        # break
-
-            # Saving the model for later use every 10 epochs:
-            if epoch % save_every == 0:
-                resume_dir = os.path.join(self.save_dir, 'resume_points')
-                os.makedirs(resume_dir, exist_ok=True)
-                resume_path = os.path.join(resume_dir, f'Epoch{epoch}.ckpt')
-                torch.save(self.model.state_dict(), resume_path)
-                print(f'Saving model to {resume_path}')
-
-            self.metric[0].reset()
-            self.scheduler.step()
-            # if epoch >= swa_start:
-            #     print('in SWA scheduler')
-            #     self.swa_model.update_parameters(self.model)
-            #      self.swa_scheduler.step()
-            #   else:
-            #        self.scheduler.step(epoch + 1)
-
-            print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
-        # UPDATE SWA MODEL RUNNIGN MEAN AND VARIANCE
-        # with autocast():
-        #     Trainer.update_bn(trainloader, self.swa_model)
-
-        # choose the best model between the saved models in regard to r2 value or minimum loss
-        if len(val_list.keys()) > 0:
-            best_path = val_list[min(val_list.keys())]
-            print(f'loss of best model saved is {min(val_list.keys())} , path {best_path}')
-
-            shutil.move(best_path,
-                        os.path.join(self.save_dir, 'best.ckpt'))
-
-        elif len(r2_dict.keys()) > 0:
-            best_path = r2_dict[max(r2_dict.keys())]
-            print(f'{self.metric_str[0]} of best model saved is {max(r2_dict.keys())} , path {best_path}')
-
-            shutil.move(best_path,
-                        os.path.join(self.save_dir, 'best.ckpt'))
-
-
-        else:
-            # best path is the last path which is saved at resume_points dir
-            best_path = resume_path
-            print(f'loss of best model saved from resume_point is {avg_valid_loss}')
-            shutil.move(os.path.join(self.save_dir, best_path.split('/')[-2], best_path.split('/')[-1]),
-                        os.path.join(self.save_dir, 'best.ckpt'))
-
-            # better_path=best_path
-
-            print("Time Elapsed for all epochs : {:.2} H".format((time.time() - start) / 120))
-        best_path = os.path.join(self.save_dir, 'best.ckpt')
-        return best_loss, best_path,
-        # TODO implement overfit batches
-        # TODO savelast
-
-    def test(self, batcher_test):
-
-        with torch.no_grad():
-            test_step = 0
-            test_epoch_loss = 0
-            print('--------------------------Testing-------------------- ')
-            self.model.eval()
-            r2_test = []
-            for record in batcher_test:
-                test_epoch_loss += self.test_step(record).item()
-                test_step += 1
-
-            for i, m in enumerate(self.metric):
-                r2_test.append((m.compute()) ** 2 if self.metric_str[i] == 'r2' else m.compute())
-
-                # wandb.log({f'{self.metric_str[i]} Test': r2_test[i], })
-
-        return r2_test[0], (test_epoch_loss / test_step)
-
-    def configure_optimizers(self):
-        if args.scheduler == 'cyclic':
-            opt = torch.optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9)
-        else:
-            opt = torch.optim.Adam(self.model.parameters(), lr=self.lr,
-                                   weight_decay=self.weight_decay)
-
-        return {
-            'optimizer': opt,
-            'lr_scheduler': {
-                'exp': ExponentialLR(opt,
-                                     gamma=args.lr_decay),
-                'cos': torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=args.max_epochs),
-                'warmup_cos': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
-                                                                                    max_epochs=300,
-                                                                                    warmup_start_lr=1e-7),
-                'warmup_step': StepLRScheduler(opt, decay_t=1, decay_rate=args.lr_decay, warmup_t=5,
-                                               warmup_lr_init=1e-7),
-                'step': torch.optim.lr_scheduler.StepLR(opt, step_size=1, gamma=args.lr_decay, ),
-                'cyclic': torch.optim.lr_scheduler.CyclicLR(opt, base_lr=1e-4, max_lr=self.lr,cycle_momentum=False),
-                # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min'),
-
-                'swa_scheduler': torch.optim.swa_utils.SWALR(opt, anneal_strategy="cos", anneal_epochs=5, swa_lr=0.05)
-
-            }
-        }
-
-    def setup_criterion(self):
-
-        if self.loss_type == 'classification' and self.num_outputs > 1:
-            self.criterion = nn.CrossEntropyLoss()
-        elif self.loss_type == 'classification' and self.num_outputs == 1:
-            self.criterion = nn.BCEWithLogitsLoss()
-
-        else:
-            self.criterion = nn.L1Loss()
-
-    @torch.no_grad()
-    def update_bn(loader, model, device=None):
-        r"""Updates BatchNorm running_mean, running_var buffers in the model.
-        It performs one pass over data in `loader` to estimate the activation
-        statistics for BatchNorm layers in the model.
-        Args:
-            loader (torch.utils.data.DataLoader): dataset loader to compute the
-                activation statistics on. Each data batch should be either a
-                tensor, or a list/tuple whose first element is a tensor
-                containing data.
-            model (torch.nn.Module): model for which we seek to update BatchNorm
-                statistics.
-            device (torch.device, optional): If set, data will be transferred to
-                :attr:`device` before being passed into :attr:`model`.
-        Example:
-
-        .. note::
-            The `update_bn` utility assumes that each data batch in :attr:`loader`
-            is either a tensor or a list or tuple of tensors; in the latter case it
-            is assumed that :meth:`model.forward()` should be called on the first
-            element of the list or tuple corresponding to the data batch.
-        """
-        momenta = {}
-        for module in model.modules():
-            if isinstance(module, torch.nn.modules.batchnorm._BatchNorm):
-                module.running_mean = torch.zeros_like(module.running_mean)
-                module.running_var = torch.ones_like(module.running_var)
-                momenta[module] = module.momentum
-
-        if not momenta:
-            return
-
-        was_training = model.training
-        model.train()
-        for module in momenta.keys():
-            module.momentum = None
-            module.num_batches_tracked *= 0
-        x = defaultdict()
-        for input in loader:
-
-            key = list(input.keys())[0]
-            # if isinstance(input, (list, tuple)):
-
-            # x['buildings']=torch.tensor( input[1]['buildings'])
-            x[key] = torch.tensor(input[key])
-            x = {key: value.reshape(-1, value.shape[-1], value.shape[-2], value.shape[-3]) for key, value in x.items()}
-            # x={key:value.type_as(model.fc.weight) for key , value in x.items()}
-            input = x
-            if device is not None:
-                input = input.to(device)
-            model(input)
-        print('......in SWA...............')
-        for bn_module in momenta.keys():
-            bn_module.momentum = momenta[bn_module]
-        model.train(was_training)
-
-    def custom_loss(self, batch, target):
-        losses = []
-
-        sorted, indices = torch.sort(target, descending=False, dim=0)
-        batch = batch[indices]
-        target = target[indices]
-
-        # print(sorted==target)
-        quantiles_x = torch.split(batch, 5)
-        quantiles_y = torch.split(target, 5)
-        for i in range(5):
-            losses.append(torch.nn.functional.mse_loss(self.model(quantiles_x[i]).squeeze(-1), quantiles_y[i]))
-        # print('losses_list',losses)
-        return max(losses)
-
-    def weight_ex(self, x, class_model):
-        '''
-        use binary classification for finiding weights for data
-        :return: weghing factor Beta that can be added to loss function
-        '''
-
-        hx = torch.sigmoid(class_model(x))
-
-        Beta = torch.exp(hx.squeeze(-1))
-        return Beta
 
     '''
     def subshift(self, x, y, group):
