@@ -94,12 +94,13 @@ class EncoderLayer(nn.Module):
 
     def forward(self, q, k, v):
         x = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[0])  # bs, n ,d
-        y = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[1])  # bs, n ,d
-        z = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[2])  # bs, n ,d
+        k = self.sublayer[0](k, lambda q: self.self_attn(q, k, v)[1])  # bs, n ,d
+        v = self.sublayer[0](v, lambda q: self.self_attn(q, k, v)[2])  # bs, n ,d
+        y = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[-2])  # bs, n ,d
+        z = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[-1])  # bs, n ,d
 
-        return self.sublayer[1](x, self.feed_forward), self.sublayer[1](y, self.feed_forward), self.sublayer[1](z,
+        return self.sublayer[1](x, self.feed_forward),self.sublayer[1](k, self.feed_forward),self.sublayer[1](v, self.feed_forward), self.sublayer[1](y, self.feed_forward), self.sublayer[1](z,
                                                                                                                 self.feed_forward)  # bs, n , d_model
-
 
 class Layers(nn.Module):
     "Core encoder is a stack of N layers"
