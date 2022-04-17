@@ -556,7 +556,7 @@ class Trainer:
             self.criterion = nn.BCEWithLogitsLoss()
 
         else:
-            self.criterion = nn.MSELoss()
+            self.criterion = nn.HuberLoss(delta=5)
 
     @torch.no_grad()
     def update_bn(loader, model, device=None):

@@ -23,7 +23,7 @@ from utils.utils import load_from_checkpoint
 import torch.nn.functional as F
 
 model_type = dict(resnet18=PreActResNet18,
-                  #resnet18=resnet18,
+                  # resnet18=resnet18,
                   resnet34=resnet34,
                   resnet50=resnet50,
                   mlp=mlp,
@@ -61,7 +61,7 @@ class LayerNorm(nn.Module):
         mean = x.mean(-1, keepdim=True)
         std = x.std(-1, keepdim=True)
 
-        return self.a_2 * ((x - mean) / (std + self.eps) )+ self.b_2  # bs, n, d_model
+        return self.a_2 * ((x - mean) / (std + self.eps)) + self.b_2  # bs, n, d_model
 
 
 class SublayerConnection(nn.Module):
@@ -112,7 +112,7 @@ class Layers(nn.Module):
     def forward(self, q, k, v):
         "Pass the input through each layer in turn."
         for layer in self.layers:
-            q, y, z = layer(q, q, q)                    #query , uniform query, random query
+            q, k, v, y, z = layer(q, k, v)  # query , uniform query, random query
         return self.norm(q), self.norm(y), self.norm(z)  # bs , n , d_model
 
 
@@ -157,7 +157,8 @@ class Encoder(nn.Module):
                                 nn.Linear(self.fc_in_dim // 2, self.fc_in_dim))
         self.patch = patch
         self.stride = stride
-        self.num_patches = int((args.crop - self.patch) / self.stride) + 1 #TODO it will produce error in loading pretrained models if args crop changed
+        self.num_patches = int((
+                                           args.crop - self.patch) / self.stride) + 1  # TODO it will produce error in loading pretrained models if args crop changed
 
         self.fc = nn.Linear(self.fc_in_dim * self.num_patches, num_outputs).to(args.gpus)  # combines both together
         if self_attn == 'multihead_space':
@@ -169,7 +170,7 @@ class Encoder(nn.Module):
 
         elif self_attn:
             self.positionalE = PositionalEncoding2D(self.fc_in_dim)
-            #self.positionalE = Learnt_PE(self.num_patches, self.fc_in_dim)
+            # self.positionalE = Learnt_PE(self.num_patches, self.fc_in_dim)
             self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
             self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
             self.layers = Layers(self.layer, attn_blocks)
@@ -177,7 +178,7 @@ class Encoder(nn.Module):
         with torch.no_grad():
             self.init_weights()
 
-    #@torch.no_grad
+    # @torch.no_grad
     def init_weights(self):
         def initial(m):
             if isinstance(m, nn.Linear):
@@ -187,12 +188,12 @@ class Encoder(nn.Module):
                     nn.init.normal_(m.bias, std=1e-6)  # nn.init.constant(m.bias, 0)
 
         self.apply(initial)
-        if self.self_attn=='multihead' and isinstance(self.positionalE,Learnt_PE):
-              nn.init.trunc_normal_(self.positionalE.pos_embedding, std=.02)
+        if self.self_attn == 'multihead' and isinstance(self.positionalE, Learnt_PE):
+            nn.init.trunc_normal_(self.positionalE.pos_embedding, std=.02)
 
     # @autocast()
     def forward(self, x):
-        #I'm assuming that I have only one input for now
+        # I'm assuming that I have only one input for now
         features = []
         key = list(x.keys())[0]
 
@@ -280,9 +281,9 @@ class Encoder(nn.Module):
 
             if features.size(
                     1) > 1:
-                #features = torch.mean(features, dim=1, keepdim=False)
-                #concat:
-                features=features.reshape(-1,self.fc*num_patches)
+                # features = torch.mean(features, dim=1, keepdim=False)
+                # concat:
+                features = features.reshape(-1, self.fc * num_patches)
             else:
                 features = features.squeeze(1)
 
@@ -351,8 +352,8 @@ class MultiHeadedAttention(nn.Module):
         # x = x.transpose(1, 2).contiguous().view(
         #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
         # x=x.reshape(b,n,h*d)
-
-        return self.linears[-1](x), y, z  # bs , n , d_model
+        output = self.linears[-1](x)
+        return output, output, output, y, z  # bs , n , d_model
 
 
 def attention_adapt(query, key, value, dropout=None):
@@ -366,7 +367,7 @@ def attention_adapt(query, key, value, dropout=None):
     assert scores.shape == (b, h, 1, n), 'the shape is not as expected'
     # tmp = 0.0001
     p_attn = F.softmax(scores, dim=-1)
-    print('scores ',p_attn)
+    print('scores ', p_attn)
     scores_identity = torch.ones_like(scores)
     scores_identity = scores_identity.type_as(scores)
     p_attn_identity = F.softmax(scores_identity, dim=-1)
@@ -426,7 +427,7 @@ class MultiHeadedAttention_adapt(nn.Module):
         y = rearrange(y, 'b h n d -> b n (h d)', h=self.h)
         z = rearrange(z, 'b h n d -> b n (h d)', h=self.h)
 
-        return self.linears[-1](x), y, z  # bs , n , d_model
+        return self.linears[-1](x), key, value, y, z  # bs , n , d_model
 
 
 def clones(module, N):
@@ -461,12 +462,12 @@ def img_to_patch_strided(img, p=100, s=50, padding=False):
         print('shape after padding', img.shape)
 
     patches = img.unfold(2, p, s).unfold(3, p, s)
-    #print('strided patches size :', patches.shape)  # should be b x c x num_patchesx num_patches x 100 x 100
+    # print('strided patches size :', patches.shape)  # should be b x c x num_patchesx num_patches x 100 x 100
     num_patches1, num_patches2 = patches.shape[2], patches.shape[3]
     # num_patches=((H-100)/s +1) **2
 
     patches = rearrange(patches, 'b c p1 p2 h w -> b (p1 p2) c h w ', p1=num_patches1, p2=num_patches2, h=p, w=p)
-    #print('strided patch after rearrange ', patches.shape)
+    # print('strided patch after rearrange ', patches.shape)
     return patches
 
 
@@ -527,8 +528,8 @@ class PositionalEncoding2D(nn.Module):
         emb[:, :, : self.channels] = emb_x
         emb[:, :, self.channels: 2 * self.channels] = emb_y
         self.pos_cache = emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1)
-        #print('position_embedding of the first channel: ', self.pos_cache[0, :, :, 0], 'second channel: ',
-         #     self.pos_cache[0, :, :, 1])
+        # print('position_embedding of the first channel: ', self.pos_cache[0, :, :, 0], 'second channel: ',
+        #     self.pos_cache[0, :, :, 1])
         return emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1) + tensor
 
 
