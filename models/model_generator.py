@@ -284,7 +284,7 @@ class Encoder(nn.Module):
                     1) > 1:
                 # features = torch.mean(features, dim=1, keepdim=False)
                 # concat:
-                features = features.reshape(-1, self.fc * num_patches)
+                features = features.reshape(-1, self.fc_in_dim * num_patches)
             else:
                 features = features.squeeze(1)
 
