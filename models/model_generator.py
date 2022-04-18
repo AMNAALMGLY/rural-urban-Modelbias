@@ -98,8 +98,8 @@ class EncoderLayer(nn.Module):
     def forward(self, q, k, v):
         x = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[0])  # bs, n ,d
 
-        y = self.sublayer[0](x, lambda q: self.self_attn(x, x, x)[-2])  # bs, n ,d
-        z = self.sublayer[0](x, lambda q: self.self_attn(x, x, x)[-1])  # bs, n ,d
+        y = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[-2])  # bs, n ,d
+        z = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[-1])  # bs, n ,d
 
         x = self.sublayer[1](x, self.feed_forward)
         return x, x, x, \
@@ -118,12 +118,12 @@ class EncoderLayer_adapt(nn.Module):
         self.size = size  # d_model or embed_dim
 
     def forward(self, q, k, v):
-        x = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[0])  # bs, n ,d
+        x = self.sublayer[0](q, lambda q,k,v: self.self_attn(q, k, v)[0])  # bs, n ,d
 
-        k = self.sublayer[0](k, lambda q: self.self_attn(q, k, v)[1])  # bs, n ,d
-        v = self.sublayer[0](v, lambda q: self.self_attn(q, k, v)[2])  # bs, n ,d
-        y = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[-2])  # bs, n ,d
-        z = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[-1])  # bs, n ,d
+        k = self.sublayer[0](k, lambda q,k,v: self.self_attn(q, k, v)[1])  # bs, n ,d
+        v = self.sublayer[0](v, lambda q,k,v: self.self_attn(q, k, v)[2])  # bs, n ,d
+        y = self.sublayer[0](q, lambda q,k,v: self.self_attn(q, k, v)[-2])  # bs, n ,d
+        z = self.sublayer[0](q, lambda q,k,v: self.self_attn(q, k, v)[-1])  # bs, n ,d
 
         return self.sublayer[1](x, self.feed_forward), self.sublayer[1](k, self.feed_forward), self.sublayer[1](v,
                                                                                                                 self.feed_forward), \
@@ -231,7 +231,7 @@ class Encoder(nn.Module):
         key = list(x.keys())[0]
 
         if not self.self_attn:
-            features.append(self.resnet_bands(x[key])[2])
+            features.append(self.resnet_bands(x[key])[1])
             # features = torch.cat(features)
             # x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
             # b, num_patches, c, h, w = x_p.shape
@@ -253,7 +253,7 @@ class Encoder(nn.Module):
             b, num_patches, c, h, w = x_p.shape
 
             for p in range(num_patches):
-                features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
+                features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[2])
             # features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c2, h2, w2))[1])
             features = torch.stack((features), dim=1)
 
