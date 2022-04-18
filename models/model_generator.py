@@ -291,7 +291,7 @@ class Encoder(nn.Module):
                 # features = torch.mean(features, dim=1, keepdim=False)
                 # concat:
                 features =  rearrange(features, 'b n d -> b (n d)',d=self.fc_in_dim)
-                assert  features.shape ==(b, self.dim) , 'aggeragtion output of features is not as expected'
+                assert  tuple(features.shape) ==(b, self.dim) , 'aggeragtion output of features is not as expected'
             else:
                 features = features.squeeze(1)
 
