@@ -195,7 +195,7 @@ class Encoder(nn.Module):
             self.multi_head_adapt = MultiHeadedAttention_adapt(h=1, d_model=self.fc_in_dim)
             self.layer_adapt = EncoderLayer_adapt(size=self.fc_in_dim, self_attn=self.multi_head_adapt, feed_forward=self.ff)
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
-            self.dim *= self.num_patches
+            self.dim *= (self.num_patches**2)
 
         elif self_attn:
             self.positionalE = PositionalEncoding2D(self.fc_in_dim)
@@ -203,7 +203,7 @@ class Encoder(nn.Module):
             self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
             self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
             self.layers = Layers(self.layer, attn_blocks)
-            self.dim *= self.num_patches
+            self.dim *=( self.num_patches**2)
         self.fc = nn.Linear(self.dim, num_outputs).to(
             args.gpus)  # combines both together
         with torch.no_grad():
