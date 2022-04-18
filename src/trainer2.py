@@ -61,7 +61,7 @@ class Trainer:
         - model:PreAct Model class
         - lr: int learning_rate
         - weight_decay: int
-        - loss_type: str, one of ['classification', 'regression']
+        - loss_type: str, one of ['classification', 'mse','smoothL1']
         - num_outputs:output class  one of [None ,num_classes]
         - metric:List[str]  one of ['r2','R2' ,'mse', 'rank']
 
@@ -555,7 +555,9 @@ class Trainer:
         elif self.loss_type == 'classification' and self.num_outputs == 1:
             self.criterion = nn.BCEWithLogitsLoss()
 
-        else:
+        elif self.loss_type=='mse':
+            self.criterion=nn.MSELoss()
+        elif self.loss_type=='smoothL1':
             self.criterion = nn.SmoothL1Loss(beta=1)
 
     @torch.no_grad()
