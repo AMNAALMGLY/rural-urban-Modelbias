@@ -83,10 +83,35 @@ class SublayerConnection(nn.Module):
 
 
 class EncoderLayer(nn.Module):
-    "Encoder is made up of self-attn and feed forward (defined below)"
+    """
+     Encoder is made up of self-attn and feed forward (defined below)
+     self attention
+    """
 
     def __init__(self, size, self_attn, feed_forward, dropout=0):
         super(EncoderLayer, self).__init__()
+        self.self_attn = self_attn
+        self.feed_forward = feed_forward
+        self.sublayer = clones(SublayerConnection(size, dropout), 2)
+        self.size = size  # d_model or embed_dim
+
+    def forward(self, q, k, v):
+        x = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[0])  # bs, n ,d
+
+        y = self.sublayer[0](x, lambda q: self.self_attn(x, x, x)[-2])  # bs, n ,d
+        z = self.sublayer[0](x, lambda q: self.self_attn(x, x, x)[-1])  # bs, n ,d
+
+        x = self.sublayer[1](x, self.feed_forward)
+        return x, x, x, \
+               self.sublayer[1](y, self.feed_forward), self.sublayer[1](z,
+                                                                        self.feed_forward)  # bs, n , d_model
+
+
+class EncoderLayer_adapt(nn.Module):
+    "Encoder is made up of self-attn and feed forward (defined below) -query attention(different from key& value "
+
+    def __init__(self, size, self_attn, feed_forward, dropout=0):
+        super(EncoderLayer_adapt, self).__init__()
         self.self_attn = self_attn
         self.feed_forward = feed_forward
         self.sublayer = clones(SublayerConnection(size, dropout), 2)
@@ -157,19 +182,18 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-        self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 2), nn.GELU(),
-                                nn.Linear(self.fc_in_dim // 2, self.fc_in_dim))
+        self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 8), nn.GELU(),
+                                nn.Linear(self.fc_in_dim //8, self.fc_in_dim))
         self.patch = patch
         self.stride = stride
         self.num_patches = int((
                                        args.crop - self.patch) / self.stride) + 1  # TODO it will produce error in loading pretrained models if args crop changed
 
-
         if self_attn == 'multihead_space':
 
             self.spaceE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
             self.multi_head_adapt = MultiHeadedAttention_adapt(h=1, d_model=self.fc_in_dim)
-            self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt, feed_forward=self.ff)
+            self.layer_adapt = EncoderLayer_adapt(size=self.fc_in_dim, self_attn=self.multi_head_adapt, feed_forward=self.ff)
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
             self.dim *= self.num_patches
 
@@ -290,8 +314,8 @@ class Encoder(nn.Module):
                     1) > 1:
                 # features = torch.mean(features, dim=1, keepdim=False)
                 # concat:
-                features =  rearrange(features, 'b n d -> b (n d)',d=self.fc_in_dim)
-                assert  tuple(features.shape) ==(b, self.dim) , 'aggeragtion output of features is not as expected'
+                features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
+                assert tuple(features.shape) == (b, self.dim), 'aggeragtion output of features is not as expected'
             else:
                 features = features.squeeze(1)
 
