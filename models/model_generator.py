@@ -119,6 +119,7 @@ class EncoderLayer_adapt(nn.Module):
 
     def forward(self, q, k, v):
         x = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[0])  # bs, n ,d
+
         k = self.sublayer[0](k, lambda q: self.self_attn(q, k, v)[1])  # bs, n ,d
         v = self.sublayer[0](v, lambda q: self.self_attn(q, k, v)[2])  # bs, n ,d
         y = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[-2])  # bs, n ,d
@@ -174,7 +175,8 @@ class Encoder(nn.Module):
         # MultiHeadedAttention(h=1,d_model=512)
 
         self.resnet_bands = resnet_bands
-        self.fc_in_dim = self.resnet_bands.fc.in_features
+        #self.fc_in_dim = self.resnet_bands.fc.in_features
+        self.fc_in_dim = 256
 
         self.dim = self.fc_in_dim
 
@@ -222,14 +224,14 @@ class Encoder(nn.Module):
         if self.self_attn == 'multihead' and isinstance(self.positionalE, Learnt_PE):
             nn.init.trunc_normal_(self.positionalE.pos_embedding, std=.02)
 
-    # @autocast()
+    @autocast()
     def forward(self, x):
         # I'm assuming that I have only one input for now
         features = []
         key = list(x.keys())[0]
 
         if not self.self_attn:
-            features.append(self.resnet_bands(x[key])[1])
+            features.append(self.resnet_bands(x[key])[2])
             # features = torch.cat(features)
             # x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
             # b, num_patches, c, h, w = x_p.shape

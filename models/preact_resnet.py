@@ -1,4 +1,5 @@
 #adapted from https://github.com/kuangliu/pytorch-cifar/blob/master/models/preact_resnet.py
+import copy
 import re
 import time
 from collections import OrderedDict
@@ -166,16 +167,17 @@ class PreActResNet(nn.Module):
         x = self.layer2(x)
 
         x = self.layer3(x)
+        layer3=self.avgpool(x).view(x.size(0), -1)
         x = self.layer4(x)
         x = self.final_bn(x)
         x = self.final_relu(x)
         x = self.avgpool(x)
         #x=torch.mean(x,dim=(-1,-2))
         x = x.view(x.size(0), -1)
-        features=x
+        features=copy.deepcopy(x)
         x = self.fc(x)
 
-        return x,features
+        return x,features,layer3
 
 
 def PreActResNet18(in_channels,pretrained):
