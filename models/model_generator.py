@@ -224,7 +224,7 @@ class Encoder(nn.Module):
         if self.self_attn == 'multihead' and isinstance(self.positionalE, Learnt_PE):
             nn.init.trunc_normal_(self.positionalE.pos_embedding, std=.02)
 
-    @autocast()
+    #@autocast()
     def forward(self, x):
         # I'm assuming that I have only one input for now
         features = []
