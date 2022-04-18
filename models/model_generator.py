@@ -99,8 +99,11 @@ class EncoderLayer(nn.Module):
         y = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[-2])  # bs, n ,d
         z = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[-1])  # bs, n ,d
 
-        return self.sublayer[1](x, self.feed_forward),self.sublayer[1](k, self.feed_forward),self.sublayer[1](v, self.feed_forward), self.sublayer[1](y, self.feed_forward), self.sublayer[1](z,
-                                                                                                                self.feed_forward)  # bs, n , d_model
+        return self.sublayer[1](x, self.feed_forward), self.sublayer[1](k, self.feed_forward), self.sublayer[1](v,
+                                                                                                                self.feed_forward), \
+               self.sublayer[1](y, self.feed_forward), self.sublayer[1](z,
+                                                                        self.feed_forward)  # bs, n , d_model
+
 
 class Layers(nn.Module):
     "Core encoder is a stack of N layers"
@@ -159,15 +162,16 @@ class Encoder(nn.Module):
         self.patch = patch
         self.stride = stride
         self.num_patches = int((
-                                           args.crop - self.patch) / self.stride) + 1  # TODO it will produce error in loading pretrained models if args crop changed
+                                       args.crop - self.patch) / self.stride) + 1  # TODO it will produce error in loading pretrained models if args crop changed
 
-        self.fc = nn.Linear(self.fc_in_dim *( self.num_patches**2), num_outputs).to(args.gpus)  # combines both together
+
         if self_attn == 'multihead_space':
 
             self.spaceE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
             self.multi_head_adapt = MultiHeadedAttention_adapt(h=1, d_model=self.fc_in_dim)
             self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt, feed_forward=self.ff)
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
+            self.fc_in_dim *= self.num_patches
 
         elif self_attn:
             self.positionalE = PositionalEncoding2D(self.fc_in_dim)
@@ -175,7 +179,9 @@ class Encoder(nn.Module):
             self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
             self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
             self.layers = Layers(self.layer, attn_blocks)
-
+            self.fc_in_dim *= self.num_patches
+        self.fc = nn.Linear(self.fc_in_dim, num_outputs).to(
+            args.gpus)  # combines both together
         with torch.no_grad():
             self.init_weights()
 
