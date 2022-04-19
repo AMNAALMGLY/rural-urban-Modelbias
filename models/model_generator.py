@@ -345,7 +345,7 @@ class MultiHeadedAttentionAdapt(nn.Module):
 
         query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
                              for l, x in zip(self.linears, (query, key, value))]
-        assert tuple(query.shape) == (nbatches, self.h, 1, self.d_k)
+        assert tuple(query.shape) == (nbatches, self.h, nPatches, self.d_k)
         assert tuple(key.shape) == (nbatches, self.h, nPatches, self.d_k)
         assert tuple(value.shape) == (nbatches, self.h, nPatches, self.d_k)
 
