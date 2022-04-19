@@ -264,7 +264,7 @@ def attention(query, key, value, dropout=None):
 
     assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
     p_attn = F.softmax(scores, dim=-1)
-    print('scores ', p_attn[10])
+    print('scores ', p_attn.shape)
 
     out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
     assert tuple(out.shape) == (b, h, n, d), 'shape of attention output is not expected'
@@ -283,7 +283,7 @@ def attention_uniform(query, key, value, dropout=None):
     scores_identity = torch.ones((b, h, n, n)).type_as(query)
 
     p_attn_identity = F.softmax(scores_identity, dim=-1)
-    print('uniform scores ', p_attn_identity[10])
+    print('uniform scores ',p_attn_identity.shape)
 
     out_ident = einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
     assert tuple(out_ident.shape) == (b, h, n, d), 'shape of uniform attention output is not expected'
@@ -309,7 +309,7 @@ def attention_center(query, key, value, dropout=None):
     assert tuple(scores.shape) == (b, h, 1, n), 'scores shape is not as expected'
 
     p_attn = F.softmax(scores, dim=-1)
-    print('scores ', p_attn[10])
+    print('scores ', p_attn.shape)
 
     out = einsum('b h i j, b h j d -> b h j d', p_attn, value)
     assert tuple(out.shape) == (b, h, n, d), 'shape of attention output is not expected'
