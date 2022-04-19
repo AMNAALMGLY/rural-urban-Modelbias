@@ -361,7 +361,7 @@ class MultiHeadedAttentionAdapt(nn.Module):
             raise NotImplementedError
 
         # 3) "concat heads "
-        x = rearrange(x, 'b h n d -> b n (h d)', h=self.h, n=1)
+        x = rearrange(x, 'b h n d -> b n (h d)', h=self.h)
 
         assert tuple(x.shape) == (nbatches, nPatches, self.d_k * self.h)
 
