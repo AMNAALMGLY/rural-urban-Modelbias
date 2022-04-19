@@ -83,10 +83,7 @@ class SublayerConnection(nn.Module):
 
 
 class EncoderLayer(nn.Module):
-    """
-     Encoder is made up of self-attn and feed forward (defined below)
-     self attention
-    """
+    "Encoder is made up of self-attn and feed forward (defined below) -query attention(different from key& value "
 
     def __init__(self, size, self_attn, feed_forward, dropout=0):
         super(EncoderLayer, self).__init__()
@@ -95,40 +92,10 @@ class EncoderLayer(nn.Module):
         self.sublayer = clones(SublayerConnection(size, dropout), 2)
         self.size = size  # d_model or embed_dim
 
-    def forward(self, q, k, v):
-        x = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[0])  # bs, n ,d
+    def forward(self, x):
+        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x))  # bs, n ,d
 
-        y = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[-2])  # bs, n ,d
-        z = self.sublayer[0](q, lambda q: self.self_attn(q, k, v)[-1])  # bs, n ,d
-
-        x = self.sublayer[1](x, self.feed_forward)
-        return x, x, x, \
-               self.sublayer[1](y, self.feed_forward), self.sublayer[1](z,
-                                                                        self.feed_forward)  # bs, n , d_model
-
-
-class EncoderLayer_adapt(nn.Module):
-    "Encoder is made up of self-attn and feed forward (defined below) -query attention(different from key& value "
-
-    def __init__(self, size, self_attn, feed_forward, dropout=0):
-        super(EncoderLayer_adapt, self).__init__()
-        self.self_attn = self_attn
-        self.feed_forward = feed_forward
-        self.sublayer = clones(SublayerConnection(size, dropout), 2)
-        self.size = size  # d_model or embed_dim
-
-    def forward(self, q, k, v):
-        x = self.sublayer[0](q, lambda q,k,v: self.self_attn(q, k, v)[0])  # bs, n ,d
-
-        k = self.sublayer[0](k, lambda q,k,v: self.self_attn(q, k, v)[1])  # bs, n ,d
-        v = self.sublayer[0](v, lambda q,k,v: self.self_attn(q, k, v)[2])  # bs, n ,d
-        y = self.sublayer[0](q, lambda q,k,v: self.self_attn(q, k, v)[-2])  # bs, n ,d
-        z = self.sublayer[0](q, lambda q,k,v: self.self_attn(q, k, v)[-1])  # bs, n ,d
-
-        return self.sublayer[1](x, self.feed_forward), self.sublayer[1](k, self.feed_forward), self.sublayer[1](v,
-                                                                                                                self.feed_forward), \
-               self.sublayer[1](y, self.feed_forward), self.sublayer[1](z,
-                                                                        self.feed_forward)  # bs, n , d_model
+        return self.sublayer[1](x, self.feed_forward)  # bs, n , d_model
 
 
 class Layers(nn.Module):
@@ -139,11 +106,11 @@ class Layers(nn.Module):
         self.layers = clones(layer, N)
         self.norm = LayerNorm(layer.size)
 
-    def forward(self, q, k, v):
+    def forward(self, x):
         "Pass the input through each layer in turn."
         for layer in self.layers:
-            q, k, v, y, z = layer(q, k, v)  # query , uniform query, random query
-        return self.norm(q), self.norm(y), self.norm(z)  # bs , n , d_model
+            x = layer(x)  # query , uniform query, random query
+        return self.norm(x)  # bs , n , d_model
 
 
 class Encoder(nn.Module):
@@ -175,8 +142,8 @@ class Encoder(nn.Module):
         # MultiHeadedAttention(h=1,d_model=512)
 
         self.resnet_bands = resnet_bands
-        #self.fc_in_dim = self.resnet_bands.fc.in_features
-        self.fc_in_dim = 256
+        self.fc_in_dim = self.resnet_bands.fc.in_features
+        # self.fc_in_dim = 256
 
         self.dim = self.fc_in_dim
 
@@ -184,28 +151,24 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-        self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 8), nn.GELU(),
-                                nn.Linear(self.fc_in_dim //8, self.fc_in_dim))
+        self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 2), nn.GELU(),
+                                nn.Linear(self.fc_in_dim // 2, self.fc_in_dim))
         self.patch = patch
         self.stride = stride
         self.num_patches = int((
                                        args.crop - self.patch) / self.stride) + 1  # TODO it will produce error in loading pretrained models if args crop changed
+        if self.attn:
+            if self_attn == 'multihead_space':
 
-        if self_attn == 'multihead_space':
-
-            self.spaceE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
-            self.multi_head_adapt = MultiHeadedAttention_adapt(h=1, d_model=self.fc_in_dim)
-            self.layer_adapt = EncoderLayer_adapt(size=self.fc_in_dim, self_attn=self.multi_head_adapt, feed_forward=self.ff)
+                self.PE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
+            else:
+                self.PE = PositionalEncoding2D(self.fc_in_dim)
+            self.multi_head_adapt = MultiHeadedAttentionAdapt(h=1, d_model=self.fc_in_dim, w=self_attn)
+            self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
+                                            feed_forward=self.ff)
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
-            self.dim *= (self.num_patches**2)
+            self.dim *= (self.num_patches ** 2)
 
-        elif self_attn:
-            self.positionalE = PositionalEncoding2D(self.fc_in_dim)
-            # self.positionalE = Learnt_PE(self.num_patches, self.fc_in_dim)
-            self.multi_head = MultiHeadedAttention(h=1, d_model=self.fc_in_dim)
-            self.layer = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head, feed_forward=self.ff)
-            self.layers = Layers(self.layer, attn_blocks)
-            self.dim *=( self.num_patches**2)
         self.fc = nn.Linear(self.dim, num_outputs).to(
             args.gpus)  # combines both together
         with torch.no_grad():
@@ -221,10 +184,10 @@ class Encoder(nn.Module):
                     nn.init.normal_(m.bias, std=1e-6)  # nn.init.constant(m.bias, 0)
 
         self.apply(initial)
-        if self.self_attn == 'multihead' and isinstance(self.positionalE, Learnt_PE):
-            nn.init.trunc_normal_(self.positionalE.pos_embedding, std=.02)
+        if self.self_attn == 'multihead' and isinstance(self.PE, Learnt_PE):
+            nn.init.trunc_normal_(self.PE.pos_embedding, std=.02)
 
-    #@autocast()
+    # @autocast()
     def forward(self, x):
         # I'm assuming that I have only one input for now
         features = []
@@ -253,73 +216,37 @@ class Encoder(nn.Module):
             b, num_patches, c, h, w = x_p.shape
 
             for p in range(num_patches):
-                features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[2])
+                features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
             # features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c2, h2, w2))[1])
             features = torch.stack((features), dim=1)
 
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'shape of features after resnet is not as expected'
 
+            features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
+                                 p2=int(num_patches ** 0.5))
+
+            features = self.PE(features)
+
+            assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
+                                             self.fc_in_dim), 'positional encoding shape is not as expected'
+            features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
+                                 p2=int(num_patches ** 0.5))
+            assert tuple(features.shape) == (
+                b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
+
+            features = self.layers_adapt(x)
+            assert tuple(features.shape) == (
+                b, num_patches, self.fc_in_dim), 'output of  attention layer is not correct'
+
             if self.self_attn == 'multihead_space':
-                print(' inside space  attention')
-                # features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
-                #                    p2=int(num_patches ** 0.5))
-
-                features = self.spaceE(features)
-
-                # assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
-                #                                self.fc_in_dim), 'positional encoding shape is not as expected'
-                # features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
-                #                    p2=int(num_patches ** 0.5))
-                assert tuple(features.shape) == (
-                    b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
-
-                query = features[:, (num_patches - 1) // 2, :].unsqueeze(1)  # just take the center patch
-
-                features, _, _ = self.layers_adapt(query, features, features)
-                assert tuple(features.shape) == (
-                    b, 1, self.fc_in_dim), 'output of space attention layer is not correct'
-
-
-            elif self.self_attn == 'multihead':
-                print(' inside attention that use positional encoding')
-                features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
-                                     p2=int(num_patches ** 0.5))
-
-                features = self.positionalE(features)
-                assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
-                                                 self.fc_in_dim), 'positional encoding shape is not as expected'
-                features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
-                                     p2=int(num_patches ** 0.5))
-                assert tuple(features.shape) == (
-                    b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
-                features, _, _ = self.layers(features, features, features)
-                assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of positional attention ' \
-                                                                                  'layer is not correct '
-
-
-            elif self.self_attn == 'multihead_uniform':
-                print(' inside uniform attention')
-
-                _, features, _ = self.layers(features, features, features)
-                assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of uniform attention ' \
-                                                                                  'layer is not correct '
-
-            elif self.self_attn == 'multihead_random':
-                print(' inside random attention')
-
-                _, _, features = self.layers(features, features, features)
-                assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of random attention ' \
-                                                                                  'layer is not correct '
-
-            if features.size(
-                    1) > 1:
-                # features = torch.mean(features, dim=1, keepdim=False)
+                features = features[:, (num_patches - 1) // 2, :].squeeze(1)
+            else:
+                #features = torch.mean(features, dim=1, keepdim=False)
                 # concat:
                 features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
                 assert tuple(features.shape) == (b, self.dim), 'aggeragtion output of features is not as expected'
-            else:
-                features = features.squeeze(1)
+
 
         # return self.fc(self.relu(self.dropout(torch.cat(features))))
         return self.fc(self.relu(self.dropout(features)))
@@ -336,97 +263,67 @@ def attention(query, key, value, dropout=None):
 
     assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
     p_attn = F.softmax(scores, dim=-1)
-    print('scores ', p_attn)
-    scores_identity = torch.ones_like(scores)
-    scores_identity = scores_identity.type_as(scores)
-    p_attn_identity = F.softmax(scores_identity, dim=-1)
-    print('uniform scores ', p_attn_identity)
-    scores_random = torch.randn_like(scores)
-    scores_random = scores_random.type_as(scores)
-    p_attn_random = F.softmax(scores_random, dim=-1)
+    print('scores ', p_attn[10])
 
     out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
     assert tuple(out.shape) == (b, h, n, d), 'shape of attention output is not expected'
-    out_ident = einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
-    out_random = einsum('b h i j, b h i d -> b h i d', p_attn_random, value)
 
-    return out, out_ident, out_random, p_attn, p_attn_identity, p_attn_random
+    return out, p_attn
 
 
-class MultiHeadedAttention(nn.Module):
-    def __init__(self, h, d_model, dropout=0):
-        "Take in model size and number of heads."
-        super(MultiHeadedAttention, self).__init__()
-        assert d_model % h == 0
-        # We assume d_v always equals d_k
-        print('in multiheadedAttention')
-        self.d_k = d_model // h
-        self.h = h
-        self.linears = clones(nn.Linear(d_model, d_model), 4)
-        self.attn, self.ident_attn, self.rand_attn = None, None, None
-        self.dropout = nn.Dropout(p=dropout)
-
-    def forward(self, query, key, value):
-        nbatches = query.size(0)
-
-        # 1) Do all the linear projections in batch from d_model => h x d_k
-
-        query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
-                             for l, x in zip(self.linears, (query, key, value))]
-
-        # 2) Apply attention on all the projected vectors in batch.
-        x, y, z, self.attn, self.ident_attn, self.rand_attn = attention(query, key, value,
-                                                                        )
-
-        # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
-        x = rearrange(x, 'b h n d -> b n (h d)', h=self.h)
-        y = rearrange(y, 'b h n d -> b n (h d)', h=self.h)
-        z = rearrange(z, 'b h n d -> b n (h d)', h=self.h)
-
-        # x = x.transpose(1, 2).contiguous().view(
-        #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
-        # x=x.reshape(b,n,h*d)
-        output = self.linears[-1](x)
-        return output, output, output, y, z  # bs , n , d_model
-
-
-def attention_adapt(query, key, value, dropout=None):
-    "Compute 'Scaled Dot Product Attention if central patch is used as query"
-    # query: bs, h,1, embed_dim
+def attention_uniform(query, key, value, dropout=None):
+    "Compute 'Scaled Dot Product Attention'"
+    # query: bs, h,n, embed_dim
     # key: bs, h,n, embed_dim
     # value: bs, h, n,embed_dim
 
-    b, h, n, d = key.shape
-    scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
-    assert scores.shape == (b, h, 1, n), 'the shape is not as expected'
-    # tmp = 0.0001
-    p_attn = F.softmax(scores, dim=-1)
-    print('scores ', p_attn)
-    scores_identity = torch.ones_like(scores)
-    scores_identity = scores_identity.type_as(scores)
+    b, h, n, d = query.shape
+
+    scores_identity = torch.ones((b, h, n, n)).type_as(query)
+
     p_attn_identity = F.softmax(scores_identity, dim=-1)
+    print('uniform scores ', p_attn_identity[10])
 
-    scores_random = torch.randn_like(scores)
-    scores_random = scores_random.type_as(scores)
-    p_attn_random = F.softmax(scores_random, dim=-1)
+    out_ident = einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
+    assert tuple(out_ident.shape) == (b, h, n, d), 'shape of uniform attention output is not expected'
 
-    out = einsum('b h i j, b h j d -> b h i d', p_attn, value)
-    assert tuple(out.shape) == (b, h, 1, d), 'shape of out attention isnot as expected'
-    out_ident = einsum('b h i j, b h j d -> b h i d', p_attn_identity, value)
-    out_random = einsum('b h i j, b h j d -> b h i d', p_attn_random, value)
-    # print('output attention ', out.shape)
-
-    return out, out_ident, out_random, p_attn, p_attn_identity, p_attn_random
+    return out_ident, p_attn_identity
 
 
-class MultiHeadedAttention_adapt(nn.Module):
+def attention_center(query, key, value, dropout=None):
+    "Compute 'Scaled Dot Product Attention'"
+    # query: bs, h,n, embed_dim
+    # key: bs, h,n, embed_dim
+    # value: bs, h, n,embed_dim
+
+    b, h, n, d = query.shape
+    # Sanity check for center patch:
+    if (n - 1) % 2 != 0:
+        raise NotImplementedError
+    else:
+        query = query[:, (n - 1) // 2, :].unsqueeze(1)  # just take the center patch
+
+    scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
+
+    assert tuple(scores.shape) == (b, h, 1, n), 'scores shape is not as expected'
+
+    p_attn = F.softmax(scores, dim=-1)
+    print('scores ', p_attn[10])
+
+    out = einsum('b h i j, b h j d -> b h j d', p_attn, value)
+    assert tuple(out.shape) == (b, h, n, d), 'shape of attention output is not expected'
+
+    return out, p_attn
+
+
+class MultiHeadedAttentionAdapt(nn.Module):
     '''
     attention if just central patch query is used
     '''
 
-    def __init__(self, h, d_model, dropout=0):
+    def __init__(self, h, d_model, dropout=0, w='multihead'):
         "Take in model size and number of heads."
-        super(MultiHeadedAttention_adapt, self).__init__()
+        super(MultiHeadedAttentionAdapt, self).__init__()
         assert d_model % h == 0
         # We assume d_v always equals d_k
         print('in multiheadedAttention')
@@ -434,8 +331,9 @@ class MultiHeadedAttention_adapt(nn.Module):
 
         self.h = h
         self.linears = clones(nn.Linear(d_model, d_model), 4)
-        self.attn, self.ident_attn, self.rand_attn = None, None, None
+        self.attn = None
         self.dropout = nn.Dropout(p=dropout)
+        self.w = w
 
     def forward(self, query, key, value):
         nbatches = query.size(0)
@@ -451,17 +349,22 @@ class MultiHeadedAttention_adapt(nn.Module):
         assert tuple(value.shape) == (nbatches, self.h, nPatches, self.d_k)
 
         # 2) Apply attention on all the projected vectors in batch.
-        x, y, z, self.attn, self.ident_attn, self.rand_attn = attention_adapt(query, key, value,
-                                                                              )
+        if self.w == 'multihead_uniform':
+            x, self.attn = attention_uniform(query, key, value,
+                                             )
+        elif self.w == 'multihead':
+            x, self.attn = attention(query, key, value)
+        elif self.w == 'multihead_space':
+            x, self.attn = attention_center(query, key, value)
+        else:
+            raise NotImplementedError
 
         # 3) "concat heads "
         x = rearrange(x, 'b h n d -> b n (h d)', h=self.h, n=1)
-        assert tuple(x.shape) == (nbatches, 1, (self.d_k) * self.h)
 
-        y = rearrange(y, 'b h n d -> b n (h d)', h=self.h)
-        z = rearrange(z, 'b h n d -> b n (h d)', h=self.h)
+        assert tuple(x.shape) == (nbatches, nPatches, self.d_k * self.h)
 
-        return self.linears[-1](x), key, value, y, z  # bs , n , d_model
+        return x  # bs , n , d_model
 
 
 def clones(module, N):
@@ -629,3 +532,109 @@ class Learnt_PE(nn.Module):
         """Input has shape `(batch_size, seq_len,seq_len, emb_dim)`"""
         print('learnt_embedding', self.pos_embedding[0, :, :, 0], 'second_channel', self.pos_embedding[0, :, :, 1])
         return x + self.pos_embedding
+
+
+def attention_adapt(query, key, value, dropout=None):
+    "Compute 'Scaled Dot Product Attention if central patch is used as query"
+    # query: bs, h,1, embed_dim
+    # key: bs, h,n, embed_dim
+    # value: bs, h, n,embed_dim
+
+    b, h, n, d = key.shape
+    scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
+    assert scores.shape == (b, h, 1, n), 'the shape is not as expected'
+    # tmp = 0.0001
+    p_attn = F.softmax(scores, dim=-1)
+    print('scores ', p_attn)
+    scores_identity = torch.ones_like(scores)
+    scores_identity = scores_identity.type_as(scores)
+    p_attn_identity = F.softmax(scores_identity, dim=-1)
+
+    scores_random = torch.randn_like(scores)
+    scores_random = scores_random.type_as(scores)
+    p_attn_random = F.softmax(scores_random, dim=-1)
+
+    out = einsum('b h i j, b h j d -> b h i d', p_attn, value)
+    assert tuple(out.shape) == (b, h, 1, d), 'shape of out attention isnot as expected'
+    out_ident = einsum('b h i j, b h j d -> b h i d', p_attn_identity, value)
+    out_random = einsum('b h i j, b h j d -> b h i d', p_attn_random, value)
+    # print('output attention ', out.shape)
+
+    return out, out_ident, out_random, p_attn, p_attn_identity, p_attn_random
+
+
+class MultiHeadedAttention(nn.Module):
+    def __init__(self, h, d_model, dropout=0):
+        "Take in model size and number of heads."
+        super(MultiHeadedAttention, self).__init__()
+        assert d_model % h == 0
+        # We assume d_v always equals d_k
+        print('in multiheadedAttention')
+        self.d_k = d_model // h
+        self.h = h
+        self.linears = clones(nn.Linear(d_model, d_model), 3)
+        self.attn = None
+        self.dropout = nn.Dropout(p=dropout)
+
+    def forward(self, query, key, value):
+        nbatches = query.size(0)
+
+        # 1) Do all the linear projections in batch from d_model => h x d_k
+
+        query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
+                             for l, x in zip(self.linears, (query, key, value))]
+
+        # 2) Apply attention on all the projected vectors in batch.
+        x, self.attn, = attention(query, key, value
+                                  )
+
+        # 3) "Concat" using a view and apply a final linear.(done here already in the attention function)
+        x = rearrange(x, 'b h n d -> b n (h d)', h=self.h)
+
+        # x = x.transpose(1, 2).contiguous().view(
+        #   nbatches, -1, self.h * self.d_k)  # bs , n , d_model
+        # x=x.reshape(b,n,h*d)
+        # output = self.linears[-1](x)
+        return x  # bs , n , d_model
+
+
+"""
+  elif self.self_attn == 'multihead':
+                print(' inside attention that use positional encoding')
+                features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
+                                     p2=int(num_patches ** 0.5))
+
+                features = self.PE(features)
+                assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
+                                                 self.fc_in_dim), 'positional encoding shape is not as expected'
+                features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
+                                     p2=int(num_patches ** 0.5))
+                assert tuple(features.shape) == (
+                    b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
+                features, _, _ = self.layers(features, features, features)
+                assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of positional attention ' \
+                                                                                  'layer is not correct '
+
+
+            elif self.self_attn == 'multihead_uniform':
+                print(' inside uniform attention')
+
+                _, features, _ = self.layers(features, features, features)
+                assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of uniform attention ' \
+                                                                                  'layer is not correct '
+
+            elif self.self_attn == 'multihead_random':
+                print(' inside random attention')
+
+                _, _, features = self.layers(features, features, features)
+                assert tuple(features.shape) == (b, num_patches, self.fc_in_dim), 'output of random attention ' \
+                                                                                  'layer is not correct '
+            if features.size(
+                    1) > 1:
+                # features = torch.mean(features, dim=1, keepdim=False)
+                # concat:
+                features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
+                assert tuple(features.shape) == (b, self.dim), 'aggeragtion output of features is not as expected'
+            else:
+                features = features.squeeze(1)        
+"""

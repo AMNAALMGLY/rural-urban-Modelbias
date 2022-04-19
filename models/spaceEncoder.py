@@ -159,29 +159,29 @@ class GridCellSpatialRelationEncoder(nn.Module):
         Return:
             sprenc: input tesnor added to the encoding ->Tensor shape (batch_size, num_context_pt, spa_embed_dim)
         """
-        if len(tensor.shape) != 3:
-            raise RuntimeError("The input tensor has to be 3d!")
-        batch_size, x, orig_ch = tensor.shape
+        if len(tensor.shape) != 4:
+            raise RuntimeError("The input tensor has to be 4d!")
+        batch_size, x,y, orig_ch = tensor.shape
 
-        pos = torch.arange(float(x ** 0.5), )
+        pos = torch.arange(float(x), )
         paired = torch.cartesian_prod(pos, pos)
 
         paired = paired.unsqueeze(0)
         coords = paired.repeat((batch_size, 1, 1))
-        assert tuple(coords.shape) == (batch_size, x, 2), 'shape of coordinates is not as expected '
+        assert tuple(coords.shape) == (batch_size, x*y, 2), 'shape of coordinates is not as expected '
         # print(coords.shape)  # expected [batch_size, num_context_pts,2]
 
         # Relative coordinates :
-        rel_coord = torch.empty((batch_size, x , 2))
+        rel_coord = torch.empty((batch_size, x*y , 2))
 
-        center_coord = coords[:, ((x) - 1) // 2, :]  # shape [batch, 1 , 2]
+        center_coord = coords[:, ((x*y) - 1) // 2, :]  # shape [batch, 1 , 2]
         # print(center_coord,center_coord.shape)
-        for i in range(x):  # num of context points
+        for i in range(x*y):  # num of context points
             coord = coords[:, i, :]
 
             rel_coord[:, i, :] = coord - center_coord
         # print('relative coordinates:',rel_coord[0],rel_coord.shape)
-        assert tuple(rel_coord.shape) == (batch_size, x, 2), 'shape of relative coordinates is not as expected'
+        assert tuple(rel_coord.shape) == (batch_size, x*y, 2), 'shape of relative coordinates is not as expected'
 
         # spr_embeds = self.make_input_embeds(coords.numpy())
         spr_embeds = self.make_input_embeds(rel_coord.numpy())
@@ -206,7 +206,7 @@ class GridCellSpatialRelationEncoder(nn.Module):
             return self.ffn(spr_embeds)
         else:
 
-            # spr_embeds = rearrange(spr_embeds, 'b (p1 p2) d -> b p1 p2 d', p1=x,
-            #                       p2=y)
+            spr_embeds = rearrange(spr_embeds, 'b (p1 p2) d -> b p1 p2 d', p1=x,
+                                   p2=y)
             print('embedding', spr_embeds[0])
             return spr_embeds + tensor
