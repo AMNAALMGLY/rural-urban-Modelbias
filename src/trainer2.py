@@ -304,7 +304,7 @@ class Trainer:
         else:
             self.class_model = None
         # log the gradients
-        wandb.watch(self.model, log='all')
+        wandb.watch(self.model, log='all',log_freq=5)
 
         swa_start = int(0.75 * max_epochs)  # swa in 25% of the training
 
