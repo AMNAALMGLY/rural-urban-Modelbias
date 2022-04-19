@@ -157,13 +157,13 @@ class Encoder(nn.Module):
         self.stride = stride
         self.num_patches = int((
                                        args.crop - self.patch) / self.stride) + 1  # TODO it will produce error in loading pretrained models if args crop changed
-        if self.attn:
-            if self_attn == 'multihead_space':
+        if self.self_attn:
+            if self.self_attn == 'multihead_space':
 
                 self.PE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
             else:
                 self.PE = PositionalEncoding2D(self.fc_in_dim)
-            self.multi_head_adapt = MultiHeadedAttentionAdapt(h=1, d_model=self.fc_in_dim, w=self_attn)
+            self.multi_head_adapt = MultiHeadedAttentionAdapt(h=1, d_model=self.fc_in_dim, w=self.self_attn)
             self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
                                             feed_forward=self.ff)
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
