@@ -302,7 +302,7 @@ def attention_center(query, key, value, dropout=None):
     if (n - 1) % 2 != 0:
         raise NotImplementedError
     else:
-        query = query[:, (n - 1) // 2, :].unsqueeze(1)  # just take the center patch
+        query = query[:,:, (n - 1) // 2, :].unsqueeze(1)  # just take the center patch
         assert tuple(query.shape) == (query, 1, d)
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
 
