@@ -257,7 +257,7 @@ class Encoder(nn.Module):
         return self.fc(self.relu(self.dropout(features)))
 
 
-def attention(query, key, value, dropout=None):
+def attention(query, key, value,tmp=1000, dropout=None):
     "Compute 'Scaled Dot Product Attention'"
     # query: bs, h,n, embed_dim
     # key: bs, h,n, embed_dim
@@ -267,7 +267,7 @@ def attention(query, key, value, dropout=None):
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
 
     assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
-    p_attn = F.softmax(scores, dim=-1)
+    p_attn = F.softmax(scores/tmp, dim=-1)
     print('scores ', p_attn.shape)
 
     out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
