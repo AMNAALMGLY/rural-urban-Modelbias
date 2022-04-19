@@ -208,13 +208,14 @@ class Encoder(nn.Module):
 
 
         else:
+            # patching
             print('in attention with patches')
             x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
             # x_p2=img_to_patch_strided(x['buildings'], p=120,s=100)
 
             print('patches shape :', x_p.shape)
             b, num_patches, c, h, w = x_p.shape
-
+            # feature extracting
             for p in range(num_patches):
                 features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
             # features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c2, h2, w2))[1])
@@ -222,7 +223,7 @@ class Encoder(nn.Module):
 
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'shape of features after resnet is not as expected'
-
+            #Positional encoder
             features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
                                  p2=int(num_patches ** 0.5))
 
@@ -234,20 +235,19 @@ class Encoder(nn.Module):
                                  p2=int(num_patches ** 0.5))
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
-
+            #Attention Layers
             features = self.layers_adapt(features)
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'output of  attention layer is not correct'
-
+            #Aggregation
             if self.self_attn == 'multihead_space':
                 features = features[:, (num_patches - 1) // 2, :].squeeze(1)
                 assert tuple(features.shape) == (features, 1, self.fc_in_dim)
             else:
-                #features = torch.mean(features, dim=1, keepdim=False)
+                # features = torch.mean(features, dim=1, keepdim=False)
                 # concat:
                 features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
                 assert tuple(features.shape) == (b, self.dim), 'aggeragtion output of features is not as expected'
-
 
         # return self.fc(self.relu(self.dropout(torch.cat(features))))
         return self.fc(self.relu(self.dropout(features)))
@@ -283,7 +283,7 @@ def attention_uniform(query, key, value, dropout=None):
     scores_identity = torch.ones((b, h, n, n)).type_as(query)
 
     p_attn_identity = F.softmax(scores_identity, dim=-1)
-    print('uniform scores ',p_attn_identity.shape)
+    print('uniform scores ', p_attn_identity.shape)
 
     out_ident = einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
     assert tuple(out_ident.shape) == (b, h, n, d), 'shape of uniform attention output is not expected'
@@ -302,8 +302,8 @@ def attention_center(query, key, value, dropout=None):
     if (n - 1) % 2 != 0:
         raise NotImplementedError
     else:
-        query = query[:,:, (n - 1) // 2, :].unsqueeze(1)  # just take the center patch
-        assert tuple(query.shape) == (query, 1, d)
+        query = query[:, :, (n - 1) // 2, :].unsqueeze(1)  # just take the center patch
+        assert tuple(query.shape) == (b,1, 1, d)
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
 
     assert tuple(scores.shape) == (b, h, 1, n), 'scores shape is not as expected'
@@ -331,7 +331,7 @@ class MultiHeadedAttentionAdapt(nn.Module):
         self.d_k = d_model // h
 
         self.h = h
-        self.linears = clones(nn.Linear(d_model, d_model), 4)
+        self.linears = clones(nn.Linear(d_model, d_model), 3)
         self.attn = None
         self.dropout = nn.Dropout(p=dropout)
         self.w = w
@@ -340,7 +340,7 @@ class MultiHeadedAttentionAdapt(nn.Module):
         nbatches = query.size(0)
         nPatches = key.size(1)
 
-        #assert tuple(query.shape) == (nbatches, 1, self.d_k)
+        # assert tuple(query.shape) == (nbatches, 1, self.d_k)
         # 1) Do all the linear projections in batch from d_model => h x d_k
 
         query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
