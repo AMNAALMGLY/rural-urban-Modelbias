@@ -242,7 +242,7 @@ class Encoder(nn.Module):
             #Aggregation
             if self.self_attn == 'multihead_space':
                 features = features[:, (num_patches - 1) // 2, :].squeeze(1)
-                assert tuple(features.shape) == (features, 1, self.fc_in_dim)
+                assert tuple(features.shape) == (b, 1, self.fc_in_dim)
             else:
                 # features = torch.mean(features, dim=1, keepdim=False)
                 # concat:
