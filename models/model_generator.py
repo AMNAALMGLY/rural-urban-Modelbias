@@ -241,6 +241,7 @@ class Encoder(nn.Module):
 
             if self.self_attn == 'multihead_space':
                 features = features[:, (num_patches - 1) // 2, :].squeeze(1)
+                assert tuple(features.shape) == (features, 1, self.fc_in_dim)
             else:
                 #features = torch.mean(features, dim=1, keepdim=False)
                 # concat:
@@ -302,7 +303,7 @@ def attention_center(query, key, value, dropout=None):
         raise NotImplementedError
     else:
         query = query[:, (n - 1) // 2, :].unsqueeze(1)  # just take the center patch
-
+        assert tuple(query.shape) == (query, 1, d)
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
 
     assert tuple(scores.shape) == (b, h, 1, n), 'scores shape is not as expected'
@@ -339,7 +340,7 @@ class MultiHeadedAttentionAdapt(nn.Module):
         nbatches = query.size(0)
         nPatches = key.size(1)
 
-        assert tuple(query.shape) == (nbatches, 1, self.d_k)
+        #assert tuple(query.shape) == (nbatches, 1, self.d_k)
         # 1) Do all the linear projections in batch from d_model => h x d_k
 
         query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
