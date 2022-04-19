@@ -163,11 +163,12 @@ class Encoder(nn.Module):
                 self.PE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
             else:
                 self.PE = PositionalEncoding2D(self.fc_in_dim)
+                self.dim *= (self.num_patches ** 2)
             self.multi_head_adapt = MultiHeadedAttentionAdapt(h=1, d_model=self.fc_in_dim, w=self.self_attn)
             self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
                                             feed_forward=self.ff)
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
-            self.dim *= (self.num_patches ** 2)
+
 
         self.fc = nn.Linear(self.dim, num_outputs).to(
             args.gpus)  # combines both together
@@ -242,7 +243,7 @@ class Encoder(nn.Module):
             #Aggregation
             if self.self_attn == 'multihead_space':
                 features = features[:, (num_patches - 1) // 2, :].squeeze(1)
-                assert tuple(features.shape) == (b,self.fc_in_dim)
+                assert tuple(features.shape) == (b,self.dim)
             else:
                 # features = torch.mean(features, dim=1, keepdim=False)
                 # concat:
