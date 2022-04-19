@@ -235,7 +235,7 @@ class Encoder(nn.Module):
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
 
-            features = self.layers_adapt(x)
+            features = self.layers_adapt(features)
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'output of  attention layer is not correct'
 
