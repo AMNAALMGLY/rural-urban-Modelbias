@@ -225,6 +225,7 @@ class Encoder(nn.Module):
             features = torch.stack((features), dim=1)
             # prenormalization
             features = self.pre_norm(features)
+            print('after_norm',features[0,:,:])
 
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'shape of features after resnet is not as expected'
@@ -258,7 +259,7 @@ class Encoder(nn.Module):
         return self.fc(self.relu(self.dropout(features)))
 
 
-def attention(query, key, value, tmp=1000, dropout=None):
+def attention(query, key, value, tmp=1, dropout=None):
     "Compute 'Scaled Dot Product Attention'"
     # query: bs, h,n, embed_dim
     # key: bs, h,n, embed_dim
