@@ -175,6 +175,7 @@ class PreActResNet(nn.Module):
         #x=torch.mean(x,dim=(-1,-2))
         x = x.view(x.size(0), -1)
         features=x
+
         x = self.fc(x)
 
         return x,features,layer3

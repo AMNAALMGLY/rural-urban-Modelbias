@@ -146,7 +146,7 @@ class Encoder(nn.Module):
         # self.fc_in_dim = 256
 
         self.dim = self.fc_in_dim
-
+        self.pre_norm = LayerNorm(self.fc_in_dim)
         self.resnet_ms = resnet_ms
         self.resnet_build = resnet_build
         self.Mlp = Mlp
@@ -168,7 +168,6 @@ class Encoder(nn.Module):
             self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
                                             feed_forward=self.ff)
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
-
 
         self.fc = nn.Linear(self.dim, num_outputs).to(
             args.gpus)  # combines both together
@@ -217,17 +216,19 @@ class Encoder(nn.Module):
             print('patches shape :', x_p.shape)
             b, num_patches, c, h, w = x_p.shape
             # feature extracting
-            i=0
+            i = 0
             for p in range(num_patches):
                 features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
-                print('features scale',features[i],torch.linalg.norm(features[i]))
-                i+=1
+                print('features scale', features[i], torch.linalg.norm(features[i]))
+                i += 1
             # features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c2, h2, w2))[1])
             features = torch.stack((features), dim=1)
+            # prenormalization
+            features = self.pre_norm(features)
 
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'shape of features after resnet is not as expected'
-            #Positional encoder
+            # Positional encoder
             features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
                                  p2=int(num_patches ** 0.5))
 
@@ -239,14 +240,14 @@ class Encoder(nn.Module):
                                  p2=int(num_patches ** 0.5))
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
-            #Attention Layers
+            # Attention Layers
             features = self.layers_adapt(features)
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'output of  attention layer is not correct'
-            #Aggregation
+            # Aggregation
             if self.self_attn == 'multihead_space':
                 features = features[:, (num_patches - 1) // 2, :].squeeze(1)
-                assert tuple(features.shape) == (b,self.dim)
+                assert tuple(features.shape) == (b, self.dim)
             else:
                 # features = torch.mean(features, dim=1, keepdim=False)
                 # concat:
@@ -257,7 +258,7 @@ class Encoder(nn.Module):
         return self.fc(self.relu(self.dropout(features)))
 
 
-def attention(query, key, value,tmp=1000, dropout=None):
+def attention(query, key, value, tmp=1000, dropout=None):
     "Compute 'Scaled Dot Product Attention'"
     # query: bs, h,n, embed_dim
     # key: bs, h,n, embed_dim
@@ -267,7 +268,7 @@ def attention(query, key, value,tmp=1000, dropout=None):
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
 
     assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
-    p_attn = F.softmax(scores/tmp, dim=-1)
+    p_attn = F.softmax(scores / tmp, dim=-1)
     print('scores ', p_attn.shape)
 
     out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
@@ -307,7 +308,7 @@ def attention_center(query, key, value, dropout=None):
         raise NotImplementedError
     else:
         query = query[:, :, (n - 1) // 2, :].unsqueeze(1)  # just take the center patch
-        assert tuple(query.shape) == (b,1, 1, d)
+        assert tuple(query.shape) == (b, 1, 1, d)
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
 
     assert tuple(scores.shape) == (b, h, 1, n), 'scores shape is not as expected'
