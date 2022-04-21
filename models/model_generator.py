@@ -219,13 +219,13 @@ class Encoder(nn.Module):
             i = 0
             for p in range(num_patches):
                 features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
-                print('features scale', features[i], torch.linalg.norm(features[i]))
+                #print('features scale', features[i], torch.linalg.norm(features[i]))
                 i += 1
             # features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c2, h2, w2))[1])
             features = torch.stack((features), dim=1)
             # prenormalization
-            features = self.pre_norm(features)
-            print('after_norm',features[0,:,:])
+            #features = self.pre_norm(features)
+            #print('after_norm',features[0,:,:])
 
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'shape of features after resnet is not as expected'
@@ -259,13 +259,15 @@ class Encoder(nn.Module):
         return self.fc(self.relu(self.dropout(features)))
 
 
-def attention(query, key, value, tmp=1, dropout=None):
+def attention(query, key, value, tmp=.01, dropout=None):
     "Compute 'Scaled Dot Product Attention'"
     # query: bs, h,n, embed_dim
     # key: bs, h,n, embed_dim
     # value: bs, h, n,embed_dim
 
     b, h, n, d = query.shape
+    #Normalize:
+    query,key=F.normalize(query,dim=-1),F.normalize(key,dim=-1)
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
 
     assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
