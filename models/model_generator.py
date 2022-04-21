@@ -282,6 +282,7 @@ def attention(query, key, value, tmp=.01, dropout=None):
 
     assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
     p_attn = F.softmax(scores / tmp, dim=1)
+    #p_attn=taylor_softmax_v1(scores/tmp)
     print('scores ', p_attn.shape)
 
     out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
