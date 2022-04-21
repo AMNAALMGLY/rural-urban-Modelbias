@@ -34,6 +34,16 @@ model_type = dict(resnet18=PreActResNet18,
                   vit384=vit_B_32_384
                   )
 
+def taylor_softmax_v1(x, dim=1, n=4, use_log=False):
+    assert n % 2 == 0 and n > 0
+    fn = torch.ones_like(x)
+    denor = 1.
+    for i in range(1, n + 1):
+        denor *= i
+        fn = fn + x.pow(i) / denor
+    out = fn / fn.sum(dim=dim, keepdims=True)
+    if use_log: out = out.log()
+    return out
 
 def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
     model_fn = model_type[model_name]
@@ -271,7 +281,7 @@ def attention(query, key, value, tmp=.01, dropout=None):
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
 
     assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
-    p_attn = F.softmax(scores / tmp, dim=-1)
+    p_attn = F.softmax(scores / tmp, dim=1)
     print('scores ', p_attn.shape)
 
     out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
