@@ -281,7 +281,7 @@ def attention(query, key, value, tmp=.01, dropout=None):
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
 
     assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
-    p_attn = F.softmax(scores / tmp, dim=1)
+    p_attn = F.softmax(scores / tmp, dim=-2)
     #p_attn=taylor_softmax_v1(scores/tmp)
     print('scores ', p_attn.shape)
 
@@ -290,6 +290,26 @@ def attention(query, key, value, tmp=.01, dropout=None):
 
     return out, p_attn
 
+def attention2(query, key, value, tmp=.01, dropout=None):
+    "Compute 'Scaled Dot Product Attention'"
+    # query: bs, h,n, embed_dim
+    # key: bs, h,n, embed_dim
+    # value: bs, h, n,embed_dim
+
+    b, h, n, d = query.shape
+    #Normalize:
+    query,key=F.normalize(query,dim=-1),F.normalize(key,dim=-1)
+    scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
+
+    assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
+    p_attn = F.softmax(scores / tmp, dim=-1)
+    #p_attn=taylor_softmax_v1(scores/tmp)
+    print('scores ', p_attn.shape)
+
+    out = einsum('b h i j, b h j d -> b h i d', p_attn, value)
+    assert tuple(out.shape) == (b, h, n, d), 'shape of attention output is not expected'
+
+    return out, p_attn
 
 def attention_uniform(query, key, value, dropout=None):
     "Compute 'Scaled Dot Product Attention'"
@@ -376,6 +396,8 @@ class MultiHeadedAttentionAdapt(nn.Module):
             x, self.attn = attention(query, key, value)
         elif self.w == 'multihead_space':
             x, self.attn = attention_center(query, key, value)
+        elif self.w=='multihead2':
+            x, self.attn = attention2(query, key, value)
         else:
             raise NotImplementedError
 
