@@ -494,7 +494,7 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
             with torch.no_grad():
                 mean = rgb_weights.mean()
                 std = rgb_weights.std()
-                ms_weights = torch.empty((out_channels, ms_channels, H, W))
+                ms_weights = torch.empty((out_channels, ms_channels, H, W),device=args.gpus)
                 ms_weights = torch.nn.init.trunc_normal_(ms_weights, mean, std)
             print(f'random: {time.time() - start}')
 
