@@ -35,6 +35,7 @@ model_type = dict(resnet18=PreActResNet18,
                   vit384=vit_B_32_384
                   )
 
+
 def taylor_softmax_v1(x, dim=1, n=4, use_log=False):
     assert n % 2 == 0 and n > 0
     fn = torch.ones_like(x)
@@ -45,6 +46,7 @@ def taylor_softmax_v1(x, dim=1, n=4, use_log=False):
     out = fn / fn.sum(dim=dim, keepdims=True)
     if use_log: out = out.log()
     return out
+
 
 def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
     model_fn = model_type[model_name]
@@ -153,14 +155,17 @@ class Encoder(nn.Module):
         # MultiHeadedAttention(h=1,d_model=512)
 
         self.resnet_bands = resnet_bands
-        self.fc_in_dim = self.resnet_bands.fc.in_features
+        self.resnet_ms = resnet_ms
+        self.resnet_build = resnet_build
+        self.Mlp = Mlp
+        if self.resnet_build and self.resnet_bands:
+            self.fc_in_dim = self.resnet_bands.fc.in_features*2
+        else:
+            self.fc_in_dim = self.resnet_bands.fc.in_features
         # self.fc_in_dim = 256
 
         self.dim = self.fc_in_dim
         self.pre_norm = LayerNorm(self.fc_in_dim)
-        self.resnet_ms = resnet_ms
-        self.resnet_build = resnet_build
-        self.Mlp = Mlp
 
         self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 4), nn.GELU(),
                                 nn.Linear(self.fc_in_dim // 4, self.fc_in_dim))
@@ -174,7 +179,7 @@ class Encoder(nn.Module):
                 self.PE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
             else:
                 self.PE = PositionalEncoding2D(self.fc_in_dim)
-                #self.dim *= (self.num_patches ** 2)
+
             self.multi_head_adapt = MultiHeadedAttentionAdapt(h=1, d_model=self.fc_in_dim, w=self.self_attn)
             self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
                                             feed_forward=self.ff)
@@ -202,10 +207,10 @@ class Encoder(nn.Module):
     def forward(self, x):
         # I'm assuming that I have only one input for now
         features = []
-        key = list(x.keys())[0]
+        key = list(x.keys())
 
         if not self.self_attn:
-            features.append(self.resnet_bands(x[key])[1])
+            features.append(self.resnet_bands(x[key][0])[1])
             # features = torch.cat(features)
             # x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
             # b, num_patches, c, h, w = x_p.shape
@@ -221,22 +226,30 @@ class Encoder(nn.Module):
         else:
             # patching
             print('in attention with patches')
-            x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
+
+            x_p = img_to_patch_strided(x[key][0], p=self.patch, s=self.stride)
             # x_p2=img_to_patch_strided(x['buildings'], p=120,s=100)
 
             print('patches shape :', x_p.shape)
             b, num_patches, c, h, w = x_p.shape
             # feature extracting
-            i = 0
+
             for p in range(num_patches):
                 features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
-                #print('features scale', features[i], torch.linalg.norm(features[i]))
-                i += 1
-            # features2.append(self.resnet_ms(x_p2[:, p, ...].view(-1, c2, h2, w2))[1])
-            features = torch.stack((features), dim=1)
-            # prenormalization
-            #features = self.pre_norm(features)
-            #print('after_norm',features[0,:,:])
+
+            features = torch.stack(features, dim=1)
+            if self.resnet_build:
+                features2 = []
+                x_p2 = img_to_patch_strided(x[key][1], p=self.patch, s=self.stride)
+                print('patches for ms shape :', x_p2.shape)
+                b, num_patches2, c2, h2, w2 = x_p2.shape
+                # feature extracting
+
+                for p in range(num_patches2):
+                    features2.append(self.resnet_build(x_p[:, p, ...].view(-1, c, h, w))[1])
+
+                features2 = torch.stack((features2), dim=1)
+                features = torch.cat((features, features2), dim=-1)
 
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'shape of features after resnet is not as expected'
@@ -263,35 +276,34 @@ class Encoder(nn.Module):
             else:
                 features = torch.mean(features, dim=1, keepdim=False)
                 # concat:
-                #features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
+                # features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
                 assert tuple(features.shape) == (b, self.dim), 'aggeragtion output of features is not as expected'
 
         # return self.fc(self.relu(self.dropout(torch.cat(features))))
         return self.fc(self.relu(self.dropout(features)))
 
 
-
-
-def attention(query, key, value, tmp=.01, dropout=None):
+def attention(query, key, value, tmp=1, dropout=None):
     "Compute 'Scaled Dot Product Attention'"
     # query: bs, h,n, embed_dim
     # key: bs, h,n, embed_dim
     # value: bs, h, n,embed_dim
 
     b, h, n, d = query.shape
-    #Normalize:
-    query,key=F.normalize(query,dim=-1),F.normalize(key,dim=-1)
+    # Normalize:
+    query, key = F.normalize(query, dim=-1), F.normalize(key, dim=-1)
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
 
     assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
     p_attn = F.softmax(scores / tmp, dim=-1)
-    #p_attn=taylor_softmax_v1(scores/tmp)
+    # p_attn=taylor_softmax_v1(scores/tmp)
     print('scores ', p_attn.shape)
 
     out = einsum('b h i j, b h j d -> b h i d', p_attn, value)
     assert tuple(out.shape) == (b, h, n, d), 'shape of attention output is not expected'
 
     return out, p_attn
+
 
 def attention_uniform(query, key, value, dropout=None):
     "Compute 'Scaled Dot Product Attention'"

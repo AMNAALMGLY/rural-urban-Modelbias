@@ -381,7 +381,7 @@ def _resnet(
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
 #        state_dict['conv1.weight'] = nn.Parameter(
  #           init_first_layer_weights(in_channels, state_dict['conv1.weight'], args.hs_weight_init))
-        print(state_dict['state_dict']['encoder_q.0.weight'].device)
+       # print(state_dict['state_dict']['encoder_q.0.weight'].device)
         state_dict['state_dict']['encoder_q.0.weight']=torch.tensor(state_dict['state_dict']['encoder_q.0.weight'],device=args.gpus)
         state_dict['state_dict']['encoder_q.0.weight'] = nn.Parameter(init_first_layer_weights(in_channels,state_dict['state_dict']['encoder_q.0.weight'],args.hs_weight_init))
 
