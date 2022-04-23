@@ -227,7 +227,7 @@ class Encoder(nn.Module):
             # patching
             print('in attention with patches')
 
-            x_p = img_to_patch_strided(x[key][0], p=self.patch, s=self.stride)
+            x_p = img_to_patch_strided(x[key[0]], p=self.patch, s=self.stride)
             # x_p2=img_to_patch_strided(x['buildings'], p=120,s=100)
 
             print('patches shape :', x_p.shape)
@@ -240,7 +240,7 @@ class Encoder(nn.Module):
             features = torch.stack(features, dim=1)
             if self.resnet_build:
                 features2 = []
-                x_p2 = img_to_patch_strided(x[key][1], p=self.patch, s=self.stride)
+                x_p2 = img_to_patch_strided(x[key[1]], p=self.patch, s=self.stride)
                 print('patches for ms shape :', x_p2.shape)
                 b, num_patches2, c2, h2, w2 = x_p2.shape
                 # feature extracting
