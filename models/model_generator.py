@@ -159,9 +159,11 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
         if self.resnet_build and self.resnet_bands:
-            self.fc_in_dim = self.resnet_bands.fc.in_features*2
+            self.fc_in_dim = self.resnet_bands.fc.in_features +self.resnet_build.fc.in_features
         else:
             self.fc_in_dim = self.resnet_bands.fc.in_features
+        if self.self_attn=='multihead_early':
+            self.fc_in_dim=256
         # self.fc_in_dim = 256
 
         self.dim = self.fc_in_dim
@@ -233,9 +235,12 @@ class Encoder(nn.Module):
             print('patches shape :', x_p.shape)
             b, num_patches, c, h, w = x_p.shape
             # feature extracting
-
-            for p in range(num_patches):
-                features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
+            if self.self_attn == 'mutlihead_early':
+                for p in range(num_patches):
+                    features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[2])
+            else:
+                for p in range(num_patches):
+                    features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
 
             features = torch.stack(features, dim=1)
             if self.resnet_build:
@@ -386,7 +391,7 @@ class MultiHeadedAttentionAdapt(nn.Module):
         if self.w == 'multihead_uniform':
             x, self.attn = attention_uniform(query, key, value,
                                              )
-        elif self.w == 'multihead':
+        elif self.w == 'multihead' or self.w == 'multihead_early':
             x, self.attn = attention(query, key, value)
         elif self.w == 'multihead_space':
             x, self.attn = attention_center(query, key, value)
