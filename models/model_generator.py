@@ -20,6 +20,7 @@ from models.pytorch_pretrained_vit.model import vit_B_32, vit_B_16, vit_L_32, vi
 from models.resnet import resnet18, resnet34, resnet50, mlp, resnext50_32x4d
 from models.spaceEncoder import GridCellSpatialRelationEncoder
 from utils.utils import load_from_checkpoint
+
 import torch.nn.functional as F
 
 model_type = dict(resnet18=PreActResNet18,
@@ -161,8 +162,8 @@ class Encoder(nn.Module):
         self.resnet_build = resnet_build
         self.Mlp = Mlp
 
-        self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 2), nn.GELU(),
-                                nn.Linear(self.fc_in_dim // 2, self.fc_in_dim))
+        self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 4), nn.GELU(),
+                                nn.Linear(self.fc_in_dim // 4, self.fc_in_dim))
         self.patch = patch
         self.stride = stride
         self.num_patches = int((
@@ -173,7 +174,7 @@ class Encoder(nn.Module):
                 self.PE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
             else:
                 self.PE = PositionalEncoding2D(self.fc_in_dim)
-                self.dim *= (self.num_patches ** 2)
+                #self.dim *= (self.num_patches ** 2)
             self.multi_head_adapt = MultiHeadedAttentionAdapt(h=1, d_model=self.fc_in_dim, w=self.self_attn)
             self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
                                             feed_forward=self.ff)
@@ -260,37 +261,18 @@ class Encoder(nn.Module):
                 features = features[:, (num_patches - 1) // 2, :].squeeze(1)
                 assert tuple(features.shape) == (b, self.dim)
             else:
-                # features = torch.mean(features, dim=1, keepdim=False)
+                features = torch.mean(features, dim=1, keepdim=False)
                 # concat:
-                features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
+                #features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
                 assert tuple(features.shape) == (b, self.dim), 'aggeragtion output of features is not as expected'
 
         # return self.fc(self.relu(self.dropout(torch.cat(features))))
         return self.fc(self.relu(self.dropout(features)))
 
 
+
+
 def attention(query, key, value, tmp=.01, dropout=None):
-    "Compute 'Scaled Dot Product Attention'"
-    # query: bs, h,n, embed_dim
-    # key: bs, h,n, embed_dim
-    # value: bs, h, n,embed_dim
-
-    b, h, n, d = query.shape
-    #Normalize:
-    query,key=F.normalize(query,dim=-1),F.normalize(key,dim=-1)
-    scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
-
-    assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
-    p_attn = F.softmax(scores / tmp, dim=-2)
-    #p_attn=taylor_softmax_v1(scores/tmp)
-    print('scores ', p_attn.shape)
-
-    out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
-    assert tuple(out.shape) == (b, h, n, d), 'shape of attention output is not expected'
-
-    return out, p_attn
-
-def attention2(query, key, value, tmp=.01, dropout=None):
     "Compute 'Scaled Dot Product Attention'"
     # query: bs, h,n, embed_dim
     # key: bs, h,n, embed_dim
@@ -361,7 +343,7 @@ class MultiHeadedAttentionAdapt(nn.Module):
     attention if just central patch query is used
     '''
 
-    def __init__(self, h, d_model, dropout=0, w='multihead'):
+    def __init__(self, h, d_model, dropout=0.1, w='multihead'):
         "Take in model size and number of heads."
         super(MultiHeadedAttentionAdapt, self).__init__()
         assert d_model % h == 0
@@ -396,8 +378,7 @@ class MultiHeadedAttentionAdapt(nn.Module):
             x, self.attn = attention(query, key, value)
         elif self.w == 'multihead_space':
             x, self.attn = attention_center(query, key, value)
-        elif self.w=='multihead2':
-            x, self.attn = attention2(query, key, value)
+
         else:
             raise NotImplementedError
 
@@ -406,7 +387,7 @@ class MultiHeadedAttentionAdapt(nn.Module):
 
         assert tuple(x.shape) == (nbatches, nPatches, self.d_k * self.h)
 
-        return x  # bs , n , d_model
+        return self.dropout(x)  # bs , n , d_model
 
 
 def clones(module, N):
@@ -678,5 +659,27 @@ class MultiHeadedAttention(nn.Module):
                 features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
                 assert tuple(features.shape) == (b, self.dim), 'aggeragtion output of features is not as expected'
             else:
-                features = features.squeeze(1)        
+                features = features.squeeze(1)     
+
+
+def attention(query, key, value, tmp=.01, dropout=None):
+    "Compute 'Scaled Dot Product Attention'"
+    # query: bs, h,n, embed_dim
+    # key: bs, h,n, embed_dim
+    # value: bs, h, n,embed_dim
+
+    b, h, n, d = query.shape
+    #Normalize:
+    query,key=F.normalize(query,dim=-1),F.normalize(key,dim=-1)
+    scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
+
+    assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
+    p_attn = F.softmax(scores / tmp, dim=-2)
+    #p_attn=taylor_softmax_v1(scores/tmp)
+    print('scores ', p_attn.shape)
+
+    out = einsum('b h i j, b h i d -> b h i d', p_attn, value)
+    assert tuple(out.shape) == (b, h, n, d), 'shape of attention output is not expected'
+
+    return out, p_attn   
 """
