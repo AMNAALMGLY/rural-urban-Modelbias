@@ -106,7 +106,7 @@ class EncoderLayer(nn.Module):
         self.size = size  # d_model or embed_dim
 
     def forward(self, x):
-        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x))  # bs, n ,d
+        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x)[0])  # bs, n ,d
 
         return self.sublayer[1](x, self.feed_forward)  # bs, n , d_model
 
@@ -184,7 +184,7 @@ class Encoder(nn.Module):
                 self.PE = PositionalEncoding2D(self.fc_in_dim)
             if self.self_attn=='torch':
                 self.multi_head_adapt=nn.MultiheadAttention(embed_dim=self.fc_in_dim,num_heads=
-                                                   1,dropout=0.1)
+                                                   1,dropout=0.1,batch_first=True)
             else:
                    self.multi_head_adapt = MultiHeadedAttentionAdapt(h=1, d_model=self.fc_in_dim, w=self.self_attn)
             self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
@@ -203,7 +203,8 @@ class Encoder(nn.Module):
                 nn.init.xavier_uniform_(
                     m.weight)  # _trunc_normal(m.weight, std=0.02)  # from .initialization import _trunc_normal
                 if hasattr(m, 'bias') and m.bias is not None:
-                    nn.init.normal_(m.bias, std=1e-6)  # nn.init.constant(m.bias, 0)
+                    #nn.init.normal_(m.bias, std=1e-6)
+                    nn.init.xavier_normal_(m.bias)
 
         self.apply(initial)
         if self.self_attn == 'multihead' and isinstance(self.PE, Learnt_PE):
@@ -327,7 +328,7 @@ def attention_uniform(query, key, value, dropout=None):
     p_attn_identity = F.softmax(scores_identity, dim=-1)
     print('uniform scores ', p_attn_identity.shape)
 
-    out_ident = einsum('b h i j, b h i d -> b h i d', p_attn_identity, value)
+    out_ident = einsum('b h i j, b h j d -> b h i d', p_attn_identity, value)
     assert tuple(out_ident.shape) == (b, h, n, d), 'shape of uniform attention output is not expected'
 
     return out_ident, p_attn_identity
