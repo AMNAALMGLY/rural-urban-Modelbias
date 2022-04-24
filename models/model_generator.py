@@ -235,7 +235,7 @@ class Encoder(nn.Module):
             print('patches shape :', x_p.shape)
             b, num_patches, c, h, w = x_p.shape
             # feature extracting
-            if self.self_attn == 'mutlihead_early':
+            if self.self_attn == 'multihead_early':
                 for p in range(num_patches):
                     features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[2])
             else:
