@@ -184,7 +184,7 @@ class Encoder(nn.Module):
                 self.PE = PositionalEncoding2D(self.fc_in_dim)
             if self.self_attn=='torch':
                 self.multi_head_adapt=nn.MultiheadAttention(embed_dim=self.fc_in_dim,num_heads=
-                                                   1,dropout=0.1,batch_first=True)
+                                                   1,dropout=0.1)
             else:
                    self.multi_head_adapt = MultiHeadedAttentionAdapt(h=1, d_model=self.fc_in_dim, w=self.self_attn)
             self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
