@@ -167,7 +167,8 @@ class Encoder(nn.Module):
         # self.fc_in_dim = 256
 
         self.dim = self.fc_in_dim
-        self.pre_norm = LayerNorm(self.fc_in_dim)
+        #self.pre_norm = LayerNorm(self.fc_in_dim)
+
 
         self.ff = nn.Sequential(nn.Linear(self.fc_in_dim, self.fc_in_dim // 4), nn.GELU(),
                                 nn.Linear(self.fc_in_dim // 4, self.fc_in_dim))
@@ -181,8 +182,11 @@ class Encoder(nn.Module):
                 self.PE = GridCellSpatialRelationEncoder(spa_embed_dim=self.fc_in_dim)
             else:
                 self.PE = PositionalEncoding2D(self.fc_in_dim)
-
-            self.multi_head_adapt = MultiHeadedAttentionAdapt(h=1, d_model=self.fc_in_dim, w=self.self_attn)
+            if self.self_attn=='torch':
+                self.multi_head_adapt=nn.MultiheadAttention(embed_dim=self.fc_in_dim,num_heads=
+                                                   1,dropout=0.1)
+            else:
+                   self.multi_head_adapt = MultiHeadedAttentionAdapt(h=1, d_model=self.fc_in_dim, w=self.self_attn)
             self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
                                             feed_forward=self.ff)
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
