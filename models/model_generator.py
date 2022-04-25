@@ -106,8 +106,7 @@ class EncoderLayer(nn.Module):
         self.size = size  # d_model or embed_dim
 
     def forward(self, x):
-        x = self.sublayer[0](x, lambda x: self.self_attn(x.permute(1,0,2), x.permute(1,0,2), x.permute(1,0,2))[0])  # bs, n ,d
-        print(self.sublayer[0](x, lambda x: self.self_attn(x.permute(1,0,2), x.permute(1,0,2), x.permute(1,0,2))[1].shape))
+        x = self.sublayer[0](x, lambda x: self.self_attn(x,x, x)[0])  # bs, n ,d
         return self.sublayer[1](x, self.feed_forward)  # bs, n , d_model
 
 
@@ -444,7 +443,8 @@ class MultiheadAttention(nn.Module):
         nn.init.xavier_uniform_(self.o_proj.weight)
         self.o_proj.bias.data.fill_(0)
 
-    def forward(self, x, mask=None, return_attention=False):
+    def forward(self, x,k,v, mask=None, return_attention=False):
+
         batch_size, seq_length, embed_dim = x.size()
         qkv = self.qkv_proj(x)
 
