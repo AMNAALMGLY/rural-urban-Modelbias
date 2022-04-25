@@ -203,8 +203,8 @@ class Encoder(nn.Module):
                 nn.init.xavier_uniform_(
                     m.weight)  # _trunc_normal(m.weight, std=0.02)  # from .initialization import _trunc_normal
                 if hasattr(m, 'bias') and m.bias is not None:
-                    #nn.init.normal_(m.bias, std=1e-6)
-                    nn.init.xavier_normal_(m.bias)
+                    nn.init.constant_(m.bias, 0)
+                    #nn.init.xavier_normal_(m.bias)
 
         self.apply(initial)
         if self.self_attn == 'multihead' and isinstance(self.PE, Learnt_PE):
