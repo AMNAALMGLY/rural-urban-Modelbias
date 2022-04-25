@@ -300,7 +300,7 @@ def attention(query, key, value, tmp=1, dropout=None):
 
     b, h, n, d = query.shape
     # Normalize:
-    query, key = F.normalize(query, dim=-1), F.normalize(key, dim=-1)
+    #query, key = F.normalize(query, dim=-1), F.normalize(key, dim=-1)
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
 
     assert tuple(scores.shape) == (b, h, n, n), 'the shape is not as expected'
@@ -396,6 +396,7 @@ class MultiHeadedAttentionAdapt(nn.Module):
             x, self.attn = attention_uniform(query, key, value,
                                              )
         elif self.w == 'multihead' or self.w == 'multihead_early':
+            print('here')
             x, self.attn = attention(query, key, value)
         elif self.w == 'multihead_space':
             x, self.attn = attention_center(query, key, value)
