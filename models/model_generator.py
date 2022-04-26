@@ -465,7 +465,7 @@ class MultiheadAttention(nn.Module):
         nn.init.xavier_uniform_(self.o_proj.weight)
         self.o_proj.bias.data.fill_(0)
 
-    def forward(self, x, k, v, mask=None, return_attention=False):
+    def forward(self, x, mask=None, return_attention=False):
 
         batch_size, seq_length, embed_dim = x.size()
         qkv = self.qkv_proj(x)
