@@ -262,7 +262,7 @@ class Encoder(nn.Module):
 
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'shape of features after resnet is not as expected'
-            if self.attn !='global_pool':
+            if self.self_attn !='global_pool':
                 # Positional encoder
                 features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
                                      p2=int(num_patches ** 0.5))
@@ -536,7 +536,8 @@ def img_to_patch_strided(img, p=100, s=50, padding=False):
                              w=p)
     assert tuple(patches_orig.shape) == (
     img.shape[0], img.shape[1], output_h, output_w), 'patches original shape is not as expected'
-    assert torch.all(patches_orig.eq(img[:,:,output_h, :output_w])), 'orginal tensor isnot as same as patched one'
+    #TODO What if I'm using padding?
+    assert torch.all(patches_orig.eq(img[:,:,:output_h, :output_w])), 'orginal tensor isnot as same as patched one'
 
     return patches
 
