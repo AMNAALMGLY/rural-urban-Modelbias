@@ -262,32 +262,34 @@ class Encoder(nn.Module):
 
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'shape of features after resnet is not as expected'
-            # Positional encoder
-            features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
-                                 p2=int(num_patches ** 0.5))
+            if self.attn !='global_pool':
+                # Positional encoder
+                features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
+                                     p2=int(num_patches ** 0.5))
 
-            features = self.PE(features)
+                features = self.PE(features)
 
-            assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
-                                             self.fc_in_dim), 'positional encoding shape is not as expected'
-            features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
-                                 p2=int(num_patches ** 0.5))
-            assert tuple(features.shape) == (
-                b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
-            # Attention Layers
-            features = self.layers_adapt(features)
-            assert tuple(features.shape) == (
-                b, num_patches, self.fc_in_dim), 'output of  attention layer is not correct'
-            # Aggregation
-            if self.self_attn == 'multihead_space':
-                features = features[:, (num_patches - 1) // 2, :].squeeze(1)
-                assert tuple(features.shape) == (b, self.fc_in_dim), 'aggeragtion output of features is not as expected'
+                assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
+                                                 self.fc_in_dim), 'positional encoding shape is not as expected'
+                features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
+                                     p2=int(num_patches ** 0.5))
+                assert tuple(features.shape) == (
+                    b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
+                # Attention Layers
+                features = self.layers_adapt(features)
+                assert tuple(features.shape) == (
+                    b, num_patches, self.fc_in_dim), 'output of  attention layer is not correct'
+                # Aggregation
+                if self.self_attn == 'multihead_space':
+                    features = features[:, (num_patches - 1) // 2, :].squeeze(1)
+                    assert tuple(features.shape) == (b, self.fc_in_dim), 'aggeragtion output of features is not as expected'
+                else:
+                    features = torch.mean(features, dim=1, keepdim=False)
+                    # concat:
+                    # features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
+                    assert tuple(features.shape) == (b, self.fc_in_dim), 'aggeragtion output of features is not as expected'
             else:
                 features = torch.mean(features, dim=1, keepdim=False)
-                # concat:
-                # features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
-                assert tuple(features.shape) == (b, self.fc_in_dim), 'aggeragtion output of features is not as expected'
-
         # return self.fc(self.relu(self.dropout(torch.cat(features))))
         return self.fc(self.relu(self.dropout(features)))
 
@@ -534,7 +536,7 @@ def img_to_patch_strided(img, p=100, s=50, padding=False):
                              w=p)
     assert tuple(patches_orig.shape) == (
     img.shape[0], img.shape[1], output_h, output_w), 'patches original shape is not as expected'
-    assert torch.all(patches_orig.eq(img[:output_h, :output_w])), 'orginal tensor isnot as same as patched one'
+    assert torch.all(patches_orig.eq(img[:,:,output_h, :output_w])), 'orginal tensor isnot as same as patched one'
 
     return patches
 
