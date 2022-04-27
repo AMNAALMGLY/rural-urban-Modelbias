@@ -190,7 +190,7 @@ class Encoder(nn.Module):
                                             feed_forward=self.ff)
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
 
-        self.fc = nn.Linear(self.dim, num_outputs).to(
+        self.fc = nn.Linear(self.fc_in_dim, num_outputs).to(
             args.gpus)  # combines both together
         with torch.no_grad():
             self.init_weights()
@@ -216,7 +216,7 @@ class Encoder(nn.Module):
         key = list(x.keys())
 
         if not self.self_attn:
-            features.append(self.resnet_bands(x[key][0])[1])
+            features.append(self.resnet_bands(x[key[0]])[1])
             # features = torch.cat(features)
             # x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
             # b, num_patches, c, h, w = x_p.shape
@@ -255,7 +255,7 @@ class Encoder(nn.Module):
                 # feature extracting
 
                 for p in range(num_patches2):
-                    features2.append(self.resnet_build(x_p[:, p, ...].view(-1, c, h, w))[1])
+                    features2.append(self.resnet_build(x_p2[:, p, ...].view(-1, c2, h2, w2))[1])
 
                 features2 = torch.stack((features2), dim=1)
                 features = torch.cat((features, features2), dim=-1)
@@ -281,12 +281,12 @@ class Encoder(nn.Module):
             # Aggregation
             if self.self_attn == 'multihead_space':
                 features = features[:, (num_patches - 1) // 2, :].squeeze(1)
-                assert tuple(features.shape) == (b, self.dim)
+                assert tuple(features.shape) == (b, self.fc_in_dim), 'aggeragtion output of features is not as expected'
             else:
                 features = torch.mean(features, dim=1, keepdim=False)
                 # concat:
                 # features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
-                assert tuple(features.shape) == (b, self.dim), 'aggeragtion output of features is not as expected'
+                assert tuple(features.shape) == (b, self.fc_in_dim), 'aggeragtion output of features is not as expected'
 
         # return self.fc(self.relu(self.dropout(torch.cat(features))))
         return self.fc(self.relu(self.dropout(features)))
