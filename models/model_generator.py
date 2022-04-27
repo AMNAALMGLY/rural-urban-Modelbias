@@ -520,12 +520,22 @@ def img_to_patch_strided(img, p=100, s=50, padding=False):
         print('shape after padding', img.shape)
 
     patches = img.unfold(2, p, s).unfold(3, p, s)
+    patches_shape = patches.shape
     # print('strided patches size :', patches.shape)  # should be b x c x num_patchesx num_patches x 100 x 100
     num_patches1, num_patches2 = patches.shape[2], patches.shape[3]
     # num_patches=((H-100)/s +1) **2
 
     patches = rearrange(patches, 'b c p1 p2 h w -> b (p1 p2) c h w ', p1=num_patches1, p2=num_patches2, h=p, w=p)
     # print('strided patch after rearrange ', patches.shape)
+    # Sanity check for equality (reshape back)
+    patches_orig = patches.view(patches_shape)
+    output_h, output_w = patches_shape[2] * patches_shape[4], patches_shape[3] * patches_shape[5]
+    patches_orig = rearrange(patches_orig, 'b c p1 p2 h w -> b c (p1 h) (p2 w)', p1=num_patches1, p2=num_patches2, h=p,
+                             w=p)
+    assert tuple(patches_orig.shape) == (
+    img.shape[0], img.shape[1], output_h, output_w), 'patches original shape is not as expected'
+    assert torch.all(patches_orig.eq(img[:output_h, :output_w])), 'orginal tensor isnot as same as patched one'
+
     return patches
 
 
@@ -589,6 +599,29 @@ class PositionalEncoding2D(nn.Module):
         # print('position_embedding of the first channel: ', self.pos_cache[0, :, :, 0], 'second channel: ',
         #     self.pos_cache[0, :, :, 1])
         return emb[None, :, :, :orig_ch].repeat(tensor.shape[0], 1, 1, 1) + tensor
+
+
+class PositionalEncoding1D(nn.Module):
+    "Implement the PE function."
+
+    def __init__(self, d_model, dropout, max_len=5000):
+        super(PositionalEncoding1D, self).__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        # Compute the positional encodings once in log space.
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2) *
+                             -(math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        x = x + Variable(self.pe[:, :x.size(1)],
+                         requires_grad=False)
+        return self.dropout(x)
 
 
 class geoAttention(nn.Module):
