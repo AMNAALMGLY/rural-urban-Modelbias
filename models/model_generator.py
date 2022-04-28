@@ -162,7 +162,7 @@ class Encoder(nn.Module):
         else:
             self.fc_in_dim = self.resnet_bands.fc.in_features
         if self.self_attn == 'multihead_early':
-            self.fc_in_dim = 256
+            self.fc_in_dim =  64+128+256
         # self.fc_in_dim = 256
 
         self.dim = self.fc_in_dim
@@ -241,7 +241,10 @@ class Encoder(nn.Module):
             # feature extracting
             if self.self_attn == 'multihead_early':
                 for p in range(num_patches):
-                    features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[2])
+                    _,_,layer3,layer2,layer1=self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))
+                    output=torch.cat((layer3,layer2,layer1),dim=-1)
+                    features.append(output)
+                    #features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[2])
             else:
                 for p in range(num_patches):
                     features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])

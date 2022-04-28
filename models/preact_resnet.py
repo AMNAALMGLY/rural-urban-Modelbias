@@ -163,9 +163,9 @@ class PreActResNet(nn.Module):
         x = self.maxpool(x)
 
         x = self.layer1(x)
-
+        layer1= self.avgpool(x).view(x.size(0), -1)
         x = self.layer2(x)
-
+        layer2 = self.avgpool(x).view(x.size(0), -1)
         x = self.layer3(x)
         layer3=self.avgpool(x).view(x.size(0), -1)
         x = self.layer4(x)
@@ -178,7 +178,7 @@ class PreActResNet(nn.Module):
 
         x = self.fc(x)
 
-        return x,features,layer3
+        return x,features,layer3,layer2,layer1
 
 
 def PreActResNet18(in_channels,pretrained):
