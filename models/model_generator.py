@@ -533,15 +533,27 @@ def img_to_patch_strided(img, p=100, s=50, padding=False):
     patches = rearrange(patches, 'b c p1 p2 h w -> b (p1 p2) c h w ', p1=num_patches1, p2=num_patches2, h=p, w=p)
     # print('strided patch after rearrange ', patches.shape)
     # Sanity check for equality (reshape back)
-    patches_orig = patches.view(patches_shape)
-    output_h, output_w = patches_shape[2] * patches_shape[4], patches_shape[3] * patches_shape[5]
-    patches_orig = rearrange(patches_orig, 'b c p1 p2 h w -> b c (p1 h) (p2 w)', p1=num_patches1, p2=num_patches2, h=p,
-                             w=p)
-    assert tuple(patches_orig.shape) == (
-    img.shape[0], img.shape[1], output_h, output_w), 'patches original shape is not as expected'
-    #TODO What if I'm using padding?
-    assert torch.all(patches_orig.eq(img[:,:,:output_h, :output_w])), 'orginal tensor isnot as same as patched one'
-
+    if s==p:
+        patches_orig = patches.view(patches_shape)
+        output_h, output_w = patches_shape[2] * patches_shape[4], patches_shape[3] * patches_shape[5]
+        patches_orig = rearrange(patches_orig, 'b c p1 p2 h w -> b c (p1 h) (p2 w)', p1=num_patches1, p2=num_patches2, h=p,
+                                 w=p)
+        assert tuple(patches_orig.shape) == (
+        img.shape[0], img.shape[1], output_h, output_w), 'patches original shape is not as expected'
+        #TODO What if I'm using padding?
+        assert torch.all(patches_orig.eq(img[:,:,:output_h, :output_w])), 'orginal tensor isnot as same as patched one'
+    '''
+    else:
+      
+        # REASSEMBLE THE IMAGE USING FOLD
+        patches_orig = patches.contiguous().view(img.shape[0], img.shape[1], -1, p * p)
+        patches_orig = patches_orig.permute(0, 1, 3, 2)
+        patches_orig = patches_orig.contiguous().view(img.shape[0],img.shape[1], p * p, -1)
+        patches_orig = F.fold(patches_orig, output_size=(img.shape[-2], img.shape[-1]), kernel_size=p, stride=s)
+        patches_orig = patches_orig.squeeze()
+        assert torch.all(
+            patches_orig.eq(img), 'orginal tensor isnot as same as patched one'
+    '''
     return patches
 
 
