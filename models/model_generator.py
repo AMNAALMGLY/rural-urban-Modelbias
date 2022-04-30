@@ -283,14 +283,14 @@ class Encoder(nn.Module):
                 assert tuple(features.shape) == (
                     b, num_patches, self.fc_in_dim), 'output of  attention layer is not correct'
                 # Aggregation
-                if self.self_attn == 'multihead_space':
-                    features = features[:, (num_patches - 1) // 2, :].squeeze(1)
-                    assert tuple(features.shape) == (b, self.fc_in_dim), 'aggeragtion output of features is not as expected'
-                else:
-                    features = torch.mean(features, dim=1, keepdim=False)
+                #if self.self_attn == 'multihead_space':
+                 #   features = features[:, (num_patches - 1) // 2, :].squeeze(1)
+                 #   assert tuple(features.shape) == (b, self.fc_in_dim), 'aggeragtion output of features is not as expected'
+                #else:
+                features = torch.mean(features, dim=1, keepdim=False)
                     # concat:
                     # features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
-                    assert tuple(features.shape) == (b, self.fc_in_dim), 'aggeragtion output of features is not as expected'
+                assert tuple(features.shape) == (b, self.fc_in_dim), 'aggeragtion output of features is not as expected'
             else:
                 features = torch.mean(features, dim=1, keepdim=False)
         # return self.fc(self.relu(self.dropout(torch.cat(features))))
