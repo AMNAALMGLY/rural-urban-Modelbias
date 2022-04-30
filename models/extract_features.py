@@ -56,41 +56,64 @@ DHS_MODELS = [
    # 'DHS_OOC_E_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
 
 
-    'DHS_OOC_A_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
-    'DHS_OOC_B_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
-    'DHS_OOC_C_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
-    'DHS_OOC_D_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
-    'DHS_OOC_E_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
+   # 'DHS_OOC_A_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
+    #'DHS_OOC_B_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
+    #'DHS_OOC_C_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
+    #'DHS_OOC_D_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
+    #'DHS_OOC_E_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
 
-    'DHS_OOC_A_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
-    'DHS_OOC_B_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
-    'DHS_OOC_C_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
-    'DHS_OOC_D_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
-    'DHS_OOC_E_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
+    #'DHS_OOC_A_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
+    #'DHS_OOC_B_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
+    #'DHS_OOC_C_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
+    #'DHS_OOC_D_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
+    #'DHS_OOC_E_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
 
-    'DHS_OOC_A_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
-     'DHS_OOC_B_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
-     'DHS_OOC_C_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
-     'DHS_OOC_D_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
-     'DHS_OOC_E_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+    #'DHS_OOC_A_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+     #'DHS_OOC_B_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+     #'DHS_OOC_C_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+     #'DHS_OOC_D_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+     #'DHS_OOC_E_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
 
-    'DHS_OOC_A_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
-     'DHS_OOC_B_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
-     'DHS_OOC_C_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
-     'DHS_OOC_D_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
-     'DHS_OOC_E_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+    #'DHS_OOC_A_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+     #'DHS_OOC_B_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+     #'DHS_OOC_C_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+     #'DHS_OOC_D_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+     #'DHS_OOC_E_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
 
-    'DHS_OOC_A_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
-    'DHS_OOC_B_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
-    'DHS_OOC_C_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
-    'DHS_OOC_D_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
-    'DHS_OOC_E_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+    #'DHS_OOC_A_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+    #'DHS_OOC_B_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+    #'DHS_OOC_C_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+    #'DHS_OOC_D_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+    #'DHS_OOC_E_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
 
-    'DHS_OOC_A_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
-    'DHS_OOC_B_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
-    'DHS_OOC_C_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
-    'DHS_OOC_D_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
-    'DHS_OOC_E_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+    #'DHS_OOC_A_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+    #'DHS_OOC_B_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+    #'DHS_OOC_C_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+    #'DHS_OOC_D_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+    #'DHS_OOC_E_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+
+
+  #  'DHS_OOC_A_NL_new_pooling_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+  #  'DHS_OOC_B_NL_new_pooling_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+  #  'DHS_OOC_C_NL_new_pooling_wealth_511_b32_fce-05_conve-05_lr0001_crop0'
+  #  'DHS_OOC_E_NL_new_pooling_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+
+#'DHS_OOC_A_NL_new_attn_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+#'DHS_OOC_C_NL_new_attn_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+#'DHS_OOC_E_NL_new_attn_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+
+
+'DHS_OOC_A_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+'DHS_OOC_B_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+'DHS_OOC_C_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+'DHS_OOC_D_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+'DHS_OOC_E_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+
+'DHS_OOC_A_NL_new_attn_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+'DHS_OOC_B_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop',
+'DHS_OOC_C_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop',
+'DHS_OOC_D_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop',
+'DHS_OOC_E_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop',
 
 
     # DHS_OOC_A_encoder_b_nl_concat
@@ -230,7 +253,7 @@ def run_extraction_on_models(model_dir: str,
                 np_dict['features'] = features
             else:
                 np_dict['features'] = np.append(np_dict['features'], features, axis=0)
-    print(np_dict['features'])
+    print(np_dict['features'].shape)
     save_dir = os.path.join(out_root_dir, model_dir)
 
     print(f'saving features to {save_dir} named {save_filename}')
