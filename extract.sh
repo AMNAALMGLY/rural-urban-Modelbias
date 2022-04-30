@@ -51,7 +51,7 @@ export CUDA_VISIBLE_DEVICES=0
 
 sbatch --output=${LOG_FOLDER}/%j.out --error=${LOG_FOLDER}/%j.err \
     --nodes=1 --ntasks-per-node=1 --time=1-00:00:00 --mem=100G \
-    --partition=atlas --cpus-per-task=10 --exclude=--exclude=atlas6,atlas20,atlas22,atlas23,atlas24\
+    --partition=atlas --cpus-per-task=10 --exclude=atlas6,atlas20,atlas22,atlas23,atlas24\
     --gres=gpu:${GPUS} --job-name=${JOBNAME} --wrap="${WRAP}"
 
 
