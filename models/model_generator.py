@@ -1,5 +1,6 @@
 """The transformer code follows the Annotated Transformer implementation.
 See https://nlp.seas.harvard.edu/2018/04/03/attention.html"""
+from models.RelPE import RelPosEmb2D
 
 """position embedding from https://github.com/tatp22/multidim-positional-encoding/blob/master/positional_encodings
 /positional_encodings.py """
@@ -266,18 +267,19 @@ class Encoder(nn.Module):
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'shape of features after resnet is not as expected'
             if self.self_attn !='global_pool':
-                # Positional encoder
-                features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
-                                     p2=int(num_patches ** 0.5))
+                if self.self_attn !='multihead_relative':
+                    # Positional encoder
+                    features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
+                                         p2=int(num_patches ** 0.5))
 
-                features = self.PE(features)
+                    features = self.PE(features)
 
-                assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
-                                                 self.fc_in_dim), 'positional encoding shape is not as expected'
-                features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
-                                     p2=int(num_patches ** 0.5))
-                assert tuple(features.shape) == (
-                    b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
+                    assert tuple(features.shape) == (b, int(num_patches ** 0.5), int(num_patches ** 0.5),
+                                                     self.fc_in_dim), 'positional encoding shape is not as expected'
+                    features = rearrange(features, 'b p1 p2 d -> b (p1 p2) d', p1=int(num_patches ** 0.5),
+                                         p2=int(num_patches ** 0.5))
+                    assert tuple(features.shape) == (
+                        b, num_patches, self.fc_in_dim), 'rearrange of PE shape is not as expected'
                 # Attention Layers
                 features = self.layers_adapt(features)
                 assert tuple(features.shape) == (
@@ -383,6 +385,8 @@ class MultiHeadedAttentionAdapt(nn.Module):
         self.attn = None
         self.dropout = nn.Dropout(p=dropout)
         self.w = w
+        if self.w=='multihead_relative':
+            self.PE=RelPosEmb2D((9,9),self.d_k)
         self._reset_parameters()
 
         # @torch.no_grad
@@ -422,6 +426,22 @@ class MultiHeadedAttentionAdapt(nn.Module):
             x, self.attn = attention(query, key, value)
         elif self.w == 'multihead_space':
             x, self.attn = attention_center(query, key, value)
+
+        elif self.w =='multihead_relative':
+            qr=self.PE(query)
+            assert tuple(qr.shape) == (nbatches, self.h, nPatches, nPatches)
+            scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(self.d_k)
+
+            assert tuple(scores.shape) == (nbatches, self.h, nPatches, nPatches), 'the shape is not as expected'
+            self.attn = F.softmax(scores+qr, dim=-1)
+            # p_attn=taylor_softmax_v1(scores/tmp)
+            print('scores ', self.attn.shape)
+
+            x = einsum('b h i j, b h j d -> b h i d', self.attn, value)
+            assert tuple(x.shape) == (nbatches, self.h, nPatches, self.d_k), 'shape of attention output is not expected'
+
+
+
 
         else:
             raise NotImplementedError
