@@ -254,18 +254,7 @@ class Encoder(nn.Module):
 
             features = torch.stack(features, dim=1)
             if self.resnet_build:
-                features2 = []initialized
-length:  5938
----------------------------------------------------------------------------
-AttributeError                            Traceback (most recent call last)
-<ipython-input-5-09dd68772429> in <module>()
-     34     print("length: ", len(df))
-     35
----> 36     basemap = ee.ImageCollection("USDA/NAIP/DOQQ").select(['R', 'G', 'B']).filter(ee.Filter.date('2016-01-01', '2018-06-01')).visualize(min=[0.0, 0.0, 0.0], max=[255.0, 255.0, 255.0])
-     37
-     38     pool = mp.Pool()
-
-AttributeError: 'ImageCollection' object has no attribute 'visualize'
+                features2 = []
                 x_p2 = img_to_patch_strided(x[key[1]], p=self.patch, s=self.stride)
                 print('patches for ms shape :', x_p2.shape)
                 b, num_patches2, c2, h2, w2 = x_p2.shape
