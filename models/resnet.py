@@ -396,8 +396,9 @@ def _resnet(
                 nn.init.constant_(model.state_dict()[key], 0.0)
             state_dict[key] = model.state_dict()[key]
 
-        model.load_state_dict(state_dict)
+        
         '''
+        model.load_state_dict(state_dict)
     return model
 
 
