@@ -558,7 +558,7 @@ class Trainer:
         elif self.loss_type=='mse':
             self.criterion=nn.MSELoss()
         elif self.loss_type=='smoothL1':
-            self.criterion = nn.SmoothL1Loss(beta=1)
+            self.criterion = nn.SmoothL1Loss(beta=3)
 
     @torch.no_grad()
     def update_bn(loader, model, device=None):
