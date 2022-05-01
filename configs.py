@@ -66,6 +66,7 @@ args = Namespace(
     clipn=True,
     normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
+
     fold='B',
     ls_bands= None,
     nl_band='merge',  # [None , merge , split]

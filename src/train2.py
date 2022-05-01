@@ -16,7 +16,7 @@ from batchers.dataset import Batcher
 from models.model_generator import get_model, Encoder, MultiHeadedAttention, geoAttention
 from src.trainer2 import Trainer
 from utils.utils import get_paths, dotdict, init_model, parse_arguments, get_full_experiment_name, load_from_checkpoint, \
-    load_npz
+    load_npz, dhs_incountry
 from configs import args as default_args
 from utils.utils import seed_everything
 import tensorflow as tf
@@ -218,55 +218,56 @@ def main(args):
     elif args.dataset=='stats':
 
         return building_exp()
+
     # dataloader
-    elif args.dataset == 'DHS_OOC':
-        paths_train = get_paths(args.dataset, 'train', args.fold, args.data_path)
+    elif 'DHS' in args.dataset:
+          if args.dataset=='DHS_incountry':
+            paths=dhs_incountry(args.dataset+'_'+args.fold,['train','val','test'],args.data_path)
+            paths_train=paths['train']
+            paths_valid=paths['val']
+            paths_test=paths['test']
+            print('num_train', len(paths_train))
+            print('num_valid', len(paths_valid))
+            print('num_test', len(paths_test))
+          elif args.dataset == 'DHS_OOC':
+            paths_train = get_paths(args.dataset, 'train', args.fold, args.data_path)
 
-        paths_valid = get_paths(args.dataset, 'val', args.fold, args.data_path)
+            paths_valid = get_paths(args.dataset, 'val', args.fold, args.data_path)
 
-        paths_test = get_paths(args.dataset, 'test', args.fold, args.data_path)
-        print('num_train', len(paths_train))
-        print('num_valid', len(paths_valid))
-        print('num_test', len(paths_test))
+            paths_test = get_paths(args.dataset, 'test', args.fold, args.data_path)
+            print('num_train', len(paths_train))
+            print('num_valid', len(paths_valid))
+            print('num_test', len(paths_test))
 
-        paths_train_b = None
-        paths_valid_b = None
-        paths_test_b = None
-        if args.include_buildings:
-            paths_train_b = get_paths(args.dataset, 'train', args.fold, args.buildings_records)
-            paths_valid_b = get_paths(args.dataset, 'val', args.fold, args.buildings_records)
-            paths_test_b = get_paths(args.dataset, 'test', args.fold, args.buildings_records)
-            print('b_train', len(paths_train_b))
-            print('b_valid', len(paths_valid_b))
-            print('b_test', len(paths_test_b))
+            paths_train_b = None
+            paths_valid_b = None
+            paths_test_b = None
+            if args.include_buildings:
+                paths_train_b = get_paths(args.dataset, 'train', args.fold, args.buildings_records)
+                paths_valid_b = get_paths(args.dataset, 'val', args.fold, args.buildings_records)
+                paths_test_b = get_paths(args.dataset, 'test', args.fold, args.buildings_records)
+                print('b_train', len(paths_train_b))
+                print('b_valid', len(paths_valid_b))
+                print('b_test', len(paths_test_b))
 
         # valid=list(paths_train[0:400])+list(paths_train[855:1155])+list(paths_train[1601:2000])
         # train=list(paths_train[400:855])+list(paths_train[1155:1601])+list(paths_train[2000:5000])
 
-        batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
+          batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                                 args.nl_label, args.include_buildings, paths_train_b, args.normalize, args.augment,
                                 args.clipn, args.batch_size, groupby=args.group,
                                 cache=True, shuffle=True,img_size=args.image_size,crop=args.crop,rand_crop=args.rand_crop,offset=args.offset)
 
-        batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
+          batcher_valid = Batcher(paths_valid, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
                                 args.nl_label, args.include_buildings, paths_valid_b, args.normalize, False, args.clipn,
                                 args.batch_size, groupby=args.group,
                                 cache=True, shuffle=False,img_size=args.image_size,crop=args.crop,rand_crop=args.rand_crop,offset=args.offset)
 
-        batcher_test = Batcher(paths_test, {'urban_rural': tf.float32}, args.ls_bands, args.nl_band, args.label_name,
+          batcher_test = Batcher(paths_test, {'urban_rural': tf.float32}, args.ls_bands, args.nl_band, args.label_name,
                                args.nl_label, args.include_buildings, paths_test_b, args.normalize, False, args.clipn,
                                args.batch_size, groupby='rural',
                                cache=True, shuffle=False,img_size=args.image_size,crop=args.crop,rand_crop=args.rand_crop,offset=args.offset)
-        '''
-        batcher_all= Batcher(get_paths(args.dataset, 'all', args.fold, args.data_path), args.scaler_features_keys,'ms', None, 'wealthpooled',
-                                None, False, None, args.normalize, False,
-                                False, 8, groupby=args.group,
-                                cache=True, shuffle=False)
-        
-        for i in batcher_all:
-            print('large tfrecords: ', i['locs'],i['labels'],i['years'],i['urban_rural'],i['country'])
-            break
-        '''
+
     ##############################################################WILDS dataset############################################################
     elif args.dataset == 'wilds':
         dataset = get_dataset(dataset="poverty", download=True, unlabeled=True)

@@ -332,7 +332,7 @@ def attention_uniform(query, key, value, dropout=None):
     scores_identity = torch.ones((b, h, n, n)).type_as(query)
 
     p_attn_identity = F.softmax(scores_identity, dim=-1)
-    print('uniform scores ', p_attn_identity.shape)
+    print('uniform scores ', p_attn_identity)
 
     out_ident = einsum('b h i j, b h j d -> b h i d', p_attn_identity, value)
     assert tuple(out_ident.shape) == (b, h, n, d), 'shape of uniform attention output is not expected'

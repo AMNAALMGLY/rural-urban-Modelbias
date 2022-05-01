@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import pickle
 import warnings
 from glob import glob
 from typing import Iterable, Optional
@@ -150,6 +151,63 @@ def get_paths(dataset: str, split: str, fold: str, root) -> np.ndarray:
     # assert  len(paths)==SIZES[f'{dataset}_{fold}'][split]
     return np.sort(paths)
 
+def _incountry(dataset: str, splits: Iterable[str], tfrecords_glob_path: str,
+               folds_pickle_path: str
+               ) -> dict[str, np.ndarray]:
+    '''
+    Args
+    - dataset: str, format '*_incountry_X' where 'X' is one of
+        ['A', 'B', 'C', 'D', 'E']
+    - splits: list of str, from ['train', 'val', 'test', 'all']
+    - tfrecords_glob_path: str, glob pattern for TFRecords
+    - folds_pickle_path: str, path to pickle file containing incountry folds
+
+    Returns
+    - paths: dict, maps split (str) => sorted np.array of str paths
+
+    Note: This is a little hacky, because it assumes that the list of TFRecord
+        paths returned matches the order of the clusters used to create the
+        folds pickle file. We know this to be true because both are
+        sorted by the survey country_year, and the order of clusters within a
+        survey are consistent. (The Google Earth Engine TFRecord export
+        script preserves ordering within each survey.)
+    '''
+    all_tfrecord_paths = np.sort(glob(tfrecords_glob_path))
+    #assert len(all_tfrecord_paths) == SIZES[dataset]['all']
+    print(all_tfrecord_paths)
+
+    fold = dataset[-1]
+    with open(folds_pickle_path, 'rb') as f:
+        incountry_folds = pickle.load(f)
+        incountry_fold = incountry_folds[fold]
+
+    paths: dict[str, np.ndarray] = {}
+    for split in splits:
+        if split == 'all':
+            paths[split] == all_tfrecord_paths
+        else:
+            indices = incountry_fold[split]
+            paths[split] = all_tfrecord_paths[indices]
+        print(len(paths[split]))
+#        assert len(paths[split]) == SIZES[dataset][split]
+    return paths
+
+
+def dhs_incountry(dataset: str, splits: Iterable[str],DHS_TFRECORDS_PATH_ROOT) -> dict[str, np.ndarray]:
+    '''
+    Args
+    - dataset: str, has format 'DHS_incountry_X' where 'X' is one of
+        ['A', 'B', 'C', 'D', 'E']
+    - splits: list of str, from ['train', 'val', 'test', 'all']
+
+    Returns
+    - paths: dict, maps split (str) => sorted np.array of str paths
+    '''
+    glob_path = os.path.join(DHS_TFRECORDS_PATH_ROOT, '*', '*.tfrecord.gz')
+    folds_pickle_path = os.path.join('/atlas/u/amna/rural-urban-Modelbias', 'data/dhs_incountry_folds.pkl')
+    return _incountry(dataset=dataset, splits=splits,
+                      tfrecords_glob_path=glob_path,
+                      folds_pickle_path=folds_pickle_path)
 
 def init_model(method, ckpt_path=None):
     '''
