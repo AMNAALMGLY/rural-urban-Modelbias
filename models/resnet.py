@@ -8,7 +8,6 @@ from models._internally_replaced_utils import load_state_dict_from_url
 from models.utils import _log_api_usage_once
 from configs import args
 import time
-import pytorch_lightning
 
 __all__ = [
     "ResNet",
@@ -398,7 +397,7 @@ def _resnet(
 
         
         '''
-        model.load_state_dict(state_dict)
+        model.load_state_dict(state_dict['state_dict'])
     return model
 
 
