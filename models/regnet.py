@@ -10,7 +10,7 @@ from configs import args
 from .resnet import init_first_layer_weights
 from ..ops.misc import Conv2dNormActivation, SqueezeExcitation
 from ..transforms._presets import ImageClassification, InterpolationMode
-from ..utils import _log_api_usage_once
+from models.utils import _log_api_usage_once
 from ._api import WeightsEnum, Weights
 from ._meta import _IMAGENET_CATEGORIES
 from ._utils import handle_legacy_interface, _ovewrite_named_param, _make_divisible
