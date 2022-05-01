@@ -386,7 +386,7 @@ class MultiHeadedAttentionAdapt(nn.Module):
         self.dropout = nn.Dropout(p=dropout)
         self.w = w
         if self.w=='multihead_relative':
-            self.PE=RelPosEmb2D((9,9),self.d_k)
+            self.PE=RelPosEmb2D((3,3),self.d_k)
         self._reset_parameters()
 
         # @torch.no_grad
