@@ -316,7 +316,6 @@ from typing import Callable, List, Optional
 import torch
 from torch import Tensor
 
-from utils import _log_api_usage_once
 
 
 interpolate = torch.nn.functional.interpolate
