@@ -1,7 +1,7 @@
 """The transformer code follows the Annotated Transformer implementation.
 See https://nlp.seas.harvard.edu/2018/04/03/attention.html"""
 from models.RelPE import RelPosEmb2D
-#from models.regnet import regnet_y_400mf
+from models.regnet import regnet_y_400mf
 
 """position embedding from https://github.com/tatp22/multidim-positional-encoding/blob/master/positional_encodings
 /positional_encodings.py """
@@ -27,7 +27,7 @@ import torch.nn.functional as F
 
 model_type = dict(#resnet18=PreActResNet18,
                    resnet18=resnet18,
-                  #regnet=regnet_y_400mf,
+                  regnet=regnet_y_400mf,
                   resnet34=resnet34,
                   resnet50=resnet50,
                   mlp=mlp,
