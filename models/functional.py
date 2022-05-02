@@ -2,7 +2,7 @@ import math
 import numbers
 import warnings
 from enum import Enum
-from typing import List, Tuple, Any, Optional
+from typing import List, Tuple, Any, Optional, no_type_check
 
 import numpy as np
 import torch
@@ -14,10 +14,21 @@ try:
 except ImportError:
     accimage = None
 
-from utils import _log_api_usage_once
+
 from . import F_pil as F_pil
 from . import F_tensor as F_t
 
+
+@no_type_check
+def _log_api_usage_once(obj: str) -> None:  # type: ignore
+    if torch.jit.is_scripting() or torch.jit.is_tracing():
+        return
+    # NOTE: obj can be an object as well, but mocking it here to be
+    # only a string to appease torchscript
+    if isinstance(obj, str):
+        torch._C._log_api_usage_once(obj)
+    else:
+        torch._C._log_api_usage_once(f"{obj.__module__}.{obj.__class__.__name__}")
 
 class InterpolationMode(Enum):
     """Interpolation modes
