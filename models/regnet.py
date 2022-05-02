@@ -9,11 +9,11 @@ from torch import nn, Tensor
 from configs import args
 from .resnet import init_first_layer_weights
 from models.utils import Conv2dNormActivation, SqueezeExcitation
-from utils import ImageClassification, InterpolationMode
+from models.utils import ImageClassification, InterpolationMode
 from models.utils import _log_api_usage_once
-from utils import WeightsEnum, Weights
-from utils import _IMAGENET_CATEGORIES
-from utils import handle_legacy_interface, _ovewrite_named_param, _make_divisible
+from models.utils import WeightsEnum, Weights
+from models.utils import _IMAGENET_CATEGORIES
+from models.utils import handle_legacy_interface, _ovewrite_named_param, _make_divisible
 
 
 __all__ = [
