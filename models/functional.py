@@ -14,7 +14,7 @@ try:
 except ImportError:
     accimage = None
 
-from .utils import _log_api_usage_once
+from utils import _log_api_usage_once
 from . import F_pil as F_pil
 from . import F_tensor as F_t
 
