@@ -106,18 +106,28 @@ DHS_MODELS = [
 #'DHS_OOC_E_NL_new_attn_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
 
 
-'DHS_OOC_A_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
-'DHS_OOC_B_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
-'DHS_OOC_C_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
-'DHS_OOC_D_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
-'DHS_OOC_E_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+#'DHS_OOC_A_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+#'DHS_OOC_B_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+#'DHS_OOC_C_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+#'DHS_OOC_D_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+#'DHS_OOC_E_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
 
-'DHS_OOC_A_NL_new_attn_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
-'DHS_OOC_B_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
-'DHS_OOC_C_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
-'DHS_OOC_D_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
-'DHS_OOC_E_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
+#'DHS_OOC_A_NL_new_attn_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+#'DHS_OOC_B_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
+#'DHS_OOC_C_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
+#'DHS_OOC_D_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
+#'DHS_OOC_E_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
+'DHS_OOC_A_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
+'DHS_OOC_B_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
+#'DHS_OOC_C_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
+'DHS_OOC_D_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
+'DHS_OOC_E_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
 
+'DHS_OOC_A_NL_uniform_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop',
+ 'DHS_OOC_B_NL_new_uniform_attn_PE100_b32_fce-05_conve-05_lr0001_crop'  ,
+    'DHS_OOC_C_NL_new_uniform_attn_PE100_b32_fce-05_conve-05_lr0001_crop',
+    'DHS_OOC_D_NL_new_uniform_attn_PE100_b32_fce-05_conve-05_lr0001_crop',
+'DHS_OOC_E_NL_new_uniform_attn_PE100_b32_fce-05_conve-05_lr0001_crop',
 
     # DHS_OOC_A_encoder_b_nl_concat
     #  'DHS_OOC_A_ms_samescaled_b64_fc01_conv01_lr0001',
