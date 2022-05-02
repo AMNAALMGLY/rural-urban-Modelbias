@@ -579,13 +579,6 @@ class InterpolationMode(Enum):
     HAMMING = "hamming"
     LANCZOS = "lanczos"
 
-__all__ = [
-
-    "ImageClassification",
-
-]
-
-
 
 class ImageClassification(nn.Module):
     def __init__(
