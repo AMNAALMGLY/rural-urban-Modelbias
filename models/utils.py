@@ -580,6 +580,20 @@ class InterpolationMode(Enum):
     LANCZOS = "lanczos"
 
 
+__all__ = [
+    "ObjectDetection",
+    "ImageClassification",
+
+]
+
+
+class ObjectDetection(nn.Module):
+    def forward(self, img: Tensor) -> Tensor:
+        if not isinstance(img, Tensor):
+            img = F.pil_to_tensor(img)
+        return F.convert_image_dtype(img, torch.float)
+
+
 class ImageClassification(nn.Module):
     def __init__(
         self,
