@@ -2,7 +2,7 @@ import math
 import pathlib
 import warnings
 from typing import Union, Optional, List, Tuple, BinaryIO, no_type_check
-import functional as F
+from . import functional as F
 import numpy as np
 import torch
 from PIL import Image, ImageDraw, ImageFont, ImageColor
