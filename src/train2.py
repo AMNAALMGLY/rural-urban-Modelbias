@@ -166,7 +166,7 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
         best_loss, path, = trainer.fit_wilds(train_loader, valid_loader, max_epochs=args.max_epochs, gpus=args.gpus,
                                               class_model=class_model)
     #Hyperparameter tuning
-    elif args.experiment=='ray_tune':
+    elif 'opt' in args.experiment_name:
         best_trial=trainer.tune_run(train_loader,valid_loader,batcher_test,max_epochs=args.max_epochs, gpus=args.gpus)
         best_loss=best_trial.last_result["loss"]
         path=None
