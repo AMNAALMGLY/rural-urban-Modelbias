@@ -22,7 +22,7 @@ AUTO: int = tf.data.experimental.AUTOTUNE
 # choose which GPU to run on
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 seed = 123
-labels_path = os.path.join(os.path.dirname(__file__), 'dhs_final_labels.csv')
+#labels_path = os.path.join(os.path.dirname(__file__), 'dhs_final_labels.csv')
 
 
 # TODO split nl_band function
@@ -125,7 +125,7 @@ class Batcher():
         self.save_dir = save_dir
         self.batch_size = batch_size
         self.shuffle = shuffle
-        self.dataframe = pd.read_csv(labels_path)
+        #self.dataframe = pd.read_csv(labels_path)
         self._iterator = None
         self.ds = self.get_dataset()
 

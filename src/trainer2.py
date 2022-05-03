@@ -1,4 +1,3 @@
-
 import os
 import shutil
 import time
@@ -21,6 +20,8 @@ import pandas as pd
 from pl_bolts import optimizers
 import tensorflow as tf
 from ray import tune
+from ray.tune import CLIReporter
+from ray.tune.schedulers import ASHAScheduler
 
 writer = SummaryWriter()
 patience = args.patience
@@ -81,7 +82,7 @@ class Trainer:
 
             # initialization
             torch.nn.init.trunc_normal_(fc.weight.data, std=0.01)
-            #fc.bias.data.zero_()
+            # fc.bias.data.zero_()
             torch.nn.init.constant_(fc.bias.data, 0.01)
 
             model.fc = fc
@@ -294,9 +295,8 @@ class Trainer:
 
         return loss
 
-
     def fit(self, trainloader, validloader, batcher_test, max_epochs, gpus, class_model=None, early_stopping=True,
-            save_every=25):
+            save_every=25, args=args):
 
         # Weighting model
         if class_model:
@@ -304,7 +304,7 @@ class Trainer:
         else:
             self.class_model = None
         # log the gradients
-        wandb.watch(self.model, log='all',log_freq=5)
+        wandb.watch(self.model, log='all', log_freq=5)
 
         swa_start = int(0.75 * max_epochs)  # swa in 25% of the training
 
@@ -352,8 +352,6 @@ class Trainer:
 
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
-
-
 
                     # b=torch.tensor(record[1]['buildings'])
 
@@ -521,6 +519,62 @@ class Trainer:
 
         return r2_test[0], (test_epoch_loss / test_step)
 
+    def train_ray(self, config):
+        '''
+        A seperate training function to adapt to ray tune hyper paramenters optimization setup
+        :param config: hyper parameters you want to tune
+        :return: loss
+        '''
+
+        self.lr = config['lr']
+        self.wd = config['wd']
+        self.configure_optimizers()
+        args.accumlation_steps = config['bs']
+
+        val_loss, _ = self.fit(t_load, v_load, test_load, epochs, tune_gpu, args=args)
+        tune.report(loss=val_loss)
+
+    def tune_run(self, trainloader, validloader, batcher_test, max_epochs, gpus):
+
+        # just to use it in raytune function make loaders as global varibles
+        global t_load, v_load, epochs, test_load, tune_gpu
+        t_load, v_load, epochs, tune_gpu, test_load = trainloader, validloader, max_epochs, gpus, batcher_test
+
+        tune_config = {"lr": tune.loguniform(1e-4, 1e-1),
+                       "wd": tune.loguniform(1e-4, 1e1),
+                       "bs": tune.choice([1, 2, 3, 4, 5])}
+
+        reporter = CLIReporter(
+
+            metric_columns=["loss", "training_iteration"])
+        scheduler = ASHAScheduler(
+            metric="loss",
+            mode="min",
+            max_t=200,
+            grace_period=1,
+            reduction_factor=2)
+        result = tune.run(
+            tune.with_parameters(self.train_ray),
+            resources_per_trial={"cpu": 4, "gpu": args.gpus},
+            config=tune_config,
+            progress_reporter=reporter,
+            metric="loss",
+            mode="min",
+
+            scheduler=scheduler,
+            stop={
+                "loss": 0.001,
+                "training_iteration": 200
+            },
+            num_samples=1
+
+        )
+        best_trial = result.get_best_trial("loss", "min", "last")
+        print("Best trial config: {}".format(best_trial.config))
+        print("Best trial final validation loss: {}".format(
+            best_trial.last_result["loss"]))
+        return best_trial
+
     def configure_optimizers(self):
         if args.scheduler == 'cyclic':
             opt = torch.optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9)
@@ -535,12 +589,12 @@ class Trainer:
                                      gamma=args.lr_decay),
                 'cos': torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(opt, T_0=args.max_epochs),
                 'warmup_cos': optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR(opt, warmup_epochs=5,
-                                                                                    max_epochs=300,
-                                                                                    warmup_start_lr=1e-7),
+                                                                                    max_epochs=200,
+                                                                                    warmup_start_lr=1e-8),
                 'warmup_step': StepLRScheduler(opt, decay_t=1, decay_rate=args.lr_decay, warmup_t=5,
                                                warmup_lr_init=1e-7),
                 'step': torch.optim.lr_scheduler.StepLR(opt, step_size=5, gamma=args.lr_decay, ),
-                'cyclic': torch.optim.lr_scheduler.CyclicLR(opt, base_lr=1e-4, max_lr=self.lr,cycle_momentum=False),
+                'cyclic': torch.optim.lr_scheduler.CyclicLR(opt, base_lr=1e-4, max_lr=self.lr, cycle_momentum=False),
                 # 'scheduler':torch.optim.lr_scheduler.ReduceLROnPlateau(opt, 'min'),
 
                 'swa_scheduler': torch.optim.swa_utils.SWALR(opt, anneal_strategy="cos", anneal_epochs=5, swa_lr=0.05)
@@ -555,9 +609,9 @@ class Trainer:
         elif self.loss_type == 'classification' and self.num_outputs == 1:
             self.criterion = nn.BCEWithLogitsLoss()
 
-        elif self.loss_type=='mse':
-            self.criterion=nn.MSELoss()
-        elif self.loss_type=='smoothL1':
+        elif self.loss_type == 'mse':
+            self.criterion = nn.MSELoss()
+        elif self.loss_type == 'smoothL1':
             self.criterion = nn.SmoothL1Loss(beta=3)
 
     @torch.no_grad()
@@ -641,6 +695,7 @@ class Trainer:
 
         Beta = torch.exp(hx.squeeze(-1))
         return Beta
+
     def fit_wilds(self, trainloader, validloader, max_epochs, gpus, class_model=None, early_stopping=True,
                   save_every=10):
         self.model.to(gpus)
@@ -814,7 +869,6 @@ class Trainer:
             print("Time Elapsed for all epochs : {:.2} H".format((time.time() - start) / 120))
         best_path = os.path.join(self.save_dir, 'best.ckpt')
         return best_loss, best_path,
-
 
     '''
     def subshift(self, x, y, group):
