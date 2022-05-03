@@ -111,6 +111,19 @@ class EncoderLayer(nn.Module):
     def forward(self, x):
         x = self.sublayer[0](x, lambda x: self.self_attn(x))  # bs, n ,d
         return self.sublayer[1](x, self.feed_forward)  # bs, n , d_model
+class fc_layer(nn.Module):
+    def __init__(self,size, feed_forward):
+        super(fc_layer, self).__init__()
+        self.linears=nn.Sequential(nn.Linear(size,size),nn.Linear(size,size))  #one for v one for out projection
+        self.LN=LayerNorm(size)
+        self.ff=feed_forward
+        self.size=size
+    def forward(self,x):
+        #ignore res connection and dropout for now
+        x=self.linears(x)
+        return self.LN(self.ff(self.LN(x)))
+
+
 
 
 class Layers(nn.Module):
@@ -126,6 +139,7 @@ class Layers(nn.Module):
         for layer in self.layers:
             x = layer(x)  # query , uniform query, random query
         return self.norm(x)  # bs , n , d_model
+
 
 
 class Encoder(nn.Module):
@@ -186,11 +200,16 @@ class Encoder(nn.Module):
             if self.self_attn == 'torch':
                 self.multi_head_adapt = MultiheadAttention(input_dim=self.fc_in_dim, embed_dim=self.fc_in_dim,
                                                            num_heads=
-                                                           1)
+                                                        1)
+                self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
+                                                feed_forward=self.ff)
+            elif self.self_attn=='linear':
+                self.layer_adapt=fc_layer(self.fc_in_dim, self.ff)
             else:
                 self.multi_head_adapt = MultiHeadedAttentionAdapt(h=1, d_model=self.fc_in_dim, w=self.self_attn)
-            self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
-                                            feed_forward=self.ff)
+                self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
+                                                feed_forward=self.ff)
+            #stack layers together
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
 
         self.fc = nn.Linear(self.fc_in_dim, num_outputs).to(
