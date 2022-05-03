@@ -166,7 +166,7 @@ class Encoder(nn.Module):
             self.fc_in_dim = self.resnet_bands.fc.in_features
         if self.self_attn == 'multihead_early':
             self.fc_in_dim =  64+128+256
-        # self.fc_in_dim = 256
+        print('fc dimension is ',self.fc_in_dim)
 
         self.dim = self.fc_in_dim
         # self.pre_norm = LayerNorm(self.fc_in_dim)

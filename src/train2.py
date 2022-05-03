@@ -167,11 +167,13 @@ def setup_experiment(model, train_loader, valid_loader, resume_checkpoints, args
                                               class_model=class_model)
     #Hyperparameter tuning
     elif 'opt' in args.experiment_name:
+        print('in raytune tuing')
         best_trial=trainer.tune_run(train_loader,valid_loader,batcher_test,max_epochs=args.max_epochs, gpus=args.gpus)
         best_loss=best_trial.last_result["loss"]
         path=None
     #Normal Settings
     else:
+        print('in normal settings')
         best_loss, path, = trainer.fit(train_loader, valid_loader,batcher_test, max_epochs=args.max_epochs, gpus=args.gpus,
                                        class_model=class_model,args=args)
     score = trainer.test(batcher_test)
