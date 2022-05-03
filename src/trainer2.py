@@ -519,7 +519,7 @@ class Trainer:
 
         return r2_test[0], (test_epoch_loss / test_step)
 
-    def train_ray(self, config):
+    def train_ray(self, config,data):
         '''
         A seperate training function to adapt to ray tune hyper paramenters optimization setup
         :param config: hyper parameters you want to tune
@@ -531,7 +531,7 @@ class Trainer:
         self.configure_optimizers()
         args.accumlation_steps = config['bs']
 
-        val_loss, _ = self.fit(t_load, v_load, test_load, epochs, tune_gpu, args=args)
+        val_loss, _ = self.fit(data[0], data[1] ,data[2], epochs, tune_gpu, args=args)
         tune.report(loss=val_loss)
 
     def tune_run(self, trainloader, validloader, batcher_test, max_epochs, gpus):
@@ -554,7 +554,7 @@ class Trainer:
             grace_period=1,
             reduction_factor=2)
         result = tune.run(
-            tune.with_parameters(self.train_ray),
+            tune.with_parameters(self.train_ray,data=( t_load, v_load,test_load)),
             resources_per_trial={"cpu": 4, "gpu": args.gpus},
             config=tune_config,
             progress_reporter=reporter,
