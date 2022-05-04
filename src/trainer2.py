@@ -116,9 +116,9 @@ class Trainer:
         self.setup_criterion()
 
         #for raytune experiments
-        self.trainloader=train_loader
-        self.valid_loader=valid_loader
-        self.batcher_test=test_loader
+        self.loader_train=train_loader
+        self.loader_valid=valid_loader
+        self.loader_test=test_loader
 
     def _shared_step(self, batch, metric_fn, is_training=True):
         '''
@@ -525,7 +525,7 @@ class Trainer:
 
         return r2_test[0], (test_epoch_loss / test_step)
 
-    def train_ray(self, config,data):
+    def train_ray(self, config):
         '''
         A seperate training function to adapt to ray tune hyper paramenters optimization setup
         :param config: hyper parameters you want to tune
@@ -537,15 +537,99 @@ class Trainer:
         self.configure_optimizers()
         args.accumlation_steps = config['bs']
 
+        wandb.watch(self.model, log='all', log_freq=5)
+
+        train_steps = len(self.loader_train)
+
+        valid_steps = len(self.loader_valid)  # the number of batches
+
+
+
+
+        for epoch in range(epochs):
+
+            epoch_start = time.time()
+
+            with tqdm(self.loader_train, unit="batch") as tepoch:
+                train_step = 0
+                epoch_loss = 0
+
+                print('-----------------------Training--------------------------------')
+                self.model.train()
+                self.opt.zero_grad()
+                for record in tepoch:
+                    tepoch.set_description(f"Epoch {epoch}")
+
+                    _, train_loss = self._shared_step(record, self.metric)
+                    train_loss.backward()
+                    # Implementing gradient accumlation
+                    if (train_step + 1) % args.accumlation_steps == 0:
+                        self.opt.step()
+                        self.opt.zero_grad()
+
+                    epoch_loss += train_loss.item()
+                    train_step += 1
+                    # print statistics
+                    print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item():.2f}')
+                    if (train_step + 1) % 20 == 0:
+                        running_train = epoch_loss / (train_step)
+                        #wandb.log({"train_loss": running_train, 'epoch': epoch})
+
+                    tepoch.set_postfix(loss=train_loss.item())
+                    time.sleep(0.1)
+
+            # Metric calulation and average loss
+            r2 = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
+            #wandb.log({f'{self.metric_str[0]} train': r2, 'epoch': epoch})
+            avgloss = epoch_loss / train_steps
+            #wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
+            print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str[0]} is {r2:.2f}')
+            self.metric[0].reset()
+
+            with torch.no_grad():
+                valid_step = 0
+                valid_epoch_loss = 0
+                print('--------------------------Validation-------------------- ')
+                self.model.eval()
+                for record in self.loader_valid:
+
+                    valid_loss = self.validation_step(record)
+                    valid_epoch_loss += valid_loss.item()
+                    valid_step += 1
+                    print(
+                        f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item():.2f}')
+                    if (valid_step + 1) % 20 == 0:
+                        running_loss = valid_epoch_loss / (valid_step)
+                #        wandb.log({"valid_loss": running_loss, 'epoch': epoch})
+
+                avg_valid_loss = valid_epoch_loss / valid_steps
+                with tune.checkpoint_dir(epoch) as checkpoint_dir:
+                    path = os.path.join(self.save_dir, "ray_checkpoint")
+                    torch.save((self.model.state_dict(), self.opt.state_dict()), path)
+
+
+
+                r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
+                self.metric[0].reset()
+                print(f'Validation {self.metric_str[0]}is {r2_valid:.2f} and loss {avg_valid_loss}')
+                #wandb.log({f'{self.metric_str[0]} valid': r2_valid, 'epoch': epoch})
+                #wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
+                # AGAINST ML RULES : moniter test values
+                r2_test, test_loss = self.test(self.loader_test)
+
+               # wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
+               # wandb.log({f'loss test': test_loss, 'epoch': epoch})
+
+                tune.report(loss=avg_valid_loss, accuracy=r2_valid)
 
         #val_loss, _ = self.fit(data[0], data[1] ,data[2], epochs, tune_gpu, args=args)
-        val_loss, _ = self.fit_ray( epochs, tune_gpu, args=args)
-        tune.report(loss=val_loss)
+        #val_loss, _ = self.fit_ray( epochs, tune_gpu, args=args)
+        #tune.report(loss=val_loss)
 
     def tune_run(self, max_epochs, gpus):
 
         # just to use it in raytune function make loaders as global varibles
-        global t_load, v_load, epochs, test_load, tune_gpu
+        global  epochs, tune_gpu
         #t_load, v_load, epochs, tune_gpu, test_load = trainloader, validloader, max_epochs, gpus, batcher_test
         epochs, tune_gpu=max_epochs, gpus
         tune_config = {"lr": tune.loguniform(1e-4, 1e-1),
@@ -724,11 +808,10 @@ class Trainer:
         # log the gradients
         wandb.watch(self.model, log='all', log_freq=5)
 
-        swa_start = int(0.75 * max_epochs)  # swa in 25% of the training
 
-        train_steps = len(self.trainloader)
+        train_steps = len(self.loader_train)
 
-        valid_steps = len(self.validloader)  # the number of batches
+        valid_steps = len(self.loader_valid)  # the number of batches
         best_loss = float('inf')
         count2 = 0  # count loss improving times
         r2_dict = defaultdict(lambda x: '')
@@ -739,11 +822,10 @@ class Trainer:
         # building_sum=[]
 
         for epoch in range(max_epochs):
-            # scheduler updates
-            # num_updates=epoch*len(trainloader)
+
             epoch_start = time.time()
 
-            with tqdm(self.trainloader, unit="batch") as tepoch:
+            with tqdm(self.loader_train, unit="batch") as tepoch:
                 train_step = 0
                 epoch_loss = 0
 
@@ -771,17 +853,6 @@ class Trainer:
                     tepoch.set_postfix(loss=train_loss.item())
                     time.sleep(0.1)
 
-                    # b=torch.tensor(record[1]['buildings'])
-
-                    # building_sum.append(torch.sum(b ,dim=(1,2,3)))
-            '''
-            building_sum=torch.cat(building_sum,dim=0)
-            print('shape of sum ',building_sum.shape)
-            np_dict=defaultdict()
-            np_dict['building_sum']=building_sum.numpy()
-
-            save_results(self.save_dir, np_dict, 'building_sum')
-            '''
             # Metric calulation and average loss
             r2 = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
             wandb.log({f'{self.metric_str[0]} train': r2, 'epoch': epoch})
@@ -795,7 +866,7 @@ class Trainer:
                 valid_epoch_loss = 0
                 print('--------------------------Validation-------------------- ')
                 self.model.eval()
-                for record in self.validloader:
+                for record in self.loader_valid:
 
                     valid_loss = self.validation_step(record)
                     valid_epoch_loss += valid_loss.item()
@@ -805,22 +876,11 @@ class Trainer:
                     if (valid_step + 1) % 20 == 0:
                         running_loss = valid_epoch_loss / (valid_step)
                         wandb.log({"valid_loss": running_loss, 'epoch': epoch})
-                # b=torch.tensor(record[1]['buildings'])
-                # if epoch==0:
-                #   building_sum.append(torch.sum(b ,dim=(1,2,3)))
-                """
-                if epoch==0:
-                    building_sum=torch.cat(building_sum,dim=0)
-                    print('shape of sum ',building_sum.shape)
-                    np_dict=defaultdict()
-                    np_dict['building_sum']=building_sum.numpy()
 
-                    save_results(self.save_dir, np_dict, 'building_sum_val')
-                """
 
                 avg_valid_loss = valid_epoch_loss / valid_steps
 
-                # tune.report(mean_loss=avg_valid_loss)
+                tune.report(mean_loss=avg_valid_loss)
 
                 r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
                 self.metric[0].reset()
@@ -829,7 +889,7 @@ class Trainer:
                 wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
 
                 # AGAINST ML RULES : moniter test values
-                r2_test, test_loss = self.test(self.batcher_test)
+                r2_test, test_loss = self.test(self.loader_test)
 
                 wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
                 wandb.log({f'loss test': test_loss, 'epoch': epoch})
@@ -875,17 +935,9 @@ class Trainer:
 
             self.metric[0].reset()
             self.scheduler.step()
-            # if epoch >= swa_start:
-            #     print('in SWA scheduler')
-            #     self.swa_model.update_parameters(self.model)
-            #      self.swa_scheduler.step()
-            #   else:
-            #        self.scheduler.step(epoch + 1)
+
 
             print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
-        # UPDATE SWA MODEL RUNNIGN MEAN AND VARIANCE
-        # with autocast():
-        #     Trainer.update_bn(trainloader, self.swa_model)
 
         # choose the best model between the saved models in regard to r2 value or minimum loss
         if len(val_list.keys()) > 0:
