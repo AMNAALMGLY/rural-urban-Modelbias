@@ -203,7 +203,7 @@ class Encoder(nn.Module):
                                                         1)
                 self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
                                                 feed_forward=self.ff)
-            elif self.self_attn=='linear':
+            elif self.self_attn=='linear':    #linear over pathes of images experiment
                 self.layer_adapt=fc_layer(self.fc_in_dim, self.ff)
             else:
                 self.multi_head_adapt = MultiHeadedAttentionAdapt(h=1, d_model=self.fc_in_dim, w=self.self_attn)
@@ -211,7 +211,10 @@ class Encoder(nn.Module):
                                                 feed_forward=self.ff)
             #stack layers together
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
-
+        #linear over  whole image experiment
+        elif self.patch==0:
+            self.layer_adapt = fc_layer(self.fc_in_dim, self.ff)
+            self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
         self.fc = nn.Linear(self.fc_in_dim, num_outputs).to(
             args.gpus)  # combines both together
         with torch.no_grad():
@@ -237,7 +240,7 @@ class Encoder(nn.Module):
         features = []
         key = list(x.keys())
 
-        if not self.self_attn:
+        if not self.self_attn :
             features.append(self.resnet_bands(x[key[0]])[1])
             # features = torch.cat(features)
             # x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
@@ -248,6 +251,11 @@ class Encoder(nn.Module):
             features = torch.cat(features)
             # features = torch.stack((features), dim=1)
             # features = torch.mean(features, dim=1, keepdim=False)
+            if self.patch==0:  #that means we want linear layers above resnet model
+                print('in linear layers for whole image experiment')
+                assert features.dim ==2 ,'shape of featuers is not expected to perform linear layers on '
+                features=self.layers_adapt(features)
+
 
 
 
