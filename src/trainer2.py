@@ -677,9 +677,9 @@ class Trainer:
         self.lr = trial.suggest_float("lr", 1e-5, 1e-1, log=True)
 
 
-        self.wd =  trial.suggest_float("lr", 1e-5, 1e1, log=True)
+        self.wd =  trial.suggest_float("wd", 1e-5, 1e1, log=True)
         self.opt=self.configure_optimizers()['optimizer']
-        args.accumlation_steps = trial.suggest_int("lr", 1,5)
+        args.accumlation_steps = trial.suggest_int("bs", 1,5)
 
         wandb.watch(self.model, log='all', log_freq=5)
 
