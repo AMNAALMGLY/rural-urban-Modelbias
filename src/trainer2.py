@@ -22,8 +22,9 @@ import tensorflow as tf
 from ray import tune
 from ray.tune import CLIReporter
 from ray.tune.schedulers import ASHAScheduler
+import optuna
+from optuna.trial import TrialState
 
-writer = SummaryWriter()
 patience = args.patience
 
 
@@ -666,7 +667,115 @@ class Trainer:
         print("Best trial final validation loss: {}".format(
             best_trial.last_result["loss"]))
         return best_trial
+    def train_optuna(self,trial):
+        '''
+        A seperate training function to adapt to ray tune hyper paramenters optimization setup
+        :param config: hyper parameters you want to tune
+        :return: loss
+        '''
 
+        self.lr = trial.suggest_float("lr", 1e-5, 1e-1, log=True)
+
+
+        self.wd =  trial.suggest_float("lr", 1e-5, 1e1, log=True)
+        self.opt=self.configure_optimizers()['optimizor']
+        args.accumlation_steps = trial.suggest_int("lr", 1,2, 3,4,5)
+
+        wandb.watch(self.model, log='all', log_freq=5)
+
+        train_steps = len(self.loader_train)
+
+        valid_steps = len(self.loader_valid)  # the number of batches
+        epochs=args.max_epochs
+        for epoch in range(epochs):
+
+
+
+            with tqdm(self.loader_train, unit="batch") as tepoch:
+                train_step = 0
+                epoch_loss = 0
+
+                print('-----------------------Training--------------------------------')
+                self.model.train()
+                self.opt.zero_grad()
+                for record in tepoch:
+                    tepoch.set_description(f"Epoch {epoch}")
+
+                    _, train_loss = self._shared_step(record, self.metric)
+                    train_loss.backward()
+                    # Implementing gradient accumlation
+                    if (train_step + 1) % args.accumlation_steps == 0:
+                        self.opt.step()
+                        self.opt.zero_grad()
+
+                    epoch_loss += train_loss.item()
+                    train_step += 1
+                    # print statistics
+                    print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item():.2f}')
+
+
+                    tepoch.set_postfix(loss=train_loss.item())
+                    time.sleep(0.1)
+
+            # Metric calulation and average loss
+            r2 = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
+
+            avgloss = epoch_loss / train_steps
+
+            print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str[0]} is {r2:.2f}')
+            self.metric[0].reset()
+
+            with torch.no_grad():
+                valid_step = 0
+                valid_epoch_loss = 0
+                print('--------------------------Validation-------------------- ')
+                self.model.eval()
+                for record in self.loader_valid:
+
+                    valid_loss = self.validation_step(record)
+                    valid_epoch_loss += valid_loss.item()
+                    valid_step += 1
+                    print(
+                        f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item():.2f}')
+
+                avg_valid_loss = valid_epoch_loss / valid_steps
+                #with tune.checkpoint_dir(epoch) as checkpoint_dir:
+                 #   path = os.path.join(self.save_dir, "ray_checkpoint")
+                  #  torch.save((self.model.state_dict(), self.opt.state_dict()), path)
+
+
+
+                r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
+                self.metric[0].reset()
+                print(f'Validation {self.metric_str[0]}is {r2_valid:.2f} and loss {avg_valid_loss}')
+
+
+                trial.report(avg_valid_loss,epoch)
+                # Handle pruning based on the intermediate value.
+                if trial.should_prune():
+                    raise optuna.exceptions.TrialPruned()
+        return avg_valid_loss
+    def run_optuna(self):
+        study = optuna.create_study(direction="maximize")
+        study.optimize(self.train_optuna, n_trials=100, timeout=600)
+
+        pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
+        complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
+
+        print("Study statistics: ")
+        print("  Number of finished trials: ", len(study.trials))
+        print("  Number of pruned trials: ", len(pruned_trials))
+        print("  Number of complete trials: ", len(complete_trials))
+
+        print("Best trial:")
+        trial = study.best_trial
+
+        print("  Value: ", trial.value)
+
+        print("  Params: ")
+        for key, value in trial.params.items():
+            print("    {}: {}".format(key, value))
+        return trial
     def configure_optimizers(self):
         if args.scheduler == 'cyclic':
             opt = torch.optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9)
@@ -788,187 +897,7 @@ class Trainer:
         Beta = torch.exp(hx.squeeze(-1))
         return Beta
 
-    def fit_ray(self, max_epochs, gpus, class_model=None, early_stopping=True,
-            save_every=25, args=args):
-        '''
-        function for ray tuning
-        :param max_epochs:
-        :param gpus:
-        :param class_model:
-        :param early_stopping:
-        :param save_every:
-        :param args:
-        :return:
-        '''
-        # Weighting model
-        if class_model:
-            self.class_model = class_model.to(gpus)
-        else:
-            self.class_model = None
-        # log the gradients
-        wandb.watch(self.model, log='all', log_freq=5)
 
-
-        train_steps = len(self.loader_train)
-
-        valid_steps = len(self.loader_valid)  # the number of batches
-        best_loss = float('inf')
-        count2 = 0  # count loss improving times
-        r2_dict = defaultdict(lambda x: '')
-        resume_path = None
-        val_list = defaultdict(lambda x: '')
-        start = time.time()
-
-        # building_sum=[]
-
-        for epoch in range(max_epochs):
-
-            epoch_start = time.time()
-
-            with tqdm(self.loader_train, unit="batch") as tepoch:
-                train_step = 0
-                epoch_loss = 0
-
-                print('-----------------------Training--------------------------------')
-                self.model.train()
-                self.opt.zero_grad()
-                for record in tepoch:
-                    tepoch.set_description(f"Epoch {epoch}")
-
-                    _, train_loss = self._shared_step(record, self.metric)
-                    train_loss.backward()
-                    # Implementing gradient accumlation
-                    if (train_step + 1) % args.accumlation_steps == 0:
-                        self.opt.step()
-                        self.opt.zero_grad()
-
-                    epoch_loss += train_loss.item()
-                    train_step += 1
-                    # print statistics
-                    print(f'Epoch {epoch} training Step {train_step}/{train_steps} train_loss {train_loss.item():.2f}')
-                    if (train_step + 1) % 20 == 0:
-                        running_train = epoch_loss / (train_step)
-                        wandb.log({"train_loss": running_train, 'epoch': epoch})
-
-                    tepoch.set_postfix(loss=train_loss.item())
-                    time.sleep(0.1)
-
-            # Metric calulation and average loss
-            r2 = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
-            wandb.log({f'{self.metric_str[0]} train': r2, 'epoch': epoch})
-            avgloss = epoch_loss / train_steps
-            wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
-            print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str[0]} is {r2:.2f}')
-            self.metric[0].reset()
-            building_sum = []
-            with torch.no_grad():
-                valid_step = 0
-                valid_epoch_loss = 0
-                print('--------------------------Validation-------------------- ')
-                self.model.eval()
-                for record in self.loader_valid:
-
-                    valid_loss = self.validation_step(record)
-                    valid_epoch_loss += valid_loss.item()
-                    valid_step += 1
-                    print(
-                        f'Epoch {epoch} validation Step {valid_step}/{valid_steps} validation_loss {valid_loss.item():.2f}')
-                    if (valid_step + 1) % 20 == 0:
-                        running_loss = valid_epoch_loss / (valid_step)
-                        wandb.log({"valid_loss": running_loss, 'epoch': epoch})
-
-
-                avg_valid_loss = valid_epoch_loss / valid_steps
-
-                tune.report(mean_loss=avg_valid_loss)
-
-                r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
-                self.metric[0].reset()
-                print(f'Validation {self.metric_str[0]}is {r2_valid:.2f} and loss {avg_valid_loss}')
-                wandb.log({f'{self.metric_str[0]} valid': r2_valid, 'epoch': epoch})
-                wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
-
-                # AGAINST ML RULES : moniter test values
-                r2_test, test_loss = self.test(self.loader_test)
-
-                wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
-                wandb.log({f'loss test': test_loss, 'epoch': epoch})
-
-                # early stopping with loss
-                if best_loss - avg_valid_loss >= 0:
-                    print('in loss improving loop by ')
-                    print(best_loss - avg_valid_loss)
-                    # loss is improving
-                    counter = 0
-                    count2 += 1
-                    best_loss = avg_valid_loss
-                    # start saving after a threshold of epochs and a patience of improvement
-                    if count2 >= 1:
-                        print('in best path saving')
-                        save_path = os.path.join(self.save_dir, f'best_Epoch{epoch}.ckpt')
-                        torch.save(self.model.state_dict(), save_path)
-                        # save r2 values and loss values
-                        r2_dict[r2_valid] = save_path
-                        val_list[avg_valid_loss] = save_path
-                        print(f'best model  in loss at Epoch {epoch} loss {avg_valid_loss} ')
-                        print(f'Path to best model at loss found during training: \n{save_path}')
-
-
-
-                elif best_loss - avg_valid_loss < 0:
-                    # loss is degrading
-                    print('in loss degrading loop by :')
-                    print(best_loss - avg_valid_loss)
-                    counter += 1  # degrading tracker
-                    count2 = 0  # improving tracker
-                    if counter >= patience and early_stopping:
-                        print(f'.................Early stopping can be in this Epoch{epoch}.....................')
-                        # break
-
-            # Saving the model for later use every 10 epochs:
-            if epoch % save_every == 0:
-                resume_dir = os.path.join(self.save_dir, 'resume_points')
-                os.makedirs(resume_dir, exist_ok=True)
-                resume_path = os.path.join(resume_dir, f'Epoch{epoch}.ckpt')
-                torch.save(self.model.state_dict(), resume_path)
-                print(f'Saving model to {resume_path}')
-
-            self.metric[0].reset()
-            self.scheduler.step()
-
-
-            print("Time Elapsed for one epochs : {:.2f}m".format((time.time() - epoch_start) / 60))
-
-        # choose the best model between the saved models in regard to r2 value or minimum loss
-        if len(val_list.keys()) > 0:
-            best_path = val_list[min(val_list.keys())]
-            print(f'loss of best model saved is {min(val_list.keys())} , path {best_path}')
-
-            shutil.move(best_path,
-                        os.path.join(self.save_dir, 'best.ckpt'))
-
-        elif len(r2_dict.keys()) > 0:
-            best_path = r2_dict[max(r2_dict.keys())]
-            print(f'{self.metric_str[0]} of best model saved is {max(r2_dict.keys())} , path {best_path}')
-
-            shutil.move(best_path,
-                        os.path.join(self.save_dir, 'best.ckpt'))
-
-
-        else:
-            # best path is the last path which is saved at resume_points dir
-            best_path = resume_path
-            print(f'loss of best model saved from resume_point is {avg_valid_loss}')
-            shutil.move(os.path.join(self.save_dir, best_path.split('/')[-2], best_path.split('/')[-1]),
-                        os.path.join(self.save_dir, 'best.ckpt'))
-
-            # better_path=best_path
-
-            print("Time Elapsed for all epochs : {:.2} H".format((time.time() - start) / 120))
-        best_path = os.path.join(self.save_dir, 'best.ckpt')
-        return best_loss, best_path,
-        # TODO implement overfit batches
-        # TODO savelast
     def fit_wilds(self, trainloader, validloader, max_epochs, gpus, class_model=None, early_stopping=True,
                   save_every=10):
         self.model.to(gpus)
