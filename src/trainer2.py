@@ -243,8 +243,8 @@ class Trainer:
 
         outputs = self.model(x)
         outputs = outputs.squeeze(dim=-1)
-        # Re-weighting data3648765
-        if self.class_model:
+        # Re-weighting data
+        if hasattr(self,'class_model') and self.class_model is not None:
             Beta = self.weight_ex(x['images'], self.class_model)
 
             outputs = outputs * (Beta ** 0.5)
