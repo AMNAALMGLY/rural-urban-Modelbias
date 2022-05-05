@@ -253,7 +253,8 @@ class Encoder(nn.Module):
             # features = torch.mean(features, dim=1, keepdim=False)
             if self.patch==0:  #that means we want linear layers above resnet model
                 print('in linear layers for whole image experiment')
-                assert features.dim ==2 ,'shape of featuers is not expected to perform linear layers on '
+                print(features.shape)
+                assert features.dim() ==2 ,'shape of featuers is not expected to perform linear layers on '
                 features=self.layers_adapt(features)
 
 
