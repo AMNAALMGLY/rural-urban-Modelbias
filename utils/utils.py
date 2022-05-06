@@ -233,10 +233,10 @@ def load_from_checkpoint(path, model):
     state_dict=ckpt
     #Sanity checks :
     print(state_dict.keys())
-    if 'resnet_bands' in state_dict:
-        state_dict=state_dict['resnet_bands']
+    #if 'resnet_bands' in state_dict:
+    state_dict=state_dict['resnet_bands']
         # Sanity checks :
-        print('state_dict_after :',state_dict.keys())
+    print('state_dict_after :',state_dict.keys())
     model.load_state_dict(state_dict)
     #model.load_state_dict(torch.load(path))
     model.eval()
