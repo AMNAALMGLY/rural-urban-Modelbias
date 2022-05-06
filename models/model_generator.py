@@ -457,7 +457,7 @@ class MultiHeadedAttentionAdapt(nn.Module):
             x, self.attn = attention_uniform(query, key, value,
                                              )
         elif self.w == 'multihead' or self.w == 'multihead_early' or self.w=='pretrained_backbone':
-            print('here')
+
             x, self.attn = attention(query, key, value)
         elif self.w == 'multihead_space':
             x, self.attn = attention_center(query, key, value)
