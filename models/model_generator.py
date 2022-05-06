@@ -218,7 +218,7 @@ class Encoder(nn.Module):
         self.fc = nn.Linear(self.fc_in_dim, num_outputs).to(
             args.gpus)  # combines both together
         #if freeze resnetbands:
-        if self_attn=='pretrained_backbone':
+        if 'pretrained_backbone' in self_attn:
             self.resnet_bands.fc=nn.Sequential()   #act as a feature extracture
             for param in self.resnet_bands.parameters():
                 param.requires_grad = False
@@ -341,6 +341,7 @@ def attention(query, key, value, tmp=1, dropout=None):
     # value: bs, h, n,embed_dim
 
     b, h, n, d = query.shape
+    print('in normal attn')
     # Normalize:
     # query, key = F.normalize(query, dim=-1), F.normalize(key, dim=-1)
     scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(d)
@@ -363,6 +364,7 @@ def attention_uniform(query, key, value, dropout=None):
     # value: bs, h, n,embed_dim
 
     b, h, n, d = query.shape
+    print('in uniform attn')
 
     scores_identity = torch.ones((b, h, n, n)).type_as(query)
 
