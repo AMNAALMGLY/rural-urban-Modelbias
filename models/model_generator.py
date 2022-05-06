@@ -146,7 +146,7 @@ class Encoder(nn.Module):
     def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, attn_blocks=6,
                  patch=100, stride=50,
                  num_outputs=1,
-                 freeze=False):
+                 ):
         # TODO add resnet_NL and resnet_Ms
         # TODO add multiple mlps for metadata
         """
@@ -218,7 +218,7 @@ class Encoder(nn.Module):
         self.fc = nn.Linear(self.fc_in_dim, num_outputs).to(
             args.gpus)  # combines both together
         #if freeze resnetbands:
-        if freeze:
+        if self_attn=='pretrained_backbone':
             self.resnet_bands.fc=nn.Sequential()   #act as a feature extracture
             for param in self.resnet_bands.parameters():
                 param.requires_grad = False

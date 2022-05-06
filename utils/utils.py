@@ -228,8 +228,9 @@ def init_model(method, ckpt_path=None):
 
 
 def load_from_checkpoint(path, model):
-    print(f'loading the model from saved checkpoint at {path}')
-    state_dict=torch.load(path)
+    print(f'initializing model from pretrained weights at {path}')
+    ckpt=torch.load(path)
+    state_dict=ckpt['state_dict']
     #Sanity checks :
     print(state_dict.keys())
     if 'resnet_bands' in state_dict:
