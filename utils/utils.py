@@ -232,12 +232,12 @@ def load_from_checkpoint(path, model):
     ckpt=torch.load(path)
     state_dict=OrderedDict()
     #Sanity checks :
-    print(ckpt.keys())
+    #print(ckpt.keys())
     #if 'resnet_bands' in state_dict:k
     #TODO make it more generic=> pass model name to the function=>check if resnet bands
     for key in ckpt.keys():
-        print(key,type(key))
-        if 'resent_bands' in str(key):
+        #print(key,type(key))
+        if 'resnet_bands' in key:
              state_dict[key.replace('resnet_bands.','')]=ckpt[key].pop()
 
         # Sanity checks :
