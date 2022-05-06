@@ -581,9 +581,9 @@ class Trainer:
 
             # Metric calulation and average loss
             r2 = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
-            #wandb.log({f'{self.metric_str[0]} train': r2, 'epoch': epoch})
+            wandb.log({f'{self.metric_str[0]} train': r2, 'epoch': epoch})
             avgloss = epoch_loss / train_steps
-            #wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
+            wandb.log({"Epoch_train_loss": avgloss, 'epoch': epoch})
             print(f'End of Epoch training average Loss is {avgloss:.2f} and {self.metric_str[0]} is {r2:.2f}')
             self.metric[0].reset()
 
@@ -613,13 +613,13 @@ class Trainer:
                 r2_valid = (self.metric[0].compute()) ** 2 if self.metric_str[0] == 'r2' else self.metric[0].compute()
                 self.metric[0].reset()
                 print(f'Validation {self.metric_str[0]}is {r2_valid:.2f} and loss {avg_valid_loss}')
-                #wandb.log({f'{self.metric_str[0]} valid': r2_valid, 'epoch': epoch})
-                #wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
+                wandb.log({f'{self.metric_str[0]} valid': r2_valid, 'epoch': epoch})
+                wandb.log({"Epoch_valid_loss": avg_valid_loss, 'epoch': epoch})
                 # AGAINST ML RULES : moniter test values
                 r2_test, test_loss = self.test(self.loader_test)
 
-               # wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
-               # wandb.log({f'loss test': test_loss, 'epoch': epoch})
+                wandb.log({f'{self.metric_str[0]} test': r2_test, 'epoch': epoch})
+                wandb.log({f'loss test': test_loss, 'epoch': epoch})
 
                 tune.report(loss=avg_valid_loss, accuracy=r2_valid)
 
@@ -757,7 +757,7 @@ class Trainer:
         return avg_valid_loss
     def run_optuna(self):
         study = optuna.create_study(direction="minimize")
-        study.optimize(self.train_optuna, n_trials=3)
+        study.optimize(self.train_optuna, n_trials=5)
 
         pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
         complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
