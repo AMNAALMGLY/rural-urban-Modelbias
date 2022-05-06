@@ -453,7 +453,7 @@ class MultiHeadedAttentionAdapt(nn.Module):
         assert tuple(value.shape) == (nbatches, self.h, nPatches, self.d_k)
 
         # 2) Apply attention on all the projected vectors in batch.
-        if self.w == 'multihead_uniform':
+        if 'uniform' in self.w:
             x, self.attn = attention_uniform(query, key, value,
                                              )
         elif self.w == 'multihead' or self.w == 'multihead_early' or self.w=='pretrained_backbone':
