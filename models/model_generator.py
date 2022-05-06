@@ -144,9 +144,9 @@ class Layers(nn.Module):
 
 class Encoder(nn.Module):
     def __init__(self, resnet_build=None, resnet_bands=None, resnet_ms=None, Mlp=None, self_attn=None, attn_blocks=6,
-                 patch=100, stride=50, dim=512,
+                 patch=100, stride=50,
                  num_outputs=1,
-                 model_dict=None):
+                 freeze=False):
         # TODO add resnet_NL and resnet_Ms
         # TODO add multiple mlps for metadata
         """
@@ -217,6 +217,11 @@ class Encoder(nn.Module):
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
         self.fc = nn.Linear(self.fc_in_dim, num_outputs).to(
             args.gpus)  # combines both together
+        #if freeze resnetbands:
+        if freeze:
+            self.resnet_bands.fc=nn.Sequential()   #act as a feature extracture
+            for param in self.resnet_bands.parameters():
+                param.requires_grad = False
         with torch.no_grad():
             self.init_weights()
 

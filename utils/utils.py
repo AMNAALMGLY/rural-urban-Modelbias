@@ -229,7 +229,15 @@ def init_model(method, ckpt_path=None):
 
 def load_from_checkpoint(path, model):
     print(f'loading the model from saved checkpoint at {path}')
-    model.load_state_dict(torch.load(path))
+    state_dict=torch.load(path)
+    #Sanity checks :
+    print(state_dict.keys())
+    if 'resnet_bands' in state_dict:
+        state_dict=state_dict['resnet_bands']
+        # Sanity checks :
+        print('state_dict_after :',state_dict.keys())
+    model.load_state_dict(state_dict)
+    #model.load_state_dict(torch.load(path))
     model.eval()
     return model
 
