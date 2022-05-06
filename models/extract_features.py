@@ -120,7 +120,7 @@ DHS_MODELS = [
 
 'DHS_OOC_A_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
 'DHS_OOC_B_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
-'DHS_OOC_C_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
+'DHS_OOC_C_NL_new_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
 'DHS_OOC_D_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
 'DHS_OOC_E_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
 

@@ -188,7 +188,7 @@ def main(args):
     seed_everything(args.seed)
     # setting experiment_path
     experiment = get_full_experiment_name(args.experiment_name, args.batch_size,
-                                          args.fc_reg, args.conv_reg, args.lr,args.rand_crop)
+                                          args.fc_reg, args.conv_reg, args.lr,args.crop)
     if args.weight_model:
         experiment = experiment + '_weighted'
 
