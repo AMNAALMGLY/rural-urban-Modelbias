@@ -16,7 +16,7 @@ import pandas as pd
 import torch
 
 import torchmetrics
-from collections import ChainMap
+from collections import ChainMap, OrderedDict
 
 from configs import args
 
@@ -230,11 +230,15 @@ def init_model(method, ckpt_path=None):
 def load_from_checkpoint(path, model):
     print(f'initializing model from pretrained weights at {path}')
     ckpt=torch.load(path)
-    state_dict=ckpt
+    state_dict=OrderedDict()
     #Sanity checks :
     print(state_dict.keys())
-    #if 'resnet_bands' in state_dict:
-    state_dict=state_dict['resnet_bands']
+    #if 'resnet_bands' in state_dict:k
+    #TODO make it more generic=> pass model name to the function=>check if resnet bands
+    for key in ckpt.keys():
+        if 'resent_bands' in key:
+             state_dict[key.replace('resnet_bands.','')]=ckpt[key].pop()
+
         # Sanity checks :
     print('state_dict_after :',state_dict.keys())
     model.load_state_dict(state_dict)
