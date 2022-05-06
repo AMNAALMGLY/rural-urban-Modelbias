@@ -756,8 +756,8 @@ class Trainer:
                     raise optuna.exceptions.TrialPruned()
         return avg_valid_loss
     def run_optuna(self):
-        study = optuna.create_study(direction="maximize")
-        study.optimize(self.train_optuna, n_trials=100, timeout=600)
+        study = optuna.create_study(direction="minimize")
+        study.optimize(self.train_optuna, n_trials=50)
 
         pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
         complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
