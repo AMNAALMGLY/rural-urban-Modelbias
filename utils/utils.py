@@ -238,7 +238,7 @@ def load_from_checkpoint(path, model):
     for key in ckpt.keys():
         #print(key,type(key))
         if 'resnet_bands' in key:
-             state_dict[key.replace('resnet_bands.','')]=ckpt[key].pop()
+             state_dict[key.replace('resnet_bands.','')]=ckpt[key]
 
         # Sanity checks :
     print('state_dict_after :',state_dict.keys())
