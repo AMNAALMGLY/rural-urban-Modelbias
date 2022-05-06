@@ -757,7 +757,7 @@ class Trainer:
         return avg_valid_loss
     def run_optuna(self):
         study = optuna.create_study(direction="minimize")
-        study.optimize(self.train_optuna, n_trials=50)
+        study.optimize(self.train_optuna, n_trials=5)
 
         pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
         complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
