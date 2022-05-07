@@ -209,6 +209,11 @@ class Encoder(nn.Module):
                 self.multi_head_adapt = MultiHeadedAttentionAdapt(h=1, d_model=self.fc_in_dim, w=self.self_attn)
                 self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
                                                 feed_forward=self.ff)
+                # if freeze resnetbands:
+            if 'pretrained_backbone' in self_attn:
+                    self.resnet_bands.fc = nn.Sequential()  # act as a feature extracture
+                    for param in self.resnet_bands.parameters():
+                        param.requires_grad = False
             #stack layers together
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
         #linear over  whole image experiment
@@ -217,11 +222,7 @@ class Encoder(nn.Module):
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
         self.fc = nn.Linear(self.fc_in_dim, num_outputs).to(
             args.gpus)  # combines both together
-        #if freeze resnetbands:
-        if 'pretrained_backbone' in self_attn:
-            self.resnet_bands.fc=nn.Sequential()   #act as a feature extracture
-            for param in self.resnet_bands.parameters():
-                param.requires_grad = False
+
         with torch.no_grad():
             self.init_weights()
 

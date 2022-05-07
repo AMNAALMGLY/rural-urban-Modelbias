@@ -20,7 +20,7 @@ from batchers.dataset import Batcher
 from batchers.dataset_constants_buildings import DHS_COUNTRIES
 from models.model_generator import get_model, Encoder
 from configs import args
-from utils.utils import save_results, get_paths, load_from_checkpoint
+from utils.utils import save_results, get_paths
 
 OUTPUTS_ROOT_DIR = args.out_dir
 
@@ -185,7 +185,15 @@ DHS_MODELS = [
     # 'dhs_ooc/DHS_OOC_E_rgb_same_b64_fc001_conv001_lr0001',
 ]
 
+#helper function
+def load_from_checkpoint(path, model):
+    print(f'initializing model from pretrained weights at {path}')
+    ckpt = torch.load(path)
 
+    model.load_state_dict(ckpt)
+    # model.load_state_dict(torch.load(path))
+    model.eval()
+    return model
 def run_extraction_on_models(model_dir: str,
                              model_params: Mapping,
                              data_params,
