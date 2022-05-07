@@ -948,7 +948,7 @@ class RegNet_X_32GF_Weights(WeightsEnum):
 
 
 @handle_legacy_interface(weights=("pretrained", RegNet_Y_400MF_Weights.IMAGENET1K_V1))
-def regnet_y_400mf(*, in_channels,weights: Optional[RegNet_Y_400MF_Weights] = None, progress: bool = True, **kwargs: Any) -> RegNet:
+def regnet_y_400mf(*, in_channels,weights: Optional[RegNet_Y_400MF_Weights] = RegNet_Y_400MF_Weights.IMAGENET1K_V1, progress: bool = True, **kwargs: Any) -> RegNet:
     """
     Constructs a RegNetY_400MF architecture from
     `Designing Network Design Spaces <https://arxiv.org/abs/2003.13678>`_.
