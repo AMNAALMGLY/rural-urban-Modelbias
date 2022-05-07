@@ -54,7 +54,7 @@ def taylor_softmax_v1(x, dim=1, n=4, use_log=False):
 def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
     model_fn = model_type[model_name]
     if model_name == 'regnet':
-       model = model_fn()
+       model = model_fn(in_channels)
     else:
         model = model_fn(in_channels, pretrained)
     if ckpt_path:

@@ -300,6 +300,7 @@ class RegNet(nn.Module):
         self,
         block_params: BlockParams,
         num_classes: int = 1000,
+            in_channels=1,
         stem_width: int = 32,
         stem_type: Optional[Callable[..., nn.Module]] = None,
         block_type: Optional[Callable[..., nn.Module]] = None,
@@ -320,7 +321,7 @@ class RegNet(nn.Module):
 
         # Ad hoc stem
         self.stem = stem_type(
-            args.in_channels[0],  # width_in
+            in_channels,  # width_in
             stem_width,
             norm_layer,
             activation,
@@ -380,14 +381,17 @@ class RegNet(nn.Module):
         x = self.trunk_output(x)
 
         x = self.avgpool(x)
+
         x = x.flatten(start_dim=1)
+        features = x
         x = self.fc(x)
 
-        return x
+        return x,features
 
 
 def _regnet(
     block_params: BlockParams,
+        in_channels,
     weights: Optional[WeightsEnum],
     progress: bool,
     **kwargs: Any,
@@ -396,13 +400,15 @@ def _regnet(
         _ovewrite_named_param(kwargs, "num_classes", len(weights.meta["categories"]))
 
     norm_layer = kwargs.pop("norm_layer", partial(nn.BatchNorm2d, eps=1e-05, momentum=0.1))
-    model = RegNet(block_params, norm_layer=norm_layer, **kwargs)
+    model = RegNet(block_params, in_channels=in_channels,norm_layer=norm_layer, **kwargs)
 
     if weights is not None:
-        state_dict=weights.get_state_dict(progress=progress)
+
+        state_dict = weights.get_state_dict(progress=progress)
         print(state_dict.keys())
-        state_dict['state_dict']['encoder_q.0.weight'] = nn.Parameter(
-            init_first_layer_weights(args.in_channels, state_dict['state_dict']['encoder_q.0.weight'], args.hs_weight_init))
+        first = list(state_dict.keys())[0]
+        state_dict[first] = nn.Parameter(
+            init_first_layer_weights(args.in_channels, state_dict[first], args.hs_weight_init))
 
         model.load_state_dict(state_dict)
 
@@ -942,7 +948,7 @@ class RegNet_X_32GF_Weights(WeightsEnum):
 
 
 @handle_legacy_interface(weights=("pretrained", RegNet_Y_400MF_Weights.IMAGENET1K_V1))
-def regnet_y_400mf(*, weights: Optional[RegNet_Y_400MF_Weights] = None, progress: bool = True, **kwargs: Any) -> RegNet:
+def regnet_y_400mf(*, in_channels,weights: Optional[RegNet_Y_400MF_Weights] = None, progress: bool = True, **kwargs: Any) -> RegNet:
     """
     Constructs a RegNetY_400MF architecture from
     `Designing Network Design Spaces <https://arxiv.org/abs/2003.13678>`_.
@@ -963,7 +969,7 @@ def regnet_y_400mf(*, weights: Optional[RegNet_Y_400MF_Weights] = None, progress
     weights = RegNet_Y_400MF_Weights.verify(weights)
 
     params = BlockParams.from_init_params(depth=16, w_0=48, w_a=27.89, w_m=2.09, group_width=8, se_ratio=0.25, **kwargs)
-    return _regnet(params, weights, progress, **kwargs)
+    return _regnet(params,in_channels, weights, progress, **kwargs)
 
 
 
