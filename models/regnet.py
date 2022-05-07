@@ -320,7 +320,7 @@ class RegNet(nn.Module):
 
         # Ad hoc stem
         self.stem = stem_type(
-            3,  # width_in
+            args.in_channels[0],  # width_in
             stem_width,
             norm_layer,
             activation,
