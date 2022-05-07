@@ -239,77 +239,78 @@ def run_extraction_on_models(model_dir: str,
     # model.fc = fc
     encoder.fc = fc
     checkpoint_pattern = os.path.join(out_root_dir, model_dir, 'best.ckpt')
+
     checkpoint_path = glob(checkpoint_pattern)
     print(checkpoint_path)
     # model = load_from_checkpoint(path=checkpoint_path[-1], model=model)
     # freeze the last layer for feature extraction
     # model.fc = nn.Sequential()
     # model.to(args.gpus)
+    if checkpoint_path:
+        encoder = load_from_checkpoint(path=checkpoint_path[-1], model=encoder)
+        # freeze the last layer for feature extraction
+        encoder.fc = nn.Sequential()
+        encoder.to(args.gpus)
 
-    encoder = load_from_checkpoint(path=checkpoint_path[-1], model=encoder)
-    # freeze the last layer for feature extraction
-    encoder.fc = nn.Sequential()
-    encoder.to(args.gpus)
+        # model.freeze()
 
-    # model.freeze()
+        with torch.no_grad():
+            # initalizating
+            np_dict = defaultdict()
+            for i, record in enumerate(batcher):
 
-    with torch.no_grad():
-        # initalizating
-        np_dict = defaultdict()
-        for i, record in enumerate(batcher):
+                x = defaultdict()
+                if data_params['include_buildings']:
+                    if data_params['ls_bands'] and data_params['nl_band']:
+                        # 2 bands split them into separate inputs
+                        # assumes for now it is only merged nl_bands
+                        x[data_params['ls_bands']] = torch.tensor(record[0]['images'][:, :, :-1], device=args.gpus)
+                        x[data_params['nl_band']] = torch.tensor(record[0]['images'][:, :, -1], device=args.gpus)
+                    elif data_params['ls_bands'] or data_params['nl_band']:
+                        # only one type of band
+                        x['images'] = torch.tensor(record[0]['images'], device=args.gpus)
 
-            x = defaultdict()
-            if data_params['include_buildings']:
-                if data_params['ls_bands'] and data_params['nl_band']:
-                    # 2 bands split them into separate inputs
-                    # assumes for now it is only merged nl_bands
-                    x[data_params['ls_bands']] = torch.tensor(record[0]['images'][:, :, :-1], device=args.gpus)
-                    x[data_params['nl_band']] = torch.tensor(record[0]['images'][:, :, -1], device=args.gpus)
-                elif data_params['ls_bands'] or data_params['nl_band']:
-                    # only one type of band
-                    x['images'] = torch.tensor(record[0]['images'], device=args.gpus)
+                    x['buildings'] = torch.tensor(record[1]['buildings'], device=args.gpus)
 
-                x['buildings'] = torch.tensor(record[1]['buildings'], device=args.gpus)
-
-            else:
-                if data_params['ls_bands'] and data_params['nl_band']:
-                    # 2 bands split them inot seperate inputs
-                    # assumes for now it is only merged nl_bands
-                    x[data_params['ls_bands']] = torch.tensor(record['images'][:, :, :-1], device=args.gpus)
-                    x[data_params['nl_band']] = torch.tensor(record['images'][:, :, -1], device=args.gpus)
-                elif data_params['ls_bands'] or data_params['nl_band']:
-                    # only one type of band
-                    x['images'] = torch.tensor(record['images'], device=args.gpus)
-
-            # x = {key: value.type_as(encoder.fc.weight) for key, value in x.items()}
-            for key, value in x.items():
-                x[key] = value.reshape(-1, value.shape[-1], value.shape[-3],
-                                       value.shape[-2]) if value.dim() >= 3 else value
-
-            output = encoder(x)
-
-            for key in batch_keys:
-                if i == 0:
-                    if data_params['include_buildings']:
-                        np_dict[key] = record[0][key]
-                    else:
-                        np_dict[key] = record[key]
                 else:
-                    if data_params['include_buildings']:
-                        np_dict[key] = np.append(np_dict[key], record[0][key], axis=0)
+                    if data_params['ls_bands'] and data_params['nl_band']:
+                        # 2 bands split them inot seperate inputs
+                        # assumes for now it is only merged nl_bands
+                        x[data_params['ls_bands']] = torch.tensor(record['images'][:, :, :-1], device=args.gpus)
+                        x[data_params['nl_band']] = torch.tensor(record['images'][:, :, -1], device=args.gpus)
+                    elif data_params['ls_bands'] or data_params['nl_band']:
+                        # only one type of band
+                        x['images'] = torch.tensor(record['images'], device=args.gpus)
+
+                # x = {key: value.type_as(encoder.fc.weight) for key, value in x.items()}
+                for key, value in x.items():
+                    x[key] = value.reshape(-1, value.shape[-1], value.shape[-3],
+                                           value.shape[-2]) if value.dim() >= 3 else value
+
+                output = encoder(x)
+
+                for key in batch_keys:
+                    if i == 0:
+                        if data_params['include_buildings']:
+                            np_dict[key] = record[0][key]
+                        else:
+                            np_dict[key] = record[key]
                     else:
-                        np_dict[key] = np.append(np_dict[key], record[key], axis=0)
-            features = output.to('cpu').numpy()
+                        if data_params['include_buildings']:
+                            np_dict[key] = np.append(np_dict[key], record[0][key], axis=0)
+                        else:
+                            np_dict[key] = np.append(np_dict[key], record[key], axis=0)
+                features = output.to('cpu').numpy()
 
-            if i == 0:
-                np_dict['features'] = features
-            else:
-                np_dict['features'] = np.append(np_dict['features'], features, axis=0)
-    print(np_dict['features'].shape)
-    save_dir = os.path.join(out_root_dir, model_dir)
+                if i == 0:
+                    np_dict['features'] = features
+                else:
+                    np_dict['features'] = np.append(np_dict['features'], features, axis=0)
+        print(np_dict['features'].shape)
+        save_dir = os.path.join(out_root_dir, model_dir)
 
-    print(f'saving features to {save_dir} named {save_filename}')
-    save_results(save_dir, np_dict, save_filename, )
+        print(f'saving features to {save_dir} named {save_filename}')
+        save_results(save_dir, np_dict, save_filename, )
 
 
 def main(args):
