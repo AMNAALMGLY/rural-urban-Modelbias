@@ -267,7 +267,7 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
                 std = rgb_weights.std()
                 ms_weights=torch.empty((out_channels, ms_channels, H, W))
                 ms_weights = torch.nn.init.trunc_normal_(ms_weights,mean, std)
-            print(f'random: {time.time() - start}')
+           # print(f'random: {time.time() - start}')
 
         elif hs_weight_init == 'samescaled':
             start = time.time()
@@ -277,7 +277,7 @@ def init_first_layer_weights(in_channels: int, rgb_weights,
                 ms_weights = (mean * 3) / (3 + ms_channels)
                 # scale both rgb_weights and ms_weights
                 rgb_weights = (rgb_weights * 3) / (3 + ms_channels)
-            print(f'samescaled: {time.time() - start}')
+           # print(f'samescaled: {time.time() - start}')
 
         else:
 

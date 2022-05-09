@@ -316,7 +316,7 @@ def main(args):
         model_dict[model_key] = get_model(model_name=model_name, in_channels=in_channels, pretrained=pretrained,
                                           ckpt_path=ckpt)
 
-        params = dict(model_name=model_name, in_channels=in_channels)
+        params = dict(model_name=model_name, in_channels=in_channels,ckpt_path=ckpt)
         encoder_params[model_key] = params
     # saving encoder params
     #saved_encoder_params = dict(model_dict=encoder_params, self_attn=args.self_attn)

@@ -26,7 +26,7 @@ from utils.utils import load_from_checkpoint
 import torch.nn.functional as F
 
 model_type = dict(resnet18=PreActResNet18,
-                   #resnet18=resnet18,
+                  # resnet18=resnet18,
                   regnet=regnet_y_400mf,
                   resnet34=resnet34,
                   resnet50=resnet50,
@@ -54,7 +54,7 @@ def taylor_softmax_v1(x, dim=1, n=4, use_log=False):
 def get_model(model_name, in_channels, pretrained=False, ckpt_path=None):
     model_fn = model_type[model_name]
     if model_name == 'regnet':
-       model = model_fn(in_channels)
+        model = model_fn(in_channels)
     else:
         model = model_fn(in_channels, pretrained)
     if ckpt_path:
@@ -111,19 +111,20 @@ class EncoderLayer(nn.Module):
     def forward(self, x):
         x = self.sublayer[0](x, lambda x: self.self_attn(x))  # bs, n ,d
         return self.sublayer[1](x, self.feed_forward)  # bs, n , d_model
+
+
 class fc_layer(nn.Module):
-    def __init__(self,size, feed_forward):
+    def __init__(self, size, feed_forward):
         super(fc_layer, self).__init__()
-        self.linears=nn.Sequential(nn.Linear(size,size),nn.Linear(size,size))  #one for v one for out projection
-        self.LN=LayerNorm(size)
-        self.ff=feed_forward
-        self.size=size
-    def forward(self,x):
-        #ignore res connection and dropout for now
-        x=self.linears(x)
+        self.linears = nn.Linear(size, size) # one for v one for out projection
+        self.LN = LayerNorm(size)
+        self.ff = feed_forward
+        self.size = size
+
+    def forward(self, x):
+        # ignore res connection and dropout for now
+        x = self.linears(x)
         return self.LN(self.ff(self.LN(x)))
-
-
 
 
 class Layers(nn.Module):
@@ -139,7 +140,6 @@ class Layers(nn.Module):
         for layer in self.layers:
             x = layer(x)  # query , uniform query, random query
         return self.norm(x)  # bs , n , d_model
-
 
 
 class Encoder(nn.Module):
@@ -165,7 +165,7 @@ class Encoder(nn.Module):
         # print('Module dict ',self.models)
         # self.fc_in_dim = dim * len(list(model_dict.values()))  # concat dimension depends on how many models I have
 
-        self.relu = nn.ELU()
+        self.relu = nn.SiLU()
         self.dropout = nn.Dropout(p=0.1)
         self.self_attn = self_attn
         # MultiHeadedAttention(h=1,d_model=512)
@@ -179,8 +179,8 @@ class Encoder(nn.Module):
         else:
             self.fc_in_dim = self.resnet_bands.fc.in_features
         if self.self_attn == 'multihead_early':
-            self.fc_in_dim =  64+128+256
-        print('fc dimension is ',self.fc_in_dim)
+            self.fc_in_dim = 64 + 128 + 256
+        print('fc dimension is ', self.fc_in_dim)
 
         self.dim = self.fc_in_dim
         # self.pre_norm = LayerNorm(self.fc_in_dim)
@@ -200,24 +200,25 @@ class Encoder(nn.Module):
             if self.self_attn == 'torch':
                 self.multi_head_adapt = MultiheadAttention(input_dim=self.fc_in_dim, embed_dim=self.fc_in_dim,
                                                            num_heads=
-                                                        1)
+                                                           1)
                 self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
                                                 feed_forward=self.ff)
-            elif self.self_attn=='linear':    #linear over pathes of images experiment
-                self.layer_adapt=fc_layer(self.fc_in_dim, self.ff)
+            elif self.self_attn == 'linear':  # linear over pathes of images experiment
+                self.layer_adapt = fc_layer(self.fc_in_dim, self.ff)
             else:
                 self.multi_head_adapt = MultiHeadedAttentionAdapt(h=1, d_model=self.fc_in_dim, w=self.self_attn)
                 self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
                                                 feed_forward=self.ff)
                 # if freeze resnetbands:
             if 'pretrained_backbone' in self_attn:
-                    self.resnet_bands.fc = nn.Sequential()  # act as a feature extracture
-                    for param in self.resnet_bands.parameters():
-                        param.requires_grad = False
-            #stack layers together
+                print('freezing resnet ...')
+                self.resnet_bands.fc = nn.Sequential()  # act as a feature extracture
+                for param in self.resnet_bands.parameters():
+                    param.requires_grad = False
+            # stack layers together
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
-        #linear over  whole image experiment
-        elif self.patch==0:
+        # linear over  whole image experiment
+        elif self.patch == 0:
             self.layer_adapt = fc_layer(self.fc_in_dim, self.ff)
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
         self.fc = nn.Linear(self.fc_in_dim, num_outputs).to(
@@ -244,26 +245,19 @@ class Encoder(nn.Module):
     def forward(self, x):
         # I'm assuming that I have only one input for now
         features = []
-        key = list(x.keys())
+        key = list(x.keys())  #types of input
 
-        if not self.self_attn :
+        if not self.self_attn:
             features.append(self.resnet_bands(x[key[0]])[1])
-            # features = torch.cat(features)
-            # x_p = img_to_patch_strided(x[key], p=self.patch, s=self.stride)
-            # b, num_patches, c, h, w = x_p.shape
 
-            # for i in range(num_patches):
-            #   features.append(self.resnet_bands(x_p[:, i, ...].view(-1, c, h, w))[1])
+
             features = torch.cat(features)
-            # features = torch.stack((features), dim=1)
-            # features = torch.mean(features, dim=1, keepdim=False)
-            if self.patch==0:  #that means we want linear layers above resnet model
+
+            if self.patch == 0:  # that means we want linear layers above resnet model
                 print('in linear layers for whole image experiment')
                 print(features.shape)
-                assert features.dim() ==2 ,'shape of featuers is not expected to perform linear layers on '
-                features=self.layers_adapt(features)
-
-
+                assert features.dim() == 2, 'shape of featuers is not expected to perform linear layers on '
+                features = self.layers_adapt(features)
 
 
         else:
@@ -278,10 +272,10 @@ class Encoder(nn.Module):
             # feature extracting
             if self.self_attn == 'multihead_early':
                 for p in range(num_patches):
-                    _,_,layer3,layer2,layer1=self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))
-                    output=torch.cat((layer3,layer2,layer1),dim=-1)
+                    _, _, layer3, layer2, layer1 = self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))
+                    output = torch.cat((layer3, layer2, layer1), dim=-1)
                     features.append(output)
-                    #features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[2])
+                    # features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[2])
             else:
                 for p in range(num_patches):
                     features.append(self.resnet_bands(x_p[:, p, ...].view(-1, c, h, w))[1])
@@ -302,8 +296,8 @@ class Encoder(nn.Module):
 
             assert tuple(features.shape) == (
                 b, num_patches, self.fc_in_dim), 'shape of features after resnet is not as expected'
-            if self.self_attn !='global_pool':
-                if self.self_attn !='multihead_relative':
+            if self.self_attn != 'global_pool':
+                if self.self_attn != 'multihead_relative':
                     # Positional encoder
                     features = rearrange(features, 'b (p1 p2) d -> b p1 p2 d', p1=int(num_patches ** 0.5),
                                          p2=int(num_patches ** 0.5))
@@ -321,13 +315,13 @@ class Encoder(nn.Module):
                 assert tuple(features.shape) == (
                     b, num_patches, self.fc_in_dim), 'output of  attention layer is not correct'
                 # Aggregation
-                #if self.self_attn == 'multihead_space':
-                 #   features = features[:, (num_patches - 1) // 2, :].squeeze(1)
-                 #   assert tuple(features.shape) == (b, self.fc_in_dim), 'aggeragtion output of features is not as expected'
-                #else:
+                # if self.self_attn == 'multihead_space':
+                #   features = features[:, (num_patches - 1) // 2, :].squeeze(1)
+                #   assert tuple(features.shape) == (b, self.fc_in_dim), 'aggeragtion output of features is not as expected'
+                # else:
                 features = torch.mean(features, dim=1, keepdim=False)
-                    # concat:
-                    # features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
+                # concat:
+                # features = rearrange(features, 'b n d -> b (n d)', d=self.fc_in_dim)
                 assert tuple(features.shape) == (b, self.fc_in_dim), 'aggeragtion output of features is not as expected'
             else:
                 features = torch.mean(features, dim=1, keepdim=False)
@@ -423,8 +417,8 @@ class MultiHeadedAttentionAdapt(nn.Module):
         self.attn = None
         self.dropout = nn.Dropout(p=dropout)
         self.w = w
-        if self.w=='multihead_relative':
-            self.PE=RelPosEmb2D((3,3),self.d_k)
+        if self.w == 'multihead_relative':
+            self.PE = RelPosEmb2D((3, 3), self.d_k)      #assuming 9 patches
         self._reset_parameters()
 
         # @torch.no_grad
@@ -432,6 +426,7 @@ class MultiHeadedAttentionAdapt(nn.Module):
     def _reset_parameters(self):
         def initial(m):
             if isinstance(m, nn.Linear):
+                print('initializing attn with xavier')
                 nn.init.xavier_uniform_(
                     m.weight)  # _trunc_normal(m.weight, std=0.02)  # from .initialization import _trunc_normal
                 if hasattr(m, 'bias') and m.bias is not None:
@@ -459,20 +454,20 @@ class MultiHeadedAttentionAdapt(nn.Module):
         if 'uniform' in self.w:
             x, self.attn = attention_uniform(query, key, value,
                                              )
-        elif self.w == 'multihead' or self.w == 'multihead_early' or self.w=='pretrained_backbone':
+        elif self.w == 'multihead' or self.w == 'multihead_early' or self.w == 'pretrained_backbone':
 
             x, self.attn = attention(query, key, value)
         elif self.w == 'multihead_space':
             x, self.attn = attention_center(query, key, value)
 
-        elif self.w =='multihead_relative':
-            qr=self.PE(query)
+        elif self.w == 'multihead_relative':
+            qr = self.PE(query)
             assert tuple(qr.shape) == (nbatches, self.h, nPatches, nPatches)
             scores = einsum('b h i d, b h j d -> b h i j', query, key) / math.sqrt(self.d_k)
 
             assert tuple(scores.shape) == (nbatches, self.h, nPatches, nPatches), 'the shape is not as expected'
-            self.attn = F.softmax(scores+qr, dim=-1)
-            # p_attn=taylor_softmax_v1(scores/tmp)
+            self.attn = F.softmax(scores + qr, dim=-1)
+
             print('scores ', self.attn.shape)
 
             x = einsum('b h i j, b h j d -> b h i d', self.attn, value)
@@ -591,15 +586,17 @@ def img_to_patch_strided(img, p=100, s=50, padding=False):
     patches = rearrange(patches, 'b c p1 p2 h w -> b (p1 p2) c h w ', p1=num_patches1, p2=num_patches2, h=p, w=p)
     # print('strided patch after rearrange ', patches.shape)
     # Sanity check for equality (reshape back)
-    if s==p:
+    if s == p:
         patches_orig = patches.view(patches_shape)
         output_h, output_w = patches_shape[2] * patches_shape[4], patches_shape[3] * patches_shape[5]
-        patches_orig = rearrange(patches_orig, 'b c p1 p2 h w -> b c (p1 h) (p2 w)', p1=num_patches1, p2=num_patches2, h=p,
+        patches_orig = rearrange(patches_orig, 'b c p1 p2 h w -> b c (p1 h) (p2 w)', p1=num_patches1, p2=num_patches2,
+                                 h=p,
                                  w=p)
         assert tuple(patches_orig.shape) == (
-        img.shape[0], img.shape[1], output_h, output_w), 'patches original shape is not as expected'
-        #TODO What if I'm using padding?
-        assert torch.all(patches_orig.eq(img[:,:,:output_h, :output_w])), 'orginal tensor isnot as same as patched one'
+            img.shape[0], img.shape[1], output_h, output_w), 'patches original shape is not as expected'
+        # TODO What if I'm using padding?
+        assert torch.all(
+            patches_orig.eq(img[:, :, :output_h, :output_w])), 'orginal tensor isnot as same as patched one'
     '''
     else:
       

@@ -222,21 +222,19 @@ def run_extraction_on_models(model_dir: str,
     encoder_params = defaultdict()
     # model params is a dictionary of dictionary that have 2 main keys(
     # model_dict(which is a dict of models itself) and self_attn)
-    # for key, value in model_params['model_dict'].items():
-    #        encoder_params[key] = get_model(**value)
+
     for key, value in model_params.items():
 
         if 'resnet' in key:
             encoder_params[key] = get_model(**value)
         else:
             encoder_params[key] = value
-    # model = get_model(**model_params)
-    # encoder = Encoder(encoder_params,model_params['self_attn'])
+
     encoder = Encoder(**encoder_params)
     # redefine the model according to num_outputs
     fc = nn.Linear(encoder.fc.in_features, args.num_outputs)
     print('fc shape', encoder.fc.in_features)
-    # model.fc = fc
+
     encoder.fc = fc
     checkpoint_pattern = os.path.join(out_root_dir, model_dir, 'best.ckpt')
 
