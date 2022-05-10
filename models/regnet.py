@@ -408,7 +408,7 @@ def _regnet(
         print(state_dict.keys())
         first = list(state_dict.keys())[0]
         state_dict[first] = nn.Parameter(
-            init_first_layer_weights(args.in_channels, state_dict[first], args.hs_weight_init))
+            init_first_layer_weights(args.in_channels[0], state_dict[first], args.hs_weight_init))
 
         model.load_state_dict(state_dict)
 

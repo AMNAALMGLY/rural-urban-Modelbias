@@ -99,7 +99,7 @@ def load_npz(path, verbose=True, check=None):
 
 
 def get_full_experiment_name(experiment_name: str, batch_size: int,
-                             fc_reg: float, conv_reg: float, lr: float, patch_size):
+                             fc_reg: float, conv_reg: float, lr: float, patch_size,fold):
     if fc_reg < 1:
         fc_str = str(fc_reg).replace('.', '')
         fc_str = fc_str[1:]
@@ -115,7 +115,7 @@ def get_full_experiment_name(experiment_name: str, batch_size: int,
         lr_str = lr_str[1:]
     else:
         lr_str = str(lr)
-    return f'{experiment_name}_b{batch_size}_fc{fc_str}_conv{conv_str}_lr{lr_str}_crop{str(patch_size)}'
+    return f'{experiment_name}_b{batch_size}_fc{fc_str}_conv{conv_str}_lr{lr_str}_crop{str(patch_size)}_fold{str(fold)}'
 
 
 def check_existing(model_dirs: Iterable[str], outputs_root_dir: str,
