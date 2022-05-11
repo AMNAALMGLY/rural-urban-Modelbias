@@ -25,12 +25,85 @@ from utils.utils import save_results, get_paths
 OUTPUTS_ROOT_DIR = args.out_dir
 
 DHS_MODELS = [
+    # attn models for 355 window 100 PE (NL+Buildings/MS):NL=>
+    'DHS_OOC_A_building_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355',
+    'DHS_OOC_B_building_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355',
+    'DHS_OOC_C_building_attn_pretrained_attn_355P100_b32_fce-05_conve-05_lr0001_crop355',
+    'DHS_OOC_D_building_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355',
+    'DHS_OOC_E_building_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355',
+    # Build=>
+    'DHS_OOC_A_NL_attn_pretrained_355P100_b32_fce-05_conve-05_lr0000000000000004e-05_crop355',
+    'DHS_OOC_C_NL_attn_pretrained_355P100_b32_fce-05_conve-05_lr0000000000000004e-05_crop355',
+    'DHS_OOC_NL_attn_pretrained_355P100_b32_fc0003_conv0003_lre-05_crop355_foldB'
+    'DHS_OOC_D_NL_attn_pretrained_355P100_b32_fce-05_conve-05_lr0000000000000004e-05_crop355',
+    'DHS_OOC_E_NL_attn_pretrained_355P100_b32_fc1_conv1_lr0001_crop355',
+    # MS=>
+    # uniform attn models for 355 window 100 PE (NL+Buildings/MS):NL=>
+
+    # linear+resnet+No patching models for 355  (NL+Buildings/MS):NL=>
+
+    # attn models for 355 window 224 PE (NL+Buildings/MS):NL=>
+
+    # Resnet Models for different inputs =>224
+    # NL
+    #'DHS_OOC_A_NL_no_attn_355P224_b32_fce-05_conve-05_lr0001_crop224',
+    #'DHS_OOC_B_NL_no_attn_355P224_b32_fce-05_conve-05_lr0001_crop224',
+    #'DHS_OOC_C_NL_no_attn_355P224_b32_fce-05_conve-05_lr0001_crop224',
+    #'DHS_OOC_D_NL_no_attn_355P224_b32_fce-05_conve-05_lr0001_crop224',
+    #'DHS_OOC_E_NL_no_attn_355P224_b32_fce-05_conve-05_lr0001_crop224',
+    # BUILD
+    #'DHS_OOC_A_building_no_attn_pretrained_attn_355P224_b32_fce-05_conve-05_lr0001_crop224_foldA',
+    #'DHS_OOC_B_building_no_attn_pretrained_attn_355P224_b32_fce-05_conve-05_lr0001_crop224',
+    #'DHS_OOC_C_building_no_attn_355P224_b32_fce-05_conve-05_lr0001_crop224',
+    #'DHS_OOC_D_building_no_attn_355P224_b32_fce-05_conve-05_lr0001_crop224',
+    #'DHS_OOC_E_building_no_attn_355P224_b32_fce-05_conve-05_lr0001_crop224',
+    # MS
+
+    # =>100
+    # NL
+    #'DHS_OOC_A_NL_no_attn_355P100_b32_fce-05_conve-05_lr0001_crop100',
+    #'DHS_OOC_B_NL_no_attn_355P100_b32_fce-05_conve-05_lr0001_crop100',
+    #'DHS_OOC_C_NL_no_attn_355P100_b32_fce-05_conve-05_lr0001_crop100',
+    #'DHS_OOC_D_NL_no_attn_355P100_b32_fce-05_conve-05_lr0001_crop100',
+    #'DHS_OOC_E_NL_no_attn_355P100_b32_fce-05_conve-05_lr0001_crop100',
+
+    # BUILD
+    #'DHS_OOC_A_builiding_no_attn_355P100_b32_fc01_conv01_lr0001_crop100',
+    #'DHS_OOC_B_building_no_attn_355P100_b32_fce-05_conve-05_lr0001_crop100',
+    #'DHS_OOC_C_building_no_attn_355P100_b32_fce-05_conve-05_lr0001_crop100',
+    #'DHS_OOC_D_builiding_no_attn_355P100_b32_fc01_conv01_lr0001_crop100',
+    #'DHS_OOC_E_building_no_attn_355P100_b32_fce-05_conve-05_lr0001_crop100',
+    # MS
+    #'DHS_OOC_A_ms_no_attn_355P100_b32_fc01_conv01_lr0001_crop100',
+    #'DHS_OOC_B_ms_no_attn_355P100_b32_fc01_conv01_lr0001_crop100',
+    #'DHS_OOC_C_ms_no_attn_355P100_b32_fc01_conv01_lr0001_crop100',
+    #'DHS_OOC_D_ms_no_attn_355P100_b32_fc01_conv01_lr0001_crop100',
+    #'DHS_OOC_E_ms_no_attn_355P100_b32_fc01_conv01_lr0001_crop100',
+    # =>355
+    # NL
+    # 'DHS_OOC_A_NL_window_exp_b32_fce-05_conve-05_lr0001_crop355',
+    # 'DHS_OOC_B_NL_window_exp_b32_fce-05_conve-05_lr0001_crop355',
+    # 'DHS_OOC_C_NL_window_exp_b32_fce-05_conve-05_lr0001_crop355',
+    # 'DHS_OOC_D_NL_window_exp_b32_fce-05_conve-05_lr0001_crop355',
+    # 'DHS_OOC_E_NL_window_exp_b32_fce-05_conve-05_lr0001_crop355',
+    # BUILD
+    #'DHS_OOC_C_building_window_exp_b32_fce-05_conve-05_lr0001_crop355',
+    #'DHS_OOC_D_building_window_exp_b32_fce-05_conve-05_lr0001_crop355',
+    #'DHS_OOC_E_building_window_exp_b32_fce-05_conve-05_lr0001_crop355',
+    # MS
+    # =>224 with offset (0, 0 ) from neighbourhood of 355 , NL=>
+
+    # Build=>
+    # =>224 with offset (130, 130 ) from neighbourhood of 355 , NL=>
+
+    # Build
+
     # put paths to DHS models here (relative to OUTPUTS_ROOT_DIR)
     #    'DHS_OOC_A_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
     #   'DHS_OOC_B_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
     #   'DHS_OOC_C_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
     #  'DHS_OOC_D_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
-  #  'DHS_OOC_E_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
+    #  'DHS_OOC_E_NL_NOattn_355_PE25_b32_fc01_conv01_lr0001_crop355',
     # 'DHS_OOC_A_building_larger_p120_b32_fce-05_conve-05_lr0001/',
     # 'DHS_OOC_B_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
     # 'DHS_OOC_C_BUILD_larger_PE120_b32_fce-05_conve-05_lr0001/',
@@ -43,136 +116,124 @@ DHS_MODELS = [
     # 'DHS_OOC_D_NL_larger_PE120_b32_fc1_conv1_lr0001/',
     # 'DHS_OOC_E_NL_larger_PE120_b32_fc01_conv01_lr0001/',
 
-    # 'DHS_OOC_A_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
-    # 'DHS_OOC_B_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
-    # 'DHS_OOC_C_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
-    # 'DHS_OOC_D_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
-    # 'DHS_OOC_E_encoder_b_nl_geo_b128_fc001_conv001_lre-05',
+    #   'DHS_OOC_A_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+    #  'DHS_OOC_B_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_C_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_D_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_E_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
 
- #   'DHS_OOC_A_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
-  #  'DHS_OOC_B_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
-   # 'DHS_OOC_C_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
-   # 'DHS_OOC_D_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
-   # 'DHS_OOC_E_NL_Noise_validation_offset20_150_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_A_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
+    # 'DHS_OOC_B_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
+    # 'DHS_OOC_C_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
+    # 'DHS_OOC_D_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
+    # 'DHS_OOC_E_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
 
+    # 'DHS_OOC_A_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
+    # 'DHS_OOC_B_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
+    # 'DHS_OOC_C_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
+    # 'DHS_OOC_D_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
+    # 'DHS_OOC_E_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
 
-   # 'DHS_OOC_A_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
-    #'DHS_OOC_B_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
-    #'DHS_OOC_C_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
-    #'DHS_OOC_D_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
-    #'DHS_OOC_E_NL_Noise_cent_nooffset_attn_uni_b64_fc01_conv01_lr0001_crop0',
+    # 'DHS_OOC_A_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_B_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_C_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_D_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_E_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
 
-    #'DHS_OOC_A_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
-    #'DHS_OOC_B_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
-    #'DHS_OOC_C_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
-    #'DHS_OOC_D_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
-    #'DHS_OOC_E_NL_Noise_cent_nooffset_attn_b64_fc01_conv01_lr0001_crop0',
+    # 'DHS_OOC_A_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_B_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_C_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_D_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_E_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
 
-    #'DHS_OOC_A_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
-     #'DHS_OOC_B_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
-     #'DHS_OOC_C_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
-     #'DHS_OOC_D_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
-     #'DHS_OOC_E_NL_Noise_offset0_attn_uni_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_A_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_B_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_C_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_D_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_E_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
 
-    #'DHS_OOC_A_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
-     #'DHS_OOC_B_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
-     #'DHS_OOC_C_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
-     #'DHS_OOC_D_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
-     #'DHS_OOC_E_NL_Noise_offset0_attn_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_A_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_B_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_C_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_D_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_E_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
 
-    #'DHS_OOC_A_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
-    #'DHS_OOC_B_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
-    #'DHS_OOC_C_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
-    #'DHS_OOC_D_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
-    #'DHS_OOC_E_NL_Noise_offset105_nei480__attn_b64_fc01_conv01_lr0001_crop355',
+    #  'DHS_OOC_A_NL_new_pooling_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+    #  'DHS_OOC_B_NL_new_pooling_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+    #  'DHS_OOC_C_NL_new_pooling_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_D_NL_new_pooling_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+    #  'DHS_OOC_E_NL_new_pooling_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
 
-    #'DHS_OOC_A_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
-    #'DHS_OOC_B_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
-    #'DHS_OOC_C_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
-    #'DHS_OOC_D_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
-    #'DHS_OOC_E_NL_Noise_offset105_nei480__attn_uni_b64_fc01_conv01_lr0001_crop355',
+    # 'DHS_OOC_A_NL_new_attn_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_B_NL_new_attn_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_C_NL_new_attn_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_D_NL_new_attn_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_E_NL_new_attn_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
 
+    # 'DHS_OOC_A_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_B_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_C_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_D_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_E_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
 
-  #  'DHS_OOC_A_NL_new_pooling_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
-  #  'DHS_OOC_B_NL_new_pooling_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
-  #  'DHS_OOC_C_NL_new_pooling_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
-   # 'DHS_OOC_D_NL_new_pooling_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
-  #  'DHS_OOC_E_NL_new_pooling_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_A_NL_new_attn_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_B_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_C_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_D_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_E_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
 
-#'DHS_OOC_A_NL_new_attn_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_B_NL_new_attn_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_C_NL_new_attn_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_D_NL_new_attn_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_E_NL_new_attn_wealth_511_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_A_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_B_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_C_NL_new_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_D_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_E_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
 
+    # 'DHS_OOC_A_NL_new_no_attn_P224_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_B_NL_new_no_attn_P224_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_C_NL_new_no_attn_P224_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_D_NL_new_no_attn_P224_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_E_NL_new_no_attn_P224_b32_fce-05_conve-05_lr0001_crop0',
 
-#'DHS_OOC_A_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_B_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_C_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_D_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_E_NL_new_pooling_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
+    #   'DHS_OOC_A_NL_new_no_attn_P511_b32_fce-05_conve-05_lr0001_crop0',
+    #  'DHS_OOC_B_NL_new_no_attn_P511_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_C_NL_new_no_attn_P511_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_D_NL_new_no_attn_P511_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_E_NL_new_no_attn_P511_b32_fce-05_conve-05_lr0001_crop0',
 
-#'DHS_OOC_A_NL_new_attn_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_B_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_C_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_D_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_E_NL_new_early_attn_wealth_511_P224_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_A_NL_new_linear_resnet_P511_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_B_NL_new_linear_resnet_P511_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_C_NL_new_linear_resnet_P511_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_D_NL_new_linear_resnet_P511_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_E_NL_new_linear_resnet_P511_b32_fce-05_conve-05_lr0001_crop0',
 
-#'DHS_OOC_A_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_B_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_C_NL_new_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_D_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_E_NL_no_attn_PE100_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_A_NL_new_linear_PE100_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_B_NL_new_linear_PE100_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_C_NL_new_linear_PE100_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_D_NL_new_linear_PE100_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_E_NL_new_linear_PE100_b32_fce-05_conve-05_lr0001_crop0',
 
-#'DHS_OOC_A_NL_new_no_attn_P224_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_B_NL_new_no_attn_P224_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_C_NL_new_no_attn_P224_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_D_NL_new_no_attn_P224_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_E_NL_new_no_attn_P224_b32_fce-05_conve-05_lr0001_crop0',
+    #    'DHS_OOC_A_NL_pretrained_attnP224stride140_uniform_b32_fce-05_conve-05_lr0001_crop511',
+    #   'DHS_OOC_B_NL_new_attn_pretrained_P224_uniform_stride140_b32_fce-05_conve-05_lr0001_crop511',
+    #  'DHS_OOC_C_NL_pretrained_attnP224stride140_uniform_b32_fce-05_conve-05_lr0001_crop511',
+    # 'DHS_OOC_D_NL_pretrained_attnP224stride140_uniform_b32_fce-05_conve-05_lr0001_crop511',
+    # 'DHS_OOC_E_NL_pretrained_attnP224stride140_uniform_b32_fce-05_conve-05_lr0001_crop511',
 
+    # 'DHS_OOC_A_NL_pretrained_attnP224stride140_b32_fce-05_conve-05_lr0001_crop511',
+    # 'DHS_OOC_B_NL_new_attn_pretrained_P224_stride140_b32_fce-05_conve-05_lr0001_crop511',
+    # 'DHS_OOC_C_NL_pretrained_attnP224stride140_b32_fce-05_conve-05_lr0001_crop511',
+    # 'DHS_OOC_D_NL_pretrained_attnP224stride140_b32_fce-05_conve-05_lr0001_crop511',
+    # 'DHS_OOC_E_NL_pretrained_attnP224stride140_b32_fce-05_conve-05_lr0001_crop511',
+    # 'DHS_OOC_A_NL_uniform_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop',
+    # 'DHS_OOC_B_NL_new_uniform_attn_PE100_b32_fce-05_conve-05_lr0001_crop'  ,
+    #   'DHS_OOC_C_NL_new_uniform_attn_PE100_b32_fce-05_conve-05_lr0001_crop',
+    #  'DHS_OOC_D_NL_new_uniform_attn_PE100_b32_fce-05_conve-05_lr0001_crop',
+    # 'DHS_OOC_E_NL_new_uniform_attn_PE100_b32_fce-05_conve-05_lr0001_crop',
 
- #   'DHS_OOC_A_NL_new_no_attn_P511_b32_fce-05_conve-05_lr0001_crop0',
-  #  'DHS_OOC_B_NL_new_no_attn_P511_b32_fce-05_conve-05_lr0001_crop0',
-   # 'DHS_OOC_C_NL_new_no_attn_P511_b32_fce-05_conve-05_lr0001_crop0',
-    #'DHS_OOC_D_NL_new_no_attn_P511_b32_fce-05_conve-05_lr0001_crop0',
-    #'DHS_OOC_E_NL_new_no_attn_P511_b32_fce-05_conve-05_lr0001_crop0',
-
-#'DHS_OOC_A_NL_new_linear_resnet_P511_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_B_NL_new_linear_resnet_P511_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_C_NL_new_linear_resnet_P511_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_D_NL_new_linear_resnet_P511_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_E_NL_new_linear_resnet_P511_b32_fce-05_conve-05_lr0001_crop0',
-
-#'DHS_OOC_A_NL_new_linear_PE100_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_B_NL_new_linear_PE100_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_C_NL_new_linear_PE100_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_D_NL_new_linear_PE100_b32_fce-05_conve-05_lr0001_crop0',
-#'DHS_OOC_E_NL_new_linear_PE100_b32_fce-05_conve-05_lr0001_crop0',
-
-
-    'DHS_OOC_A_NL_pretrained_attnP224stride140_uniform_b32_fce-05_conve-05_lr0001_crop511',
-    'DHS_OOC_B_NL_new_attn_pretrained_P224_uniform_stride140_b32_fce-05_conve-05_lr0001_crop511',
-    'DHS_OOC_C_NL_pretrained_attnP224stride140_uniform_b32_fce-05_conve-05_lr0001_crop511',
- 'DHS_OOC_D_NL_pretrained_attnP224stride140_uniform_b32_fce-05_conve-05_lr0001_crop511',
-'DHS_OOC_E_NL_pretrained_attnP224stride140_uniform_b32_fce-05_conve-05_lr0001_crop511',
-
-
-'DHS_OOC_A_NL_pretrained_attnP224stride140_b32_fce-05_conve-05_lr0001_crop511',
-'DHS_OOC_B_NL_new_attn_pretrained_P224_stride140_b32_fce-05_conve-05_lr0001_crop511',
-'DHS_OOC_C_NL_pretrained_attnP224stride140_b32_fce-05_conve-05_lr0001_crop511',
-'DHS_OOC_D_NL_pretrained_attnP224stride140_b32_fce-05_conve-05_lr0001_crop511',
-'DHS_OOC_E_NL_pretrained_attnP224stride140_b32_fce-05_conve-05_lr0001_crop511',
-#'DHS_OOC_A_NL_uniform_wealth_511_P100_b32_fce-05_conve-05_lr0001_crop',
-# 'DHS_OOC_B_NL_new_uniform_attn_PE100_b32_fce-05_conve-05_lr0001_crop'  ,
- #   'DHS_OOC_C_NL_new_uniform_attn_PE100_b32_fce-05_conve-05_lr0001_crop',
-  #  'DHS_OOC_D_NL_new_uniform_attn_PE100_b32_fce-05_conve-05_lr0001_crop',
-#'DHS_OOC_E_NL_new_uniform_attn_PE100_b32_fce-05_conve-05_lr0001_crop',
-
-#'DHS_OOC_A_NL_new_uniform_attn_PE224_b32_fce-05_conve-05_lr0001_crop0',
- #   'DHS_OOC_B_NL_new_uniform_attn_PE224_b32_fce-05_conve-05_lr0001_crop0',
-  #  'DHS_OOC_C_NL_new_uniform_attn_PE224_b32_fce-05_conve-05_lr0001_crop0',
-   # 'DHS_OOC_D_NL_new_uniform_attn_PE224_b32_fce-05_conve-05_lr0001_crop0',
-    #'DHS_OOC_E_NL_new_uniform_attn_PE224_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_A_NL_new_uniform_attn_PE224_b32_fce-05_conve-05_lr0001_crop0',
+    #   'DHS_OOC_B_NL_new_uniform_attn_PE224_b32_fce-05_conve-05_lr0001_crop0',
+    #  'DHS_OOC_C_NL_new_uniform_attn_PE224_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_D_NL_new_uniform_attn_PE224_b32_fce-05_conve-05_lr0001_crop0',
+    # 'DHS_OOC_E_NL_new_uniform_attn_PE224_b32_fce-05_conve-05_lr0001_crop0',
 
     # DHS_OOC_A_encoder_b_nl_concat
     #  'DHS_OOC_A_ms_samescaled_b64_fc01_conv01_lr0001',
@@ -199,7 +260,8 @@ DHS_MODELS = [
     # 'dhs_ooc/DHS_OOC_E_rgb_same_b64_fc001_conv001_lr0001',
 ]
 
-#helper function
+
+# helper function
 def load_from_checkpoint(path, model):
     print(f'initializing model from pretrained weights at {path}')
     ckpt = torch.load(path)
@@ -208,6 +270,8 @@ def load_from_checkpoint(path, model):
     # model.load_state_dict(torch.load(path))
     model.eval()
     return model
+
+
 def run_extraction_on_models(model_dir: str,
                              model_params: Mapping,
                              data_params,
