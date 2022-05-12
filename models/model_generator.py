@@ -210,7 +210,7 @@ class Encoder(nn.Module):
                 self.layer_adapt = EncoderLayer(size=self.fc_in_dim, self_attn=self.multi_head_adapt,
                                                 feed_forward=self.ff)
                 # if freeze resnetbands:
-            if 'pretrained_backbone' in self_attn:
+            if 'pretrained_backbone' in self_attn :
                 print('freezing resnet ...')
                 self.resnet_bands.fc = nn.Sequential()  # act as a feature extracture
                 for param in self.resnet_bands.parameters():
@@ -219,6 +219,10 @@ class Encoder(nn.Module):
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
         # linear over  whole image experiment
         elif self.patch == 0:
+            print('freezing resnet ...')
+            self.resnet_bands.fc = nn.Sequential()  # act as a feature extracture
+            for param in self.resnet_bands.parameters():
+                param.requires_grad = False
             self.layer_adapt = fc_layer(self.fc_in_dim, self.ff)
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
         self.fc = nn.Linear(self.fc_in_dim, num_outputs).to(

@@ -102,8 +102,8 @@ DHS_MODELS = [
     # BUILD
     #'DHS_OOC_building_window_exp_b32_fce-05_conve-05_lr0001_crop355_foldA',
     #'DHS_OOC_building_window_exp_b32_fce-05_conve-05_lr0001_crop355_foldB',
-    # 'DHS_OOC_C_building_window_exp_b32_fce-05_conve-05_lr0001_crop355',
-    # 'DHS_OOC_D_building_window_exp_b32_fce-05_conve-05_lr0001_crop355',
+    # 'DHS_OOC_building_window_exp_b32_fce-05_conve-05_lr0001_crop355_foldC',
+    # 'DHS_OOC_building_window_exp_b32_fce-05_conve-05_lr0001_crop355_foldD',
     # 'DHS_OOC_E_building_window_exp_b32_fce-05_conve-05_lr0001_crop355',
     
     # MS
