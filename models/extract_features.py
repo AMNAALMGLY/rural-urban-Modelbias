@@ -53,7 +53,7 @@ DHS_MODELS = [
 
     # Resnet Models for different inputs =>224
     # NL
-    # Build
+
     # 'DHS_OOC_A_NL_no_attn_355P224_b32_fce-05_conve-05_lr0001_crop224',
     # 'DHS_OOC_B_NL_no_attn_355P224_b32_fce-05_conve-05_lr0001_crop224',
     # 'DHS_OOC_C_NL_no_attn_355P224_b32_fce-05_conve-05_lr0001_crop224',
