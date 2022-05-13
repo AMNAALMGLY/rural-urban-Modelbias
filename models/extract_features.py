@@ -26,31 +26,66 @@ OUTPUTS_ROOT_DIR = args.out_dir
 
 DHS_MODELS = [
     # attn models for 355 window 100 PE (NL+Buildings/MS):NL=>
-    'DHS_OOC_A_building_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355',
-    'DHS_OOC_B_building_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355',
-    'DHS_OOC_C_building_attn_pretrained_attn_355P100_b32_fce-05_conve-05_lr0001_crop355',
-    'DHS_OOC_D_building_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355',
-    'DHS_OOC_E_building_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355',
+    # 'DHS_OOC_A_building_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355',
+    # 'DHS_OOC_B_building_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355',
+    # 'DHS_OOC_C_building_attn_pretrained_attn_355P100_b32_fce-05_conve-05_lr0001_crop355',
+    # 'DHS_OOC_D_building_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355',
+    # 'DHS_OOC_E_building_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355',
     # Build=>
-    'DHS_OOC_A_NL_attn_pretrained_355P100_b32_fce-05_conve-05_lr0000000000000004e-05_crop355',
-    'DHS_OOC_C_NL_attn_pretrained_355P100_b32_fce-05_conve-05_lr0000000000000004e-05_crop355',
-    'DHS_OOC_NL_attn_pretrained_355P100_b32_fc0003_conv0003_lre-05_crop355_foldB',
-    'DHS_OOC_D_NL_attn_pretrained_355P100_b32_fce-05_conve-05_lr0000000000000004e-05_crop355',
-    'DHS_OOC_E_NL_attn_pretrained_355P100_b32_fc1_conv1_lr0001_crop355',
+    # 'DHS_OOC_A_NL_attn_pretrained_355P100_b32_fce-05_conve-05_lr0000000000000004e-05_crop355',
+    # 'DHS_OOC_C_NL_attn_pretrained_355P100_b32_fce-05_conve-05_lr0000000000000004e-05_crop355',
+    # 'DHS_OOC_NL_attn_pretrained_355P100_b32_fc0003_conv0003_lre-05_crop355_foldB',
+    # 'DHS_OOC_D_NL_attn_pretrained_355P100_b32_fce-05_conve-05_lr0000000000000004e-05_crop355',
+    # 'DHS_OOC_E_NL_attn_pretrained_355P100_b32_fc1_conv1_lr0001_crop355',
     # MS=>
     # 'DHS_OOC_ms_attn_pretrained_attn_355P100_b32_fc0003_conv0003_lre-05_crop355_foldA',
     # 'DHS_OOC_ms_attn_pretrained_attn_355P100_b32_fc0003_conv0003_lre-05_crop355_foldB',
     # 'DHS_OOC_ms_attn_pretrained_attn_355P100_b32_fc0003_conv0003_lre-05_crop355_foldC',
     # 'DHS_OOC_ms_attn_pretrained_attn_355P100_b32_fc0003_conv0003_lre-05_crop355_foldD',
-    #'DHS_OOC_ms_attn_pretrained_attn_355P100_b32_fc0003_conv0003_lre-05_crop355_foldE',
+    # 'DHS_OOC_ms_attn_pretrained_attn_355P100_b32_fc0003_conv0003_lre-05_crop355_foldE',
 
     # uniform attn models for 355 window 100 PE (NL+Buildings/MS):NL=>
+    # 'DHS_OOC_NL_uniform_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldA',
+    # 'DHS_OOC_NL_uniform_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldB',
+    # 'DHS_OOC_NL_uniform_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldC',
+    # 'DHS_OOC_NL_uniform_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldD',
+    # 'DHS_OOC_NL_uniform_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldE',
+
     # Build
+    # 'DHS_OOC_build_uniform_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldA'
+    # 'DHS_OOC_build_uniform_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldB'
+    # 'DHS_OOC_build_uniform_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldC'
+    # 'DHS_OOC_build_uniform_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldD'
+    # 'DHS_OOC_build_uniform_attn_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldE'
+
     # linear+resnet+No patching models for 355  (NL+Buildings/MS):NL=>
     # Build
-
+    # Global average 355 P100  NL=>
+    # 'DHS_OOC_NL_pooling_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldA',
+    # 'DHS_OOC_NL_pooling_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldB',
+    # 'DHS_OOC_NL_pooling_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldC',
+    # 'DHS_OOC_NL_pooling_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldD',
+    # 'DHS_OOC_NL_pooling_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldE',
+    # Build
+    # 'DHS_OOC_build_pooling_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldA',
+    # 'DHS_OOC_build_pooling_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldB',
+    # 'DHS_OOC_build_pooling_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldC',
+    # 'DHS_OOC_build_pooling_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldD',
+    # 'DHS_OOC_build_pooling_pretrained_355P100_b32_fce-05_conve-05_lre-05_crop355_foldE',
     # attn models for 355 window 224 PE (NL+Buildings/MS):NL=>
 
+    # 'DHS_OOC_NL_attn_pretrained_355P224_b32_fce-05_conve-05_lre-05_crop355_foldA',
+    # 'DHS_OOC_NL_attn_pretrained_355P224_b32_fce-05_conve-05_lre-05_crop355_foldB',
+    # 'DHS_OOC_NL_attn_pretrained_355P224_b32_fce-05_conve-05_lre-05_crop355_foldC',
+    # 'DHS_OOC_NL_attn_pretrained_355P224_b32_fce-05_conve-05_lre-05_crop355_foldD',
+    # 'DHS_OOC_NL_attn_pretrained_355P224_b32_fce-05_conve-05_lre-05_crop355_foldE',
+    # Build=>
+    #
+    # 'DHS_OOC_build_attn_pretrained_355P224_b32_fce-05_conve-05_lre-05_crop355_foldA',
+    # 'DHS_OOC_build_attn_pretrained_355P224_b32_fce-05_conve-05_lre-05_crop355_foldB',
+    # 'DHS_OOC_build_attn_pretrained_355P224_b32_fce-05_conve-05_lre-05_crop355_foldC',
+    # 'DHS_OOC_build_attn_pretrained_355P224_b32_fce-05_conve-05_lre-05_crop355_foldD',
+    # 'DHS_OOC_build_attn_pretrained_355P224_b32_fce-05_conve-05_lre-05_crop355_foldE',
     # Resnet Models for different inputs =>224
     # NL
 
@@ -66,7 +101,7 @@ DHS_MODELS = [
     # 'DHS_OOC_D_building_no_attn_355P224_b32_fce-05_conve-05_lr0001_crop224',
     # 'DHS_OOC_E_building_no_attn_355P224_b32_fce-05_conve-05_lr0001_crop224',
     # MS
-    #'DHS_OOC_ms_no_attn_pretrained_attn_355P224_b32_fc01_conv01_lr0001_crop224_foldA',
+    # 'DHS_OOC_ms_no_attn_pretrained_attn_355P224_b32_fc01_conv01_lr0001_crop224_foldA',
     # 'DHS_OOC_ms_no_attn_pretrained_attn_355P224_b32_fc01_conv01_lr0001_crop224_foldB',
     # 'DHS_OOC_ms_no_attn_pretrained_attn_355P224_b32_fc01_conv01_lr0001_crop224_foldC',
     # 'DHS_OOC_ms_no_attn_pretrained_attn_355P224_b32_fc01_conv01_lr0001_crop224_foldD',
@@ -100,12 +135,12 @@ DHS_MODELS = [
     # 'DHS_OOC_D_NL_window_exp_b32_fce-05_conve-05_lr0001_crop355',
     # 'DHS_OOC_E_NL_window_exp_b32_fce-05_conve-05_lr0001_crop355',
     # BUILD
-    #'DHS_OOC_building_window_exp_b32_fce-05_conve-05_lr0001_crop355_foldA',
-    #'DHS_OOC_building_window_exp_b32_fce-05_conve-05_lr0001_crop355_foldB',
+    # 'DHS_OOC_building_window_exp_b32_fce-05_conve-05_lr0001_crop355_foldA',
+    # 'DHS_OOC_building_window_exp_b32_fce-05_conve-05_lr0001_crop355_foldB',
     # 'DHS_OOC_building_window_exp_b32_fce-05_conve-05_lr0001_crop355_foldC',
     # 'DHS_OOC_building_window_exp_b32_fce-05_conve-05_lr0001_crop355_foldD',
     # 'DHS_OOC_E_building_window_exp_b32_fce-05_conve-05_lr0001_crop355',
-    
+
     # MS
     # =>224 with offset (0, 0 ) from neighbourhood of 355 , NL=>
 
