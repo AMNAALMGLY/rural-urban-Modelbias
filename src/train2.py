@@ -232,6 +232,17 @@ def main(args):
 
     # dataloader
     elif 'DHS' in args.dataset:
+          paths_train_b = None
+          paths_valid_b = None
+          paths_test_b = None
+          if args.include_buildings:
+              paths_train_b = get_paths(args.dataset, 'train', args.fold, args.buildings_records)
+              paths_valid_b = get_paths(args.dataset, 'val', args.fold, args.buildings_records)
+              paths_test_b = get_paths(args.dataset, 'test', args.fold, args.buildings_records)
+              print('b_train', len(paths_train_b))
+              print('b_valid', len(paths_valid_b))
+              print('b_test', len(paths_test_b))
+
           if args.dataset=='DHS_incountry':
             paths=dhs_incountry(args.dataset+'_'+args.fold,['train','val','test'],args.data_path)
             paths_train=paths['train']
@@ -250,22 +261,13 @@ def main(args):
             print('num_valid', len(paths_valid))
             print('num_test', len(paths_test))
 
-            paths_train_b = None
-            paths_valid_b = None
-            paths_test_b = None
-            if args.include_buildings:
-                paths_train_b = get_paths(args.dataset, 'train', args.fold, args.buildings_records)
-                paths_valid_b = get_paths(args.dataset, 'val', args.fold, args.buildings_records)
-                paths_test_b = get_paths(args.dataset, 'test', args.fold, args.buildings_records)
-                print('b_train', len(paths_train_b))
-                print('b_valid', len(paths_valid_b))
-                print('b_test', len(paths_test_b))
+
 
         # valid=list(paths_train[0:400])+list(paths_train[855:1155])+list(paths_train[1601:2000])
         # train=list(paths_train[400:855])+list(paths_train[1155:1601])+list(paths_train[2000:5000])
 
           batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                                args.nl_label, args.include_buildings, paths_train_b, args.normalize, args.augment,
+                               args.nl_label, args.include_buildings, paths_train_b, args.normalize, args.augment,
                                 args.clipn, args.batch_size, groupby=args.group,
                                 cache=True, shuffle=True,img_size=args.image_size,crop=args.crop,rand_crop=args.rand_crop,offset=args.offset)
 
