@@ -493,8 +493,8 @@ def main(args):
 # TODO Save test scores in csv file
 
 if __name__ == "__main__":
-    #wandb.init(project=wandp, entity=entity, config={})
-    wandb.init(settings=wandb.Settings(start_method='fork'))
+    wandb.init(project=wandp, entity=entity, config={})
+    #wandb.init(settings=wandb.Settings(start_method='fork'))
     print('GPUS:', torch.cuda.device_count())
     parser = argparse.ArgumentParser()
     args = parse_arguments(parser, default_args)
