@@ -263,6 +263,15 @@ def main(args):
             print('num_valid', len(paths_valid))
             print('num_test', len(paths_test))
 
+            if args.include_buildings:
+
+                paths_train_b = get_paths(args.dataset, 'train', args.fold, args.data_path)
+                paths_valid_b = get_paths(args.dataset, 'val', args.fold, args.data_path)
+                paths_test_b = get_paths(args.dataset, 'test', args.fold, args.data_path)
+                print('b_train', len(paths_train_b))
+                print('b_valid', len(paths_valid_b))
+                print('b_test', len(paths_test_b))
+
 
 
         # valid=list(paths_train[0:400])+list(paths_train[855:1155])+list(paths_train[1601:2000])
