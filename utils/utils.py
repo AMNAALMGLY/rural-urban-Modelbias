@@ -265,13 +265,6 @@ def get_sustain_labels(lats, lons, label):
            print(match[pd.isna(match[label])]['lat'], 'the missing latitude')
            match=match.interpolate(method='polynomial',order=3)
     return match[label].values
-   # if len(match.index)<len(lats) or np.any(np.isnan(match[label])):
-    #    print('didnot find label ')
-     #   mean = dataframe[label].mean()  # TODO this is so wrong
-      #  return float(mean)
-  #  else:
-   #     print('found label at location')
-    #    return float(match[label])
 
 
 

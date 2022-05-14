@@ -235,13 +235,6 @@ def main(args):
           paths_train_b = None
           paths_valid_b = None
           paths_test_b = None
-          if args.include_buildings:
-              paths_train_b = get_paths(args.dataset, 'train', args.fold, args.buildings_records)
-              paths_valid_b = get_paths(args.dataset, 'val', args.fold, args.buildings_records)
-              paths_test_b = get_paths(args.dataset, 'test', args.fold, args.buildings_records)
-              print('b_train', len(paths_train_b))
-              print('b_valid', len(paths_valid_b))
-              print('b_test', len(paths_test_b))
 
           if args.dataset=='DHS_incountry':
             paths=dhs_incountry(args.dataset+'_'+args.fold,['train','val','test'],args.data_path)
@@ -251,6 +244,15 @@ def main(args):
             print('num_train', len(paths_train))
             print('num_valid', len(paths_valid))
             print('num_test', len(paths_test))
+            if args.include_buildings:
+                paths_b=dhs_incountry(args.dataset+'_'+args.fold,['train','val','test'], args.buildings_records)
+                paths_train_b = paths_b['train']
+                paths_valid_b = paths_b['val']
+                paths_test_b = paths_b['test']
+                print('b_train', len(paths_train_b))
+                print('b_valid', len(paths_valid_b))
+                print('b_test', len(paths_test_b))
+
           elif args.dataset == 'DHS_OOC':
             paths_train = get_paths(args.dataset, 'train', args.fold, args.data_path)
 
