@@ -71,6 +71,7 @@ class Trainer:
         '''
         super().__init__()
 
+        self.label_name=args.label_name
         self.model = model
         self.lr = lr
         self.weight_decay = weight_decay
@@ -194,7 +195,7 @@ class Trainer:
             longs = batch[0]['locs'][:, 1]
             if np.any(np.isnan(batch[0]['labels'])):
                 print('in get sustainlabels')
-                label = get_sustain_labels(lats, longs, 'sanitation_index')  # TODO change this
+                label = get_sustain_labels(lats, longs, self.label_name)  # TODO change this
             else:
                 label = batch[0]['labels']
             target = torch.tensor(label, )
@@ -226,7 +227,7 @@ class Trainer:
             longs = batch['locs'][:, 1]
             if np.any(np.isnan(batch['labels'])):
                 print('in get sustainlabels')
-                label = get_sustain_labels(lats, longs, 'sanitation_index')  # TODO change this
+                label = get_sustain_labels(lats, longs, self.label_name)  # TODO change this
             else:
                 label = batch['labels']
             target = torch.tensor(label, )
@@ -304,7 +305,6 @@ class Trainer:
 
     def fit(self, trainloader, validloader, batcher_test, max_epochs, gpus, class_model=None, early_stopping=True,
             save_every=25, args=args):
-
         # Weighting model
         if class_model:
             self.class_model = class_model.to(gpus)

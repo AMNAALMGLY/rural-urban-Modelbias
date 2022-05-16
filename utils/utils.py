@@ -250,7 +250,7 @@ def load_from_checkpoint(path, model):
 
 log = logging.getLogger(__name__)
 
-path = os.path.join(os.getcwd(), 'batchers', 'dhs_final_labels.csv')
+path = os.path.join(os.getcwd(), 'batchers', args.labels_path)
 dataframe = pd.read_csv(path)
 dataframe[['lat', 'lon']] = dataframe[['lat', 'lon']].apply(lambda x: x.astype(np.float32))
 dataframe=dataframe.interpolate(method='polynomial',order=3)
@@ -260,8 +260,8 @@ def get_sustain_labels(lats, lons, label):
 
     match =dataframe[(dataframe['lon'].isin(list(lons))) & (dataframe['lat'].isin(list(lats)))]
 
-    print('nan values ',match[label].isnull().sum())
-    if match[label].isnull().sum() >0:
+    nans=match[label].isnull().sum()
+    if nans >0:
            print(match[pd.isna(match[label])]['lat'], 'the missing latitude')
            match=match.interpolate(method='polynomial',order=3)
     return match[label].values
