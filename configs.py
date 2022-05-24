@@ -49,7 +49,7 @@ args = Namespace(
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    buildings_records='/network/scratch/a/amna.elmustafa/dhs_tfrecords_buildings_large',
+    buildings_records='/network/scratch/a/amna.elmustafa/dhs_tfrecords_buildings_large', #or None
 
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
@@ -65,7 +65,7 @@ args = Namespace(
     #dhs_labels_normalized.csv',
     #'/network/scratch/a/amna.elmustafa/rural-urban-Modelbias/preprocessing/dhs_labels_processed.csv',
 
-    label_name='water_index',  # urban_rural
+    label_name='water_index',  #['sanitation_index , women_edu , women_bmi']
     cache=['train', 'train_eval', 'val'],
     augment=True,
     clipn=True,
@@ -76,7 +76,7 @@ args = Namespace(
     ls_bands=None,
     nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    include_buildings=True,
+    include_buildings=True,  # True or false    #True goes with buildings_records , False goes with building_records None
     scaler_features_keys={'urban_rural': tf.float32},
     metadata=None,
     #['urban_rural', 'country'],
@@ -86,7 +86,7 @@ args = Namespace(
 
     # Experiment
     seed=123,
-    experiment_name='DHS_OOC_build_resnet_waterqntLoss',
+    experiment_name='DHS_OOC_build_resnet_waterqntLoss', #change (water ) to  current label name and (build) to current input band
     #'DHS_OOC_build_resnet_attn224_sanitation',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc','ablation_study'),
     init_ckpt_dir='/network/scratch/a/amna.elmustafa/outputs/dhs_ooc/ablation_study/DHS_OOC_NL_resnet_water_qnt_b128_fce-05_conve-05_lr001_crop224_foldA/best.ckpt',
