@@ -6,22 +6,22 @@ import multiprocessing
 import os
 import tensorflow as tf
 
-ROOT_DIR = os.path.dirname(__file__)  # folder containing this file
+ROOT_DIR = '/network/scratch/a/amna.elmustafa/rural-urban-Modelbias'
 args = Namespace(
 
     # Model
 
-    model_name=dict(resnet_bands='vitL', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
+    model_name=dict(resnet_bands='resnet18', resnet_ms='resnet18', resnet_build='resnet18', Mlp='mlp'),
     self_attn=None,  # choices : [multihead, multihead_space , multihead_uniform,multihead_random]
     hs_weight_init='random',  # [same, samescaled,random]
     model_init=['imagenet', 'imagenet','imagenet', None],
-    imagenet_weight_path='/atlas/group/model_weights/imagenet_resnet18_tensorpack.npz',
-    p_size=120,
-    stride=115,
-    blocks=6,
+    imagenet_weight_path='./imagenet_resnet18_tensorpack.npz',
+    p_size=224,
+    stride=60,
+    blocks=4,
     randcrop=False,            #this is for cropping in the forward pass
     rand_crop=0,               #This for cropping from the dataset specifying size    (mostly cropping size is not the same as patching size for attention)
-    offset=0,
+    offset=20,
 
     # Training
 
@@ -29,11 +29,11 @@ args = Namespace(
     lr_decay=0.96,
     batch_size=64,
     gpu=-1,
-    max_epochs=300,
+    max_epochs=200,
     epoch_thresh=150,
     patience=20,
     #A Building :wd=0
-    lr=.0001,  # lr0001         #0.0001 nl,ms                     #    {1 × 10−5, 3 x 10-5 , 10-4 }
+    lr=.001,  # lr0001         #0.0001 nl,ms                     #    {1 × 10−5, 3 x 10-5 , 10-4 }
     fc_reg=0.00001,                                               #{ 0 , 1, 10-3 , 10-2}
     # fc01_conv01_lr0001        fc001_conv001_lr0001       fc001_conv001_lr001   fc001_conv001_lr01       fc01_conv01_lr001
     conv_reg=0.00001,
@@ -41,15 +41,15 @@ args = Namespace(
 
 
     # data
-    image_size=511,
+    image_size=355,
     crop=224,
-    data_path='/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_ultralarge_onlynl/',
+    data_path='/network/scratch/a/amna.elmustafa/dhs_tfrecords_large/',
     #atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_raw_ultralarge_onlynl .
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_tfrecords',
-    buildings_records=None,
+    buildings_records='/network/scratch/a/amna.elmustafa/dhs_tfrecords_buildings_large',
 
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
@@ -58,20 +58,25 @@ args = Namespace(
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
+    labels_path='/network/scratch/a/amna.elmustafa/rural-urban-Modelbias/preprocessing/dhs_labels_quantile.csv',
+    #dhs_labels_quantile_sqrt.csv',
+    #dhs_labels_quantile.csv',
+    #dhs_labels_std.csv',
+    #dhs_labels_normalized.csv',
+    #'/network/scratch/a/amna.elmustafa/rural-urban-Modelbias/preprocessing/dhs_labels_processed.csv',
 
-
-    label_name='wealthpooled',  # urban_rural
+    label_name='water_index',  # urban_rural
     cache=['train', 'train_eval', 'val'],
     augment=True,
     clipn=True,
     normalize='DHS',
     dataset='DHS_OOC',            #Features, #Wilds
 
-    fold='B',
-    ls_bands= None,
-    nl_band='merge',  # [None , merge , split]
+    fold='E',
+    ls_bands=None,
+    nl_band=None,  # [None , merge , split]
     nl_label=None,  # [center, mean,None]
-    include_buildings=False,
+    include_buildings=True,
     scaler_features_keys={'urban_rural': tf.float32},
     metadata=None,
     #['urban_rural', 'country'],
@@ -81,20 +86,29 @@ args = Namespace(
 
     # Experiment
     seed=123,
-    experiment_name='DHS_OOC_B_NL_center_attn_relative',
+    experiment_name='DHS_OOC_build_resnet_waterqntLoss',
+    #'DHS_OOC_build_resnet_attn224_sanitation',
     out_dir=os.path.join(ROOT_DIR, 'outputs', 'dhs_ooc','ablation_study'),
-    init_ckpt_dir=None,
+    init_ckpt_dir='/network/scratch/a/amna.elmustafa/outputs/dhs_ooc/ablation_study/DHS_OOC_NL_resnet_water_qnt_b128_fce-05_conve-05_lr001_crop224_foldA/best.ckpt',
+    #DHS_OOC_A_building_no_attn_pretrained_attn_355P224_b32_fce-05_conve-05_lr0001_crop224_foldA/best.ckpt',
+    #'/network/scratch/a/amna.elmustafa/outputs/dhs_ooc/ablation_study/DHS_OOC_D_NL_no_attn_355P100_b32_fce-05_conve-05_lr0001_crop100/best.ckpt',
+    #'/network/scratch/a/amna.elmustafa/outputs/dhs_ooc/ablation_study/DHS_OOC_C_building_no_attn_355P100_b32_fce-05_conve-05_lr0001_crop100/best.ckpt',
+    #'/network/scratch/a/amna.elmustafa/outputs/dhs_ooc/ablation_study/DHS_OOC_D_builiding_no_attn_355P100_b32_fc01_conv01_lr0001_crop100/best.ckpt',
+    #'/network/scratch/a/amna.elmustafa/outputs/dhs_ooc/ablation_study/DHS_OOC_A_builiding_no_attn_355P100_b32_fc01_conv01_lr0001_crop100/best.ckpt',
+    #'/network/scratch/a/amna.elmustafa/outputs/dhs_ooc/ablation_study/DHS_OOC_E_building_no_attn_355P100_b32_fce-05_conve-05_lr0001_crop100/best.ckpt',
     group=  None,
 
     # 'urban',
 
-    loss_type='regression',
+    loss_type='quantile',
+    #'l1',
+    num_quantiles=3,
     lamda=0.5,
     num_outputs=1,
     resume=None,
     weight_model=None,
     # '/atlas/u/amna/rural-urban-Modelbias/outputs/dhs_ooc/DHS_OOC_A_nl_random_b32_fc01_conv01_lr0001/best.ckpt',
-    accumlation_steps=1,
+    accumlation_steps=2,
     metric=['r2'],
 
     # Visualization
@@ -116,7 +130,6 @@ else:
 if args.input == 'locs':
     args.in_channels = 2
 '''
-
 args.in_channels = [1]
 '''
 if args.ls_bands:
