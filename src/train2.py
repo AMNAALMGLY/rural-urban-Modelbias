@@ -278,7 +278,7 @@ def main(args):
         # train=list(paths_train[400:855])+list(paths_train[1155:1601])+list(paths_train[2000:5000])
 
           batcher_train = Batcher(paths_train, args.scaler_features_keys, args.ls_bands, args.nl_band, args.label_name,
-                               args.nl_label, args.include_buildings, paths_train_b, args.normalize, args.augment,
+                               args.nl_label, args.include_buildings, paths_train_b, args.normalize, True,
                                 args.clipn, args.batch_size, groupby=args.group,
                                 cache=True, shuffle=True,img_size=args.image_size,crop=args.crop,rand_crop=args.rand_crop,offset=args.offset)
 
@@ -502,8 +502,8 @@ def main(args):
 # TODO Save test scores in csv file
 
 if __name__ == "__main__":
-    wandb.init(project=wandp, entity=entity, config={})
-    #wandb.init(settings=wandb.Settings(start_method='fork'))
+    #wandb.init(project=wandp, entity=entity, config={})
+    wandb.init(settings=wandb.Settings(start_method='fork'))
     print('GPUS:', torch.cuda.device_count())
     parser = argparse.ArgumentParser()
     args = parse_arguments(parser, default_args)

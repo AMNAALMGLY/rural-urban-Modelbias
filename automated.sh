@@ -6,7 +6,7 @@ fold=('A' 'B' 'C' 'D' 'E')
 
 for f in "${fold[@]}"; do
     #for f in "${fold[@]}"; do
-    sbatch ./train.sh --fold=$f
+    sbatch ./train_.sh --fold=$f
     #done
 done
 

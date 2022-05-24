@@ -78,23 +78,7 @@ class Trainer:
         self.loss_type = loss_type
         self.save_dir = save_dir
         self.num_outputs = num_outputs
-        if num_outputs is not None:
 
-            fc = nn.Linear(model.fc.in_features, num_outputs, bias=True)
-
-            # initialization
-            torch.nn.init.trunc_normal_(fc.weight.data, std=0.01)
-            # fc.bias.data.zero_()
-            torch.nn.init.constant_(fc.bias.data, 0.01)
-
-            model.fc = fc
-
-
-
-        else:
-
-            raise ValueError('please specify a value for your number of outputs for the loss function to evaluate '
-                             'against')
 
         if args.no_of_gpus > 1:
             self.model = nn.DataParallel(self.model)
@@ -270,6 +254,10 @@ class Trainer:
         elif self.loss_type == 'classification' and self.num_outputs == 1:
             preds = torch.sigmoid(outputs, )
             target = target.long()
+        elif self.loss_type=='quantile':
+            outputs= self.criterion.to_prediction(outputs)
+            print(outputs.shape)
+            preds=torch.tensor(outputs, device=args.gpus)
 
         else:
             preds = torch.tensor(outputs, device=args.gpus)
@@ -477,20 +465,21 @@ class Trainer:
         #     Trainer.update_bn(trainloader, self.swa_model)
 
         # choose the best model between the saved models in regard to r2 value or minimum loss
-        if len(val_list.keys()) > 0:
-            best_path = val_list[min(val_list.keys())]
-            print(f'loss of best model saved is {min(val_list.keys())} , path {best_path}')
-
-            shutil.move(best_path,
-                        os.path.join(self.save_dir, 'best.ckpt'))
-
-        elif len(r2_dict.keys()) > 0:
+        if len(r2_dict.keys()) > 0:
             best_path = r2_dict[max(r2_dict.keys())]
             print(f'{self.metric_str[0]} of best model saved is {max(r2_dict.keys())} , path {best_path}')
 
             shutil.move(best_path,
                         os.path.join(self.save_dir, 'best.ckpt'))
 
+        elif len(val_list.keys()) > 0:
+            best_path = val_list[min(val_list.keys())]
+            print(f'loss of best model saved is {min(val_list.keys())} , path {best_path}')
+
+            shutil.move(best_path,
+                        os.path.join(self.save_dir, 'best.ckpt'))
+
+   
 
         else:
             # best path is the last path which is saved at resume_points dir
@@ -812,8 +801,12 @@ class Trainer:
 
         elif self.loss_type == 'mse':
             self.criterion = nn.MSELoss()
+        elif self.loss_type=='l1':
+            self.criterion=nn.L1Loss()
         elif self.loss_type == 'smoothL1':
             self.criterion = nn.SmoothL1Loss(beta=3)
+        elif self.loss_type=='quantile':
+            self.criterion=QuantileLoss()
 
     @torch.no_grad()
     def update_bn(loader, model, device=None):
@@ -1095,3 +1088,66 @@ class Trainer:
         print(losses)
         return max(losses)
     '''
+class QuantileLoss():
+    """
+    Quantile loss, i.e. a quantile of ``q=0.5`` will give half of the mean absolute error as it is calcualted as
+
+    Defined as ``max(q * (y-y_pred), (1-q) * (y_pred-y))``
+    """
+
+    def __init__(
+        self,
+        quantiles = [0.02, 0.1, 0.25, 0.5, 0.75, 0.9, 0.98],
+        **kwargs,
+    ):
+        """
+        Quantile loss
+
+        Args:
+            quantiles: quantiles for metric
+        """
+        
+        super(QuantileLoss, self).__init__()
+        self.quantiles=quantiles
+
+    def __call__(self, y_pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        # calculate quantile loss
+        assert y_pred.size(0) == target.size(0) ,'prediction shape is not as target shape for quantile loss'
+
+        losses = []
+        for i, q in enumerate(self.quantiles):
+            errors = target - y_pred[..., i]
+            losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(-1))
+        losses = torch.cat(losses, dim=1)
+        losses= torch.mean(torch.sum(losses, dim=-1))
+        
+        return losses
+
+
+    def to_prediction(self, y_pred: torch.Tensor) -> torch.Tensor:
+        """
+        Convert network prediction into a point prediction.
+
+        Args:
+            y_pred: prediction output of network
+
+        Returns:
+            torch.Tensor: point prediction
+        """
+        if y_pred.shape[1] > 1:
+            idx = self.quantiles.index(0.5)
+            y_pred = y_pred[..., idx]
+        return y_pred
+
+
+    def to_quantiles(self, y_pred: torch.Tensor) -> torch.Tensor:
+        """
+        Convert network prediction into a quantile prediction.
+
+        Args:
+            y_pred: prediction output of network
+
+        Returns:
+            torch.Tensor: prediction quantiles
+        """
+        return y_pred
