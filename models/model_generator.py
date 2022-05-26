@@ -225,7 +225,7 @@ class Encoder(nn.Module):
                 param.requires_grad = False
             self.layer_adapt = fc_layer(self.fc_in_dim, self.ff)
             self.layers_adapt = Layers(self.layer_adapt, attn_blocks)
-        self.fc = nn.Linear(self.fc_in_dim, num_outputs).to(
+        self.fc = nn.Linear(self.fc_in_dim, num_outputs*args.num_quantiles).to(
             args.gpus)  # combines both together
 
         with torch.no_grad():
@@ -235,6 +235,7 @@ class Encoder(nn.Module):
     def init_weights(self):
         def initial(m):
             if isinstance(m, nn.Linear):
+                 # initialization
                 nn.init.xavier_uniform_(
                     m.weight)  # _trunc_normal(m.weight, std=0.02)  # from .initialization import _trunc_normal
                 if hasattr(m, 'bias') and m.bias is not None:
@@ -261,7 +262,7 @@ class Encoder(nn.Module):
                 print('in linear layers for whole image experiment')
                 print(features.shape)
                 assert features.dim() == 2, 'shape of featuers is not expected to perform linear layers on '
-                features = self.layers_adapt(features)
+#                features = self.layers_adapt(features)
 
 
         else:
