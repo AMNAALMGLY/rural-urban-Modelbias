@@ -52,11 +52,7 @@ args = Namespace(
     buildings_records='/network/scratch/a/amna.elmustafa/dhs_tfrecords_buildings_large', #or None
 
     #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
-    #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
-    #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
-    #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
-    #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
-    #'/atlas/u/erikrozi/bias_mitigation/dhs_tfrecords_buildings_large',
+
     #'/atlas/u/erikrozi/bias_mitigation/africa_poverty_clean/data/dhs_buildings',
     labels_path='/network/scratch/a/amna.elmustafa/rural-urban-Modelbias/preprocessing/dhs_labels_quantile.csv',
     #dhs_labels_quantile_sqrt.csv',
